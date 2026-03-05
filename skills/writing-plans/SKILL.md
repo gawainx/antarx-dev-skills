@@ -7,24 +7,35 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, testing/verification strategy, docs they might need to check, and how to validate results. DRY. YAGNI. Practical, risk-driven verification.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
-**Context:** This should be run in a dedicated worktree (created by brainstorming skill).
+**Language rules:**
+- Use Chinese when interacting with the user while creating the plan.
+- Write the final development plan document in English.
+
+**Context:**
+- Preferred: run in a dedicated worktree for medium/large or high-risk changes.
+- Allowed: run in the current workspace for small, low-risk changes.
+- Use judgment based on change scope, migration risk, and cross-module impact.
 
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
-## Bite-Sized Task Granularity
+## Tech Stack Rules
 
-**Each step is one action (2-5 minutes):**
-- "Write the failing test" - step
-- "Run it to make sure it fails" - step
-- "Implement the minimal code to make the test pass" - step
-- "Run the tests and make sure they pass" - step
-- "Commit" - step
+- Always follow the project's actual technology stack first.
+- If stack conventions are unclear, use user-preferred defaults where applicable (Python: `click`, `rich`, `loguru`, `uv`).
+- Never override explicit project constraints or existing conventions.
+
+## Task Granularity
+
+- Tasks should be independently verifiable and reasonably scoped.
+- Typical task size is 15-90 minutes depending on complexity and risk.
+- Do not force full RED-GREEN-REFACTOR for every task.
+- Require a minimal verification strategy per task, scaled by risk.
 
 ## Plan Document Header
 
@@ -37,9 +48,13 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Goal:** [One sentence describing what this builds]
 
+**Related Design Doc:** [Exact path to approved design doc]
+
 **Architecture:** [2-3 sentences about approach]
 
 **Tech Stack:** [Key technologies/libraries]
+
+**Scope / Out of Scope:** [Explicit boundaries]
 
 ---
 ```
@@ -47,52 +62,43 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 ## Task Structure
 
 ````markdown
-### Task N: [Component Name]
+## Phase #N: [Phase Name]
+
+### Task #N: [Component Name]
+
+**Status:** Desinged | Coding | Finished
 
 **Files:**
-- Create: `exact/path/to/file.py`
-- Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test.py`
+- Create: `exact/path/to/new.file` (if needed)
+- Modify: `exact/path/to/existing.file`
+- Verify: `exact/path/to/tests/or/manual-checklist` (if applicable)
 
-**Step 1: Write the failing test**
-
-```python
-def test_specific_behavior():
-    result = function(input)
-    assert result == expected
-```
-
-**Step 2: Run test to verify it fails**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with "function not defined"
-
-**Step 3: Write minimal implementation**
-
-```python
-def function(input):
-    return expected
-```
-
-**Step 4: Run test to verify it passes**
-
-Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS
-
-**Step 5: Commit**
-
-```bash
-git add tests/path/test.py src/path/file.py
-git commit -m "feat: add specific feature"
-```
+- Function: [What this task delivers]
+- Implementation Notes: [Key technical decisions and constraints]
+- Expected Verification Result: [What must pass or be observed]
+- Completed At: [Optional timestamp when finished]
 ````
+
+## Plan Management Requirements
+
+- The plan MUST be organized into one or more phases (`Phase #1`, `Phase #2`, ...).
+- Each phase MUST contain one or more tasks (`Task #1`, `Task #2`, ...).
+- Every task MUST include:
+  - Task content
+  - Implementation notes
+  - Expected result
+  - Status: `Desinged | Coding | Finished`
+- Verification must be risk-driven:
+  - High-risk changes (schema migration, cross-module refactor, data sync): require stronger verification (automated tests and/or migration checks).
+  - Medium/low-risk changes: allow targeted build checks plus key manual-path verification.
+- Update task status promptly as work progresses.
 
 ## Remember
 - Exact file paths always
-- Complete code in plan (not "add validation")
-- Exact commands with expected output
+- Include concrete implementation notes, not vague statements
+- Include exact verification commands/checklists with expected outcomes when applicable
 - Reference relevant skills with @ syntax
-- DRY, YAGNI, TDD, frequent commits
+- DRY, YAGNI, practical verification, clear scope boundaries
 
 ## Execution Handoff
 
