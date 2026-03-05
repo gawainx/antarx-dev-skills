@@ -13,6 +13,8 @@ Load plan, review critically, execute tasks in batches, report for review betwee
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
+**Language rule:** Use Chinese for execution updates, progress reports, and clarification questions with the user.
+
 ## The Process
 
 ### Step 1: Load and Review Plan
@@ -20,15 +22,17 @@ Load plan, review critically, execute tasks in batches, report for review betwee
 2. Review critically - identify any questions or concerns about the plan
 3. If concerns: Raise them with your human partner before starting
 4. If no concerns: Create TodoWrite and proceed
+5. Confirm each selected task starts from `Desinged` and will transition through `Coding` to `Finished`
 
 ### Step 2: Execute Batch
-**Default: First 3 tasks**
+**Default: Execute 1-3 tasks per batch, dynamically chosen by risk and coupling.**
 
 For each task:
-1. Mark as in_progress
-2. Follow each step exactly (plan has bite-sized steps)
-3. Run verifications as specified
-4. Mark as completed
+1. Mark status as `Coding`
+2. Execute by task objective and boundaries
+3. If execution needs deviation from the plan, record the deviation and confirm with the user before proceeding
+4. Run risk-driven verifications as specified in the plan
+5. Mark status as `Finished`
 
 ### Step 3: Report
 When batch complete:
@@ -67,10 +71,18 @@ After all tasks complete and verified:
 
 **Don't force through blockers** - stop and ask.
 
+## Verification Strategy
+
+- Follow the same risk-driven verification policy defined by writing-plans.
+- High-risk changes (schema migration, cross-module refactor, sync/data consistency): run stronger checks (automated tests and/or migration checks).
+- Medium/low-risk changes: allow targeted build/test checks plus key manual-path verification.
+- Always report verification command/checklist and outcome for the batch.
+
 ## Remember
 - Review plan critically first
-- Follow plan steps exactly
-- Don't skip verifications
+- Execute by task (not forced micro-steps)
+- Follow plan goals and boundaries; confirm before deviating
+- Use risk-driven verification; do not skip required checks
 - Reference skills when plan says to
 - Between batches: just report and wait
 - Stop when blocked, don't guess
@@ -79,6 +91,6 @@ After all tasks complete and verified:
 ## Integration
 
 **Required workflow skills:**
-- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
+- **superpowers:using-git-worktrees** - Recommended for medium/large or high-risk changes; low-risk changes may run in current workspace
 - **superpowers:writing-plans** - Creates the plan this skill executes
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks
