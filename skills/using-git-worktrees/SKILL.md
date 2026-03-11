@@ -1,6 +1,6 @@
 ---
 name: using-git-worktrees
-description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
+description: Use only when isolation is clearly needed (parallel work, dirty workspace risk, or user request). Ask for user approval before creating a worktree and explain why it is needed.
 ---
 
 # Using Git Worktrees
@@ -12,6 +12,38 @@ Git worktrees create isolated workspaces sharing the same repository, allowing w
 **Core principle:** Systematic directory selection + safety verification = reliable isolation.
 
 **Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
+
+## Trigger Conditions (Narrow Scope)
+
+Use this skill only when at least one condition is true:
+
+1. User explicitly asks to use a worktree or isolated workspace.
+2. You must run parallel/independent implementation streams that would conflict in one working tree.
+3. Current workspace is intentionally dirty and isolating new changes is necessary to avoid cross-contamination.
+4. A parent workflow explicitly requires isolation and user agrees after explanation.
+
+Do not auto-trigger for every implementation plan.
+
+### Do Not Trigger
+
+- Read-only tasks (review, analysis, explanation, planning-only).
+- Small scoped edits that do not need branch isolation.
+- Cases where current workspace is clean and no parallel work is needed.
+- When user prefers staying in the current workspace.
+
+## User Consent Before Creation (Mandatory)
+
+Before any `git worktree add`, explain necessity and ask for confirmation.
+
+Use this format:
+
+```
+I recommend creating a git worktree for this task because <specific reason>.
+This adds setup overhead (directory setup, optional dependency install, optional baseline checks).
+Do you want me to create it now?
+```
+
+If user does not explicitly approve, do not create a worktree.
 
 ## Directory Selection Process
 
@@ -72,7 +104,7 @@ Per Jesse's rule "Fix broken things immediately":
 
 No .gitignore verification needed - outside project entirely.
 
-## Creation Steps
+## Creation Steps (After User Approval)
 
 ### 1. Detect Project Name
 
@@ -98,9 +130,11 @@ git worktree add "$path" -b "$BRANCH_NAME"
 cd "$path"
 ```
 
-### 3. Run Project Setup
+### 3. Run Project Setup (Minimal by Default)
 
-Auto-detect and run appropriate setup:
+Default to minimal setup. Run dependency installation only if user requested it, or if the next confirmed task requires it immediately.
+
+Auto-detect commands when needed:
 
 ```bash
 # Node.js
@@ -117,9 +151,11 @@ if [ -f pyproject.toml ]; then poetry install; fi
 if [ -f go.mod ]; then go mod download; fi
 ```
 
-### 4. Verify Clean Baseline
+### 4. Verify Baseline (On Demand)
 
-Run tests to ensure worktree starts clean:
+Do not run full baseline tests automatically. Propose baseline verification and run it only after user confirmation, unless a parent workflow mandates it.
+
+When approved, run project-appropriate command:
 
 ```bash
 # Examples - use project-appropriate command
@@ -150,6 +186,8 @@ Ready to implement <feature-name>
 | Both exist | Use `.worktrees/` |
 | Neither exists | Check CLAUDE.md → Ask user |
 | Directory not ignored | Add to .gitignore + commit |
+| Worktree not explicitly approved | Do not create; continue in current workspace |
+| Setup/test cost seems high | Explain cost and ask before running |
 | Tests fail during baseline | Report failures + ask |
 | No package.json/Cargo.toml | Skip dependency install |
 
@@ -169,6 +207,11 @@ Ready to implement <feature-name>
 
 - **Problem:** Can't distinguish new bugs from pre-existing issues
 - **Fix:** Report failures, get explicit permission to proceed
+
+### Creating worktree without consent
+
+- **Problem:** Adds unnecessary overhead and may violate user preference
+- **Fix:** Explain why isolation is needed, then get explicit approval first
 
 ### Hardcoding setup commands
 
@@ -195,24 +238,26 @@ Ready to implement auth feature
 
 **Never:**
 - Create worktree without verifying it's ignored (project-local)
+- Create worktree without explicit user approval
 - Skip baseline test verification
 - Proceed with failing tests without asking
 - Assume directory location when ambiguous
 - Skip CLAUDE.md check
 
 **Always:**
+- Check trigger conditions first; skip when isolation is unnecessary
+- Explain necessity and overhead, then ask for consent before creation
 - Follow directory priority: existing > CLAUDE.md > ask
 - Verify directory is ignored for project-local
-- Auto-detect and run project setup
-- Verify clean test baseline
+- Run setup and baseline verification only as needed/approved
 
 ## Integration
 
 **Called by:**
-- **brainstorming** (Phase 4) - REQUIRED when design is approved and implementation follows
-- **subagent-driven-development** - REQUIRED before executing any tasks
-- **executing-plans** - REQUIRED before executing any tasks
-- Any skill needing isolated workspace
+- **brainstorming** (Phase 4) - OPTIONAL when approved design requires isolated implementation
+- **subagent-driven-development** - OPTIONAL when task decomposition requires isolation
+- **executing-plans** - OPTIONAL when plan indicates isolation benefits
+- Any skill needing isolated workspace after user consent
 
 **Pairs with:**
 - **finishing-a-development-branch** - REQUIRED for cleanup after work complete
