@@ -1,0 +1,4 @@
+interface:
+  display_name: "Completion Progress Recorder"
+  short_description: "在需求完成时提交变更并追加 progress.md 记录"
+  default_prompt: "在验收或测试通过后，检查工作区并将本次总结追加到 progress.md"

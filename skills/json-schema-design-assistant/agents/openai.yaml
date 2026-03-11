@@ -1,0 +1,4 @@
+interface:
+  display_name: "JSON Schema Designer"
+  short_description: "Design and enhance JSON Schema with iterative workflow control"
+  default_prompt: "Use $json-schema-design-assistant to design, extend, or refine a target JSON Schema and provide a clear field-level proposal before applying changes."
