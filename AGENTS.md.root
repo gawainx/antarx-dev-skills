@@ -1,0 +1,58 @@
+# AGENTS.md
+
+本文件用于统一 Codex 在本仓库及跨设备协作时的行为基线。
+
+## What
+
+- 本仓库是 skills 与 AGENTS 的单一事实源（SSOT）。
+- 受管内容仅包括：
+  - `skills/`
+  - `AGENTS.md`
+- 通过 `scripts/sync_to_local.sh` 将受管内容同步到本机。
+- 通过 `scripts/doctor.sh` 检查本机与仓库是否一致。
+
+## Why
+
+- 保证台式机与笔记本获得一致的技能集合与代理行为。
+- 避免手工复制导致的遗漏、漂移和不可追踪修改。
+
+## How
+
+### 1. 开发流程
+
+- 所有新增/编辑 skill 与 AGENTS 的动作，都在仓库内完成。
+- 不直接手工修改 `~/.codex/skills` 中受管技能。
+- 修改后执行：
+  1. `./scripts/sync_to_local.sh --dry-run`
+  2. `./scripts/sync_to_local.sh`
+  3. `./scripts/doctor.sh`
+
+### 2. 双机同步流程
+
+- 任一设备修改仓库后：`git commit` + `git push`。
+- 另一台设备：`git pull` 后执行同步与校验脚本。
+
+### 3. 技能黑名单（禁止纳入本仓库受管）
+
+- `skill-creator`
+- `skill-installer`
+- `swiftui-macos-llm-chat-module`（Apple 平台相关）
+
+### 4. Git Commit 约束
+
+- 禁止：
+  - 空提交信息或仅标点
+  - `update` / `fix` 这类泛化描述
+  - `git commit --amend`
+- 提交信息必须满足 Conventional Commits：
+  - 正则：`^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert): .{10,}$`
+- 描述要求：
+  - 冒号后至少 10 字符
+  - 必须包含具体技术信息（文件、模块、逻辑）
+
+### 5. 验证清单
+
+- `./scripts/doctor.sh` 返回 0
+- `~/.codex/skills` 中受管技能与仓库一致
+- `AGENTS.md` 已同步到本机目标路径
+
