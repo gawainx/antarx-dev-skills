@@ -13,7 +13,9 @@ Load plan, review critically, execute tasks in batches, report for review betwee
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Language rule:** Use Chinese for execution updates, progress reports, and clarification questions with the user.
+**Language rules:**
+- Use Simplified Chinese for execution updates, progress reports, and clarification questions with the user.
+- Use Simplified Chinese as the primary language for any document saved during execution.
 
 ## The Process
 
@@ -83,6 +85,7 @@ After all tasks complete and verified:
 - Execute by task (not forced micro-steps)
 - Follow plan goals and boundaries; confirm before deviating
 - Use risk-driven verification; do not skip required checks
+- Use Simplified Chinese as the primary language for saved execution records or related documents
 - Reference skills when plan says to
 - Between batches: just report and wait
 - Stop when blocked, don't guess

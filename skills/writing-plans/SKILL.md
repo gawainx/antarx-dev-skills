@@ -14,8 +14,8 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
 
 **Language rules:**
-- Use Chinese when interacting with the user while creating the plan.
-- Write the final development plan document in English.
+- Use Simplified Chinese when interacting with the user while creating the plan.
+- Write the final development plan document primarily in Simplified Chinese.
 
 **Context:**
 - Preferred: run in a dedicated worktree for medium/large or high-risk changes.
@@ -97,6 +97,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 - Exact file paths always
 - Include concrete implementation notes, not vague statements
 - Include exact verification commands/checklists with expected outcomes when applicable
+- Use Simplified Chinese as the primary language for any saved plan document
 - Reference relevant skills with @ syntax
 - DRY, YAGNI, practical verification, clear scope boundaries
 

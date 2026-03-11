@@ -60,7 +60,7 @@ digraph brainstorming {
 - Check out the current project state first (files, docs, recent commits)
 - Ask 2-3 most relevant questions per round to refine the idea
 - Keep total clarifying questions at 6 or fewer
-- Use Chinese when interacting with the user during brainstorming
+- Use Simplified Chinese when interacting with the user during brainstorming
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Focus on understanding: purpose, constraints, success criteria
 
@@ -80,7 +80,7 @@ digraph brainstorming {
 
 **Documentation:**
 - Write the validated design to `docs/plans/<topic>_design_YYYYMMDD.md`
-- Write the design document in English
+- Write any saved document primarily in Simplified Chinese
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 
@@ -91,7 +91,7 @@ digraph brainstorming {
 ## Key Principles
 
 - **2-3 questions per round** - Ask only the most relevant questions, with a hard cap of 6 total
-- **Chinese interaction, English document** - Brainstorm with the user in Chinese, but write design docs in English
+- **Simplified Chinese interaction and documents** - Brainstorm with the user in Simplified Chinese, and write any saved document primarily in Simplified Chinese
 - **Multiple choice preferred** - Easier to answer than open-ended when possible
 - **YAGNI ruthlessly** - Remove unnecessary features from all designs
 - **Explore alternatives** - Always propose 2-3 approaches before settling
