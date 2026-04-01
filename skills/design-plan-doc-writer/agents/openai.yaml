@@ -1,4 +1,4 @@
 interface:
-  display_name: "Design & Plan Writer"
-  short_description: "Draft repository-specific design docs and phased plans."
-  default_prompt: "Use $design-plan-doc-writer to write the design document and development plan after requirements clarification is complete."
+  display_name: "设计与计划文档编写"
+  short_description: "按固定顺序产出成对设计文档与分阶段开发计划（同需求同文件名）"
+  default_prompt: "使用 $design-plan-doc-writer，在需求澄清完成后按固定顺序产出设计文档与开发计划，并确保同一需求下文件名严格一致。"

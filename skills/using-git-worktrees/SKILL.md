@@ -1,263 +1,45 @@
 ---
 name: using-git-worktrees
-description: Use only when isolation is clearly needed (parallel work, dirty workspace risk, or user request). Ask for user approval before creating a worktree and explain why it is needed.
+description: 仅在确实需要隔离（并行开发、脏工作区风险或用户明确要求）时使用。创建 worktree 前必须说明原因并获得用户同意。
 ---
 
-# Using Git Worktrees
-
-## Overview
-
-Git worktrees create isolated workspaces sharing the same repository, allowing work on multiple branches simultaneously without switching.
-
-**Core principle:** Systematic directory selection + safety verification = reliable isolation.
-
-**Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
-
-## Trigger Conditions (Narrow Scope)
-
-Use this skill only when at least one condition is true:
-
-1. User explicitly asks to use a worktree or isolated workspace.
-2. You must run parallel/independent implementation streams that would conflict in one working tree.
-3. Current workspace is intentionally dirty and isolating new changes is necessary to avoid cross-contamination.
-4. A parent workflow explicitly requires isolation and user agrees after explanation.
-
-Do not auto-trigger for every implementation plan.
-
-### Do Not Trigger
-
-- Read-only tasks (review, analysis, explanation, planning-only).
-- Small scoped edits that do not need branch isolation.
-- Cases where current workspace is clean and no parallel work is needed.
-- When user prefers staying in the current workspace.
-
-## User Consent Before Creation (Mandatory)
-
-Before any `git worktree add`, explain necessity and ask for confirmation.
-
-Use this format:
-
-```
-I recommend creating a git worktree for this task because <specific reason>.
-This adds setup overhead (directory setup, optional dependency install, optional baseline checks).
-Do you want me to create it now?
-```
-
-If user does not explicitly approve, do not create a worktree.
-
-## Directory Selection Process
-
-Follow this priority order:
-
-### 1. Check Existing Directories
-
-```bash
-# Check in priority order
-ls -d .worktrees 2>/dev/null     # Preferred (hidden)
-ls -d worktrees 2>/dev/null      # Alternative
-```
-
-**If found:** Use that directory. If both exist, `.worktrees` wins.
-
-### 2. Check CLAUDE.md
-
-```bash
-grep -i "worktree.*director" CLAUDE.md 2>/dev/null
-```
-
-**If preference specified:** Use it without asking.
-
-### 3. Ask User
-
-If no directory exists and no CLAUDE.md preference:
-
-```
-No worktree directory found. Where should I create worktrees?
-
-1. .worktrees/ (project-local, hidden)
-2. ~/.config/superpowers/worktrees/<project-name>/ (global location)
-
-Which would you prefer?
-```
-
-## Safety Verification
-
-### For Project-Local Directories (.worktrees or worktrees)
-
-**MUST verify directory is ignored before creating worktree:**
-
-```bash
-# Check if directory is ignored (respects local, global, and system gitignore)
-git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/dev/null
-```
-
-**If NOT ignored:**
-
-Per Jesse's rule "Fix broken things immediately":
-1. Add appropriate line to .gitignore
-2. Commit the change
-3. Proceed with worktree creation
-
-**Why critical:** Prevents accidentally committing worktree contents to repository.
-
-### For Global Directory (~/.config/superpowers/worktrees)
-
-No .gitignore verification needed - outside project entirely.
-
-## Creation Steps (After User Approval)
-
-### 1. Detect Project Name
-
-```bash
-project=$(basename "$(git rev-parse --show-toplevel)")
-```
-
-### 2. Create Worktree
-
-```bash
-# Determine full path
-case $LOCATION in
-  .worktrees|worktrees)
-    path="$LOCATION/$BRANCH_NAME"
-    ;;
-  ~/.config/superpowers/worktrees/*)
-    path="~/.config/superpowers/worktrees/$project/$BRANCH_NAME"
-    ;;
-esac
-
-# Create worktree with new branch
-git worktree add "$path" -b "$BRANCH_NAME"
-cd "$path"
-```
-
-### 3. Run Project Setup (Minimal by Default)
-
-Default to minimal setup. Run dependency installation only if user requested it, or if the next confirmed task requires it immediately.
-
-Auto-detect commands when needed:
-
-```bash
-# Node.js
-if [ -f package.json ]; then npm install; fi
-
-# Rust
-if [ -f Cargo.toml ]; then cargo build; fi
-
-# Python
-if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-if [ -f pyproject.toml ]; then poetry install; fi
-
-# Go
-if [ -f go.mod ]; then go mod download; fi
-```
-
-### 4. Verify Baseline (On Demand)
-
-Do not run full baseline tests automatically. Propose baseline verification and run it only after user confirmation, unless a parent workflow mandates it.
-
-When approved, run project-appropriate command:
-
-```bash
-# Examples - use project-appropriate command
-npm test
-cargo test
-pytest
-go test ./...
-```
-
-**If tests fail:** Report failures, ask whether to proceed or investigate.
-
-**If tests pass:** Report ready.
-
-### 5. Report Location
-
-```
-Worktree ready at <full-path>
-Tests passing (<N> tests, 0 failures)
-Ready to implement <feature-name>
-```
-
-## Quick Reference
-
-| Situation | Action |
-|-----------|--------|
-| `.worktrees/` exists | Use it (verify ignored) |
-| `worktrees/` exists | Use it (verify ignored) |
-| Both exist | Use `.worktrees/` |
-| Neither exists | Check CLAUDE.md → Ask user |
-| Directory not ignored | Add to .gitignore + commit |
-| Worktree not explicitly approved | Do not create; continue in current workspace |
-| Setup/test cost seems high | Explain cost and ask before running |
-| Tests fail during baseline | Report failures + ask |
-| No package.json/Cargo.toml | Skip dependency install |
-
-## Common Mistakes
-
-### Skipping ignore verification
-
-- **Problem:** Worktree contents get tracked, pollute git status
-- **Fix:** Always use `git check-ignore` before creating project-local worktree
-
-### Assuming directory location
-
-- **Problem:** Creates inconsistency, violates project conventions
-- **Fix:** Follow priority: existing > CLAUDE.md > ask
-
-### Proceeding with failing tests
-
-- **Problem:** Can't distinguish new bugs from pre-existing issues
-- **Fix:** Report failures, get explicit permission to proceed
-
-### Creating worktree without consent
-
-- **Problem:** Adds unnecessary overhead and may violate user preference
-- **Fix:** Explain why isolation is needed, then get explicit approval first
-
-### Hardcoding setup commands
-
-- **Problem:** Breaks on projects using different tools
-- **Fix:** Auto-detect from project files (package.json, etc.)
-
-## Example Workflow
-
-```
-You: I'm using the using-git-worktrees skill to set up an isolated workspace.
-
-[Check .worktrees/ - exists]
-[Verify ignored - git check-ignore confirms .worktrees/ is ignored]
-[Create worktree: git worktree add .worktrees/auth -b feature/auth]
-[Run npm install]
-[Run npm test - 47 passing]
-
-Worktree ready at /Users/jesse/myproject/.worktrees/auth
-Tests passing (47 tests, 0 failures)
-Ready to implement auth feature
-```
-
-## Red Flags
-
-**Never:**
-- Create worktree without verifying it's ignored (project-local)
-- Create worktree without explicit user approval
-- Skip baseline test verification
-- Proceed with failing tests without asking
-- Assume directory location when ambiguous
-- Skip CLAUDE.md check
-
-**Always:**
-- Check trigger conditions first; skip when isolation is unnecessary
-- Explain necessity and overhead, then ask for consent before creation
-- Follow directory priority: existing > CLAUDE.md > ask
-- Verify directory is ignored for project-local
-- Run setup and baseline verification only as needed/approved
-
-## Integration
-
-**Called by:**
-- **brainstorming** (Phase 4) - OPTIONAL when approved design requires isolated implementation
-- **subagent-driven-development** - OPTIONAL when task decomposition requires isolation
-- **executing-plans** - OPTIONAL when plan indicates isolation benefits
-- Any skill needing isolated workspace after user consent
-
-**Pairs with:**
-- **finishing-a-development-branch** - REQUIRED for cleanup after work complete
+# 使用 Git Worktree
+
+## 核心原则
+规范选目录 + 安全校验 + 用户同意，才能可靠隔离。
+
+## 触发条件
+满足任一即可：
+1. 用户明确要求 worktree/隔离工作区。
+2. 需要并行实现且单工作区会冲突。
+3. 当前工作区故意保持脏状态，需隔离避免污染。
+4. 上层流程强制隔离且用户已同意。
+
+不触发：只读任务、小改动、无需并行且工作区干净。
+
+## 创建前必须征得同意
+在执行 `git worktree add` 前，先说明必要性与成本并询问是否现在创建。
+未获明确同意不得创建。
+
+## 目录选择优先级
+1. 现有 `.worktrees/`（优先）或 `worktrees/`
+2. `CLAUDE.md` 中已有约定
+3. 无约定则询问用户
+
+## 安全校验
+若使用项目内目录（`.worktrees`/`worktrees`）：
+- 创建前必须 `git check-ignore` 验证该目录被忽略。
+- 未被忽略则先修复 `.gitignore` 并提交，再创建。
+
+## 创建步骤（同意后）
+1. 检测项目名。
+2. 按选定位置计算路径并创建新分支 worktree。
+3. 默认最小化 setup；仅在用户要求或后续任务立即需要时装依赖。
+4. 基线测试仅在用户确认或上层流程要求时执行。
+5. 报告路径与就绪状态。
+
+## 常见错误
+- 跳过 ignore 校验。
+- 未确认即创建。
+- 基线失败仍擅自继续。
+- 硬编码安装/测试命令。

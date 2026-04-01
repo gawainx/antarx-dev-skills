@@ -1,39 +1,36 @@
 ---
 name: design-plan-doc-writer
-description: Draft repository-aligned design documents and phased development plans after requirements clarification is complete. Use when the user has finished or explicitly confirmed requirements clarification for a feature or refactor and then asks to write the corresponding design doc, development plan, or both. Apply this skill to follow the sequence "requirements clarification, then design doc, then development plan", produce paired docs under the repo's docs/ and plan/ conventions, preserve the user's language (default Simplified Chinese), and compare any same-prefix existing docs before asking whether to append or overwrite.
+description: 需求澄清完成后，用于产出仓库对齐的设计文档与分阶段开发计划。适用于用户明确要求撰写设计文档、开发计划或二者同时产出时。必须遵循“需求澄清 -> 设计文档 -> 开发计划”的顺序。
 ---
 
-# Design Plan Doc Writer
+# 设计与计划文档编写
 
-Write the design doc and development plan only after requirements clarification is complete enough that implementation scope, constraints, and boundaries are stable. Treat the ordering as mandatory: requirements clarification first, design doc second, development plan third.
+仅在需求边界、约束与范围已稳定时撰写文档。
 
-## Workflow
+## 强制顺序
+1. 需求澄清
+2. 设计文档
+3. 开发计划
 
-1. Confirm that requirements clarification is finished; if not, continue clarification instead of drafting docs.
-2. Inspect the repository's existing `docs/`, `plan/`, and any feature-adjacent code before drafting.
-3. Infer the documentation category from the feature domain.
-4. Check whether a same-prefix document already exists.
-5. If a same-prefix doc exists, read it, summarize the difference, and explicitly ask whether to append or overwrite before writing anything.
-6. Draft the design doc first.
-7. Draft the development plan second, and link the design doc in `## Related Design Doc`.
-8. Keep scope tight. If the current session is only UI scaffolding or only planning, state what is explicitly out of scope.
+## 工作流
+1. 先确认需求澄清已完成；未完成则继续澄清。
+2. 检查仓库 `docs/`、`plan/` 与相关代码上下文。
+3. 根据功能领域推断文档分类。
+4. 检查是否存在同前缀文档。
+5. 若存在，先比较范围/日期/内容，并询问“追加还是覆盖”。
+6. 先写设计文档。
+7. 再写开发计划，并在 `## Related Design Doc` 引用设计文档。
+8. 严控范围，明确 In Scope / Out of Scope。
 
-## Output Rules
+## 输出规则
+- 语言跟随用户；默认简体中文。
+- 文件命名使用 `{Feat}_{YYYYMMDD}.md`。
+- 同一需求的设计文档与开发计划文件名必须严格相同（同 basename）。
+- 计划任务状态统一：`Designed | Coding | Testing | Finished`。
+- 计划仅覆盖本轮已确认范围，不得静默扩 scope。
 
-- Match the user's language. Default to Simplified Chinese when the conversation is Chinese or language is unspecified.
-- Follow the fixed sequence `requirements clarification, then design doc, then development plan`; do not skip straight to the plan unless the user explicitly overrides this.
-- Use `{Feat}_{YYYYMMDD}.md` naming.
-- Put UI and UX topics under `docs/UI/` and `plan/UI/` when that categorization fits.
-- Keep the design doc detailed enough that another agent can implement from it without re-discovery.
-- Keep the plan task-oriented, grouped by phase, and record task status using `Designed | Coding | Testing | Finished`.
-- Emphasize that each completed task should end with one git commit so implementation stays atomically traceable.
-- Keep the plan focused on the current session scope. Do not silently expand into later business features.
-
-## Design Doc Structure
-
-Follow this structure unless the repository already has a stronger local convention for the same feature family:
-
-1. Title line using the file name.
+## 设计文档结构
+1. 文件名作为标题
 2. `## 核心功能`
 3. `### 需求背景`
 4. `### 需求目标`
@@ -42,48 +39,39 @@ Follow this structure unless the repository already has a stronger local convent
 7. `## i18n`
 8. `## 测试用例`
 
-### Design Expectations
+### 设计要求
+- 说明当前架构与最终技术决策。
+- 明确触点、状态归属、UI 归属、关键约束。
+- UI 场景需写清布局结构、工具栏归属、宽度策略、空态与稳定性策略。
+- `i18n` 需包含 key、占位符、语言映射、回退策略、影响面。
+- 测试分编译检查、手工检查、回归检查。
 
-- Explain current architecture and the decision taken after research.
-- Separate in-scope and out-of-scope items explicitly.
-- Include code touch points, state ownership, UI ownership, and layout or concurrency constraints when relevant.
-- For UI work, document layout structure, toolbar ownership, width strategy, empty states, and stability rules.
-- For future follow-up capabilities, capture only the pre-wiring or reserved interfaces if they are not in current scope.
-- In `## i18n`, list proposed keys, placeholder rules, language mapping, fallback strategy, and impact scope.
-- In `## 测试用例`, split compile checks, manual checks, and regression checks.
-
-## Plan Structure
-
-Follow this structure unless the repository already has a stronger local convention for the same feature family:
-
-1. Title line using the file name.
+## 开发计划结构
+1. 文件名作为标题
 2. `## Related Design Doc`
-3. `## Phase`
+3. `## Stage`
 4. `## Tasks`
 
-### Plan Expectations
+### 计划任务模板
+计划任务必须包含如下内容：
 
-- Group tasks into 1 or more phases.
-- Each task must have:
-  - `[Task#N]` identifier
-  - a concise function goal
-  - implementation points
-  - expected test result
-  - status field using `Designed | Coding | Testing | Finished`
-- Order tasks so the first phase establishes the shell or scaffolding before feature wiring.
-- Add a final verification task for build/regression and plan state write-back.
-- State that each finished task should be followed by a git commit to preserve atomic history.
-- Keep deferred business features visible as later tasks only if they remain in the same agreed session scope; otherwise state them as out of scope in the design doc instead of inflating the plan.
+- `## Stage #N: [阶段名]`
+- `### Task #N: [任务名]`
+- `**Status:** Designed | Coding | Testing | Finished`
+- `**Files:** Create/Modify/Verify` 记录修改的文件
+- Function / Implementation Notes / Expected Verification Result： 每个任务记录函数、实现功能、预期结果
 
-## Existing-Doc Handling
+### 计划要求
+- 至少 1 个阶段，每阶段至少 1 个任务。
+- 每个任务必须可验证，建议 15-90 分钟颗粒度。
+- 风险驱动验证：高风险变更要求更强自动化或迁移校验。
+- 增加最终整体验证任务（build/regression + 计划状态回写）。
+- 每个完成任务后建议 1 次原子提交。
 
-Before creating a doc, inspect `docs/` and `plan/` for the same feature prefix.
+## 旧文档处理
+- 无同前缀：直接创建。
+- 有同前缀：必须先比较，再询问追加或覆盖，禁止静默覆盖。
 
-- If no same-prefix doc exists, create the new files directly.
-- If a same-prefix doc exists, read it first and compare scope, date, and content.
-- Do not overwrite silently. Asking whether to append or overwrite is mandatory before any write.
-
-## Resources
-
-- Read [references/framework.md](references/framework.md) for the distilled drafting checklist and category/file-placement rules.
-- Use the sample assets under `assets/` as concrete reference outputs when shaping new docs and plans.
+## 参考
+- 参考 `references/framework.md`。
+- 参考 `assets/` 中样例文档风格。
