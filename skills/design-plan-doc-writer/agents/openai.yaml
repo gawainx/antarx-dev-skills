@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design & Plan Writer"
+  short_description: "Draft repository-specific design docs and phased plans."
+  default_prompt: "Use $design-plan-doc-writer to write the design document and development plan after requirements clarification is complete."
