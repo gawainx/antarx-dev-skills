@@ -14,17 +14,19 @@ description: 需求澄清完成后，用于产出仓库对齐的设计文档与�
 
 ## 工作流
 1. 先确认需求澄清已完成；未完成则继续澄清。
-2. 检查仓库 `docs/`、`plan/` 与相关代码上下文。
+2. 检查仓库 `docs/design-docs/`、`docs/exec-plans/active/`、`docs/exec-plans/completed/` 与相关代码上下文。
 3. 根据功能领域推断文档分类。
 4. 检查是否存在同前缀文档。
 5. 若存在，先比较范围/日期/内容，并询问“追加还是覆盖”。
-6. 先写设计文档。
-7. 再写开发计划，并在 `## Related Design Doc` 引用设计文档。
+6. 先写设计文档，默认落盘到 `docs/design-docs/`。
+7. 再写开发计划，默认落盘到 `docs/exec-plans/active/`，并在 `## Related Design Doc` 引用设计文档。
 8. 严控范围，明确 In Scope / Out of Scope。
 
 ## 输出规则
 - 语言跟随用户；默认简体中文。
 - 文件命名使用 `{Feat}_{YYYYMMDD}.md`。
+- 设计文档默认存放在 `docs/design-docs/`；开发计划默认存放在 `docs/exec-plans/active/`。
+- 开发计划结束后，若用户确认完成，可移动到 `docs/exec-plans/completed/`。
 - 同一需求的设计文档与开发计划文件名必须严格相同（同 basename）。
 - 计划任务状态统一：`Designed | Coding | Testing | Finished`。
 - 计划仅覆盖本轮已确认范围，不得静默扩 scope。

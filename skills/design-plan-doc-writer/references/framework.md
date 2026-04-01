@@ -5,7 +5,7 @@
 Use this skill when:
 - requirements clarification has finished or the user has explicitly confirmed the direction is stable
 - the user explicitly asks to write a design doc, development plan, or both
-- the repository expects docs under `docs/` and plans under `plan/`
+- the repository expects design docs under `docs/design-docs/` and plans under `docs/exec-plans/active/`
 - you should now transition from clarified requirements into repository documents
 
 Do not use this skill when:
@@ -15,10 +15,12 @@ Do not use this skill when:
 
 ## Category Placement
 
-- UI / UX / layout / toolbar / inspector / window / interaction: `docs/UI/` and `plan/UI/`
-- Backup / sync / iCloud / WebDAV: `docs/backup/` and `plan/backup/`
-- Backend / storage / compatibility / migration: `docs/Backend/` or repo-specific backend folders, with matching `plan/` placement when such convention exists
-- If no clear subfolder convention exists, fall back to repo root `docs/` and `plan/`
+- default output roots:
+  - design docs: `docs/design-docs/`
+  - active plans: `docs/exec-plans/active/`
+  - completed plans: `docs/exec-plans/completed/`
+- if no clear subfolder convention exists, keep files in the default output roots above
+- if the repository defines extra subfolders under these roots, follow those conventions consistently
 
 ## Drafting Checklist
 

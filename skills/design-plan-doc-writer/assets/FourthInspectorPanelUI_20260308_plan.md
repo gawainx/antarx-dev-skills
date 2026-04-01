@@ -1,7 +1,7 @@
 # FourthInspectorPanelUI_20260308
 
 ## Related Design Doc
-- `/Users/yat/code/xcodeProjects/ArxivDailyReader/docs/UI/FourthInspectorPanelUI_20260308.md`
+- `/Users/yat/code/xcodeProjects/ArxivDailyReader/docs/design-docs/FourthInspectorPanelUI_20260308.md`
 
 ## Phase
 
