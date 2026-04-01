@@ -21,11 +21,11 @@
 - `lib/`：工具脚本与公共逻辑
 - `tests/`：测试与验证用例
 
-## 快速开始（Codex）
+## 快速开始
 
 请先阅读：`./.codex/INSTALL.md`
 
-## 双机同步 SOP（台式机/笔记本）
+## 跨设备同步方案
 
 ### 1. 一次性准备
 
@@ -35,16 +35,12 @@ cd ~/code/vibeProjects/antarx-dev-skills
 ```
 
 ### 2. 同步到本机 Codex
-
-先预览：
+顺序执行如下脚本：
 
 ```bash
+# 预览所有技能
 ./scripts/sync_to_local.sh --dry-run
-```
-
-再执行：
-
-```bash
+# 执行同步动作
 ./scripts/sync_to_local.sh
 ```
 
@@ -63,7 +59,7 @@ CODEX_SKILLS_DIR=/custom/skills CODEX_AGENTS_FILE=/custom/AGENTS.md.root ./scrip
 ./scripts/doctor.sh
 ```
 
-### 4. 在笔记本新增/编辑 skill 如何同步
+### 4. 跨设备 skill 同步流程
 
 统一流程（任意设备都一样）：
 
@@ -72,10 +68,3 @@ CODEX_SKILLS_DIR=/custom/skills CODEX_AGENTS_FILE=/custom/AGENTS.md.root ./scrip
 3. 另一台设备 `git pull`
 4. 运行 `./scripts/sync_to_local.sh`
 5. 运行 `./scripts/doctor.sh`
-
-注意：
-- 不直接手工修改 `~/.codex/skills` 中受管技能。
-- 系统技能与 Apple 平台相关技能默认不纳入受管范围：
-  - `skill-creator`
-  - `skill-installer`
-  - `swiftui-macos-llm-chat-module`

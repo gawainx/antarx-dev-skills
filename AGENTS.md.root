@@ -6,14 +6,14 @@
 
 - 本仓库是 skills 与 AGENTS 的单一事实源（SSOT）。
 - 受管内容仅包括：
-  - `skills/`
+  - `skills/`: 表示所有执行的技能
   - `AGENTS.md`
 - 通过 `scripts/sync_to_local.sh` 将受管内容同步到本机。
 - 通过 `scripts/doctor.sh` 检查本机与仓库是否一致。
 
 ## Why
 
-- 保证台式机与笔记本获得一致的技能集合与代理行为。
+- 保证跨设备获得一致的技能集合与代理行为。
 - 避免手工复制导致的遗漏、漂移和不可追踪修改。
 
 ## How
@@ -27,7 +27,7 @@
   2. `./scripts/sync_to_local.sh`
   3. `./scripts/doctor.sh`
 
-### 2. 双机同步流程
+### 2. 跨设备同步流程
 
 - 任一设备修改仓库后：`git commit` + `git push`。
 - 另一台设备：`git pull` 后执行同步与校验脚本。
@@ -40,7 +40,7 @@
 
 ### 4. Git Commit 约束
 
-- 禁止：
+- 禁止行为：
   - 空提交信息或仅标点
   - `update` / `fix` 这类泛化描述
   - `git commit --amend`
