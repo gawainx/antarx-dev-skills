@@ -1,4 +1,4 @@
 interface:
   display_name: "收尾进度记录器"
-  short_description: "在需求完成时清理工作区并追加 progress.md 记录"
-  default_prompt: "在验收或测试通过后，检查工作区状态并将本次变更总结按规范追加到 progress.md。"
+  short_description: "在需求完成时清理工作区并追加 docs/PROGRESS.md 记录"
+  default_prompt: "在验收或测试通过后，检查工作区状态并将本次变更总结按规范追加到 docs/PROGRESS.md。"
