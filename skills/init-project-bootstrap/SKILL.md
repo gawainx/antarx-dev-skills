@@ -1,6 +1,6 @@
 ---
 name: init-project-bootstrap
-description: 当用户提及“初始化目录”“初始化项目结构”“初始化项目文档路径”或明确要求执行 `/init` 命令时触发。用于在当前项目目录按标准结构创建 AGENTS.md、ARCHITECTURE.md 与 docs 分层目录及基础文档；若目标文件或目录已存在则直接跳过，严禁覆盖已有内容。
+description: 当用户提及“代码仓初始化”“初始化代码仓”“初始化目录”“初始化项目结构”“初始化项目文档路径”或明确要求执行 `/init` 命令时触发。用于在当前项目目录按 project_arch.md 约定结构创建 AGENTS.md、ARCHITECTURE.md 与 docs 分层目录及基础文档；若目标文件或目录已存在则直接跳过，严禁覆盖已有内容。
 ---
 
 # 项目初始化目录结构
@@ -22,7 +22,7 @@ description: 当用户提及“初始化目录”“初始化项目结构”“�
   - `docs/references/`
   - `docs/DESIGN.md`
   - `docs/FRONTEND.md`
-  - `docs/PROGRESS.md`
+  - `docs/PLANS.md`
   - `docs/PRODUCT_SENSE.md`
   - `docs/QUALITY_SCORE.md`
   - `docs/RELIABILITY.md`
@@ -55,13 +55,13 @@ description: 当用户提及“初始化目录”“初始化项目结构”“�
 - docs/product-specs/ 存放功能规格、用户流程、验收标准；index.md 负责索引。
 - docs/exec-plans/active/ 存放进行中的执行计划。
 - docs/exec-plans/completed/ 存放已完成执行计划。
-- docs/exec-plans/tech-debt-tracker.md 记录项目的技术摘
+- docs/exec-plans/tech-debt-tracker.md 记录项目的技术债。
 - docs/references/ 存放外部依赖、协议、框架和工具参考资料摘要。
 - docs/generated/ 存放自动生成文档；默认只读，不手工维护。
 - `docs/references/` 记录参考资料，包括脚手架、规范代码等
 - `docs/DESIGN.md` 记录项目的设计规则，包括UI设计、功能设计规范
 - `docs/FRONTEND.md` 记录项目的前端设计架构
-- `docs/PROGRESS.md` 项目进度文件，记录项目进度，完成每个开发计划之后，更新本文件
+- `docs/PLANS.md` 项目计划文件，记录项目计划与阶段推进状态
 - `docs/PRODUCT_SENSE.md`
 - `docs/QUALITY_SCORE.md`
 - `docs/RELIABILITY.md` 记录项目的可靠性设计
@@ -80,7 +80,7 @@ description: 当用户提及“初始化目录”“初始化项目结构”“�
 - 技术设计和方案决策写入 docs/design-docs/。
 - 中大任务的计划、阶段进度、决策日志写入 docs/exec-plans/active/。
 - 完成后的执行计划移入 docs/exec-plans/completed/。
-- 开发计划完成后使用 `completion-progress-recorder`技能更新 `docs/PROGRESS.md`
+- 开发计划与阶段进展更新写入 `docs/PLANS.md`
 - 遗留问题和明确未解决事项写入 tech-debt-tracker.md。
 - 工具或脚本生成的摘要写入 docs/generated/。
 
@@ -91,4 +91,3 @@ description: 当用户提及“初始化目录”“初始化项目结构”“�
 - 仅在用户明确要求初始化目录结构时执行。
 - 任何情况下都不覆盖已存在文件内容。
 - 若遇到权限问题或路径异常，停止写入并反馈错误。
-
