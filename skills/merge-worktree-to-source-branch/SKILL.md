@@ -7,7 +7,15 @@ description: Use when the user asks to 回合根源分支, 合回根源分支, �
 
 ## Hard Rule
 
-When the current directory is a temporary worktree and the user asks to merge back to the source/root/main branch, do not switch the current temporary worktree to the target branch. The merge must be performed in the real code directory or in the worktree that already owns the target branch.
+When the current directory is a temporary worktree and the user asks to merge back to the source/root/main branch, never switch the branch of the source worktree, the real code directory, or any existing worktree. Automatic integration is allowed only when the target branch can be fast-forwarded to the source branch by updating the target branch ref directly.
+
+Use this ref-only fast-forward form for automatic integration:
+
+```bash
+git fetch . <source-branch>:<target-branch>
+```
+
+If the target branch cannot be fast-forwarded to the source branch, stop and print manual merge commands for user review. Do not run `git merge`, create worktrees, or switch branches.
 
 ## Trigger Phrases
 
@@ -31,19 +39,38 @@ Use this skill for requests containing any equivalent of:
    - current temporary worktree path;
    - source branch to merge from;
    - target/root branch;
-   - real code directory or target branch worktree path.
-3. Confirm the current temporary worktree is clean before merging.
-4. Change `workdir` to the real code directory or the worktree that already has the target branch checked out.
-5. In the target directory, verify:
-   - `git status --short --branch` is clean;
-   - `git branch --show-current` equals the target branch.
-6. If the target branch is not checked out in that directory, switch there only after confirming the directory is the real code directory or target worktree. Never switch the temporary source worktree to the target branch.
-7. Merge from the source branch in the target directory:
-   - `git merge <source-branch>`
-8. After merge, verify:
+   - real code directory;
+   - current branch of the real code directory.
+3. Confirm the current temporary source worktree is clean:
+   - `git status --short --branch`
+4. Confirm both branches exist without changing checkout state:
+   - `git rev-parse --verify <source-branch>`
+   - `git rev-parse --verify <target-branch>`
+5. Check whether the target branch can be fast-forwarded to the source branch:
+   - `git merge-base --is-ancestor <target-branch> <source-branch>`
+6. If the fast-forward check succeeds, state the action and update only the target branch ref:
+   - `git fetch . <source-branch>:<target-branch>`
+7. If the fast-forward check fails, stop and print manual commands for user review. Do not execute them:
+
+   ```bash
+   # Option A: use an existing target-branch worktree
+   cd <target-branch-worktree>
+   git status --short --branch
+   git merge <source-branch>
+
+   # Option B: create a temporary target worktree
+   git worktree add <temporary-target-worktree> <target-branch>
+   cd <temporary-target-worktree>
+   git status --short --branch
+   git merge <source-branch>
+   ```
+
+8. After a successful ref-only fast-forward update, verify:
+   - `git rev-parse <target-branch>`
+   - `git rev-parse <source-branch>`
    - `git status --short --branch`
    - `git log --oneline --decorate -5`
-9. Report the target directory, target branch, source branch, merge result, and current cleanliness.
+9. Report the source branch, target branch, target ref update result, and that no worktree branch was switched.
 
 ## Stop Conditions
 
@@ -51,29 +78,34 @@ Stop and ask the user instead of guessing when:
 
 - the real code directory cannot be identified from `git worktree list --porcelain`;
 - the target/root branch is ambiguous;
-- the target directory has uncommitted changes;
 - the source worktree has uncommitted changes;
-- the target branch is already checked out by another worktree and no safe target directory is clear;
-- a merge conflict occurs.
+- either source or target branch cannot be verified;
+- the target branch cannot be fast-forwarded to the source branch;
+- updating the target branch would require force, rebase, merge commit creation, conflict resolution, branch switching, or worktree creation;
+- the requested action requires pushing to a remote and the user has not explicitly requested that push.
 
 ## Correct Command Placement
 
 Source worktree commands are only for inspection and source branch commits.
 
-Target merge commands must run with `workdir` set to the real code directory or target branch worktree path.
+Automatic target updates must use ref-only fast-forward commands. They may run from any clean worktree in the repository because they update refs without changing the current checkout.
 
-Do not run these in the temporary source worktree:
+Do not run these during the automatic path:
 
 - `git switch <target-branch>`
 - `git checkout <target-branch>`
-- `git merge <source-branch>` when the current branch is still the source branch
+- `git merge <source-branch>`
+- `git worktree add <path> <target-branch>`
+- `git push`
 
 ## Minimal User-Facing Summary Before Acting
 
-Before performing the merge, state:
+Before performing the fast-forward ref update, state:
 
 - Source branch: `<source-branch>` at `<source-worktree-path>`
-- Target branch: `<target-branch>` at `<target-directory>`
-- Action: merge source into target in the target directory
+- Target branch: `<target-branch>`
+- Real code directory current branch: `<current-branch>`
+- Action: fast-forward `<target-branch>` to `<source-branch>` by updating the target ref only
+- Safety: no worktree branch will be switched
 
 Then execute only that plan.
