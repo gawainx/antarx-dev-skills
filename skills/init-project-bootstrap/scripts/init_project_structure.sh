@@ -2,10 +2,14 @@
 set -euo pipefail
 
 ##
-# Initialize project directory structure in current working directory.
-# Inputs: none (uses current working directory).
-# Outputs: creates missing directories/files, prints CREATE/SKIP logs.
+# Initialize Codex continuous development workflow structure in current working directory.
+# Inputs: none (uses current working directory; reads templates from sibling assets/).
+# Outputs: creates missing directories/files, prints CREATE/SKIP logs only.
 ##
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+ASSETS_DIR="${SKILL_DIR}/assets"
 
 created_count=0
 skipped_count=0
@@ -30,22 +34,29 @@ ensure_dir() {
   fi
 }
 
-ensure_file() {
-  local path="$1"
-  local template="$2"
+ensure_file_from_asset() {
+  local target_path="$1"
+  local asset_path="${ASSETS_DIR}/${target_path}"
   local parent_dir
-  parent_dir="$(dirname "$path")"
 
+  if [[ ! -f "$asset_path" ]]; then
+    printf 'Missing asset template: %s\n' "$asset_path" >&2
+    exit 1
+  fi
+
+  parent_dir="$(dirname "$target_path")"
   mkdir -p "$parent_dir"
-  if [[ -e "$path" ]]; then
-    log_skip "$path"
+
+  if [[ -e "$target_path" ]]; then
+    log_skip "$target_path"
     return
   fi
 
-  printf '%s\n' "$template" > "$path"
-  log_create "$path"
+  cp "$asset_path" "$target_path"
+  log_create "$target_path"
 }
 
+ensure_dir "docs/request-clarify"
 ensure_dir "docs/design-docs"
 ensure_dir "docs/exec-plans/active"
 ensure_dir "docs/exec-plans/completed"
@@ -53,19 +64,19 @@ ensure_dir "docs/generated"
 ensure_dir "docs/product-specs"
 ensure_dir "docs/references"
 
-ensure_file "AGENTS.md" "# AGENTS"
-ensure_file "ARCHITECTURE.md" "# ARCHITECTURE"
-ensure_file "docs/design-docs/index.md" "# Design Docs Index"
-ensure_file "docs/design-docs/core-beliefs.md" "# Core Beliefs"
-ensure_file "docs/exec-plans/tech-debt-tracker.md" "# Tech Debt Tracker"
-ensure_file "docs/product-specs/index.md" "# Product Specs Index"
-ensure_file "docs/DESIGN.md" "# DESIGN"
-ensure_file "docs/FRONTEND.md" "# FRONTEND"
-ensure_file "docs/PLANS.md" "# PLANS"
-ensure_file "docs/PRODUCT_SENSE.md" "# PRODUCT_SENSE"
-ensure_file "docs/QUALITY_SCORE.md" "# QUALITY_SCORE"
-ensure_file "docs/RELIABILITY.md" "# RELIABILITY"
-ensure_file "docs/SECURITY.md" "# SECURITY"
+ensure_file_from_asset "AGENTS.md"
+ensure_file_from_asset "ARCHITECTURE.md"
+ensure_file_from_asset "docs/request-clarify/index.md"
+ensure_file_from_asset "docs/design-docs/index.md"
+ensure_file_from_asset "docs/design-docs/core-beliefs.md"
+ensure_file_from_asset "docs/exec-plans/tech-debt-tracker.md"
+ensure_file_from_asset "docs/product-specs/index.md"
+ensure_file_from_asset "docs/DESIGN.md"
+ensure_file_from_asset "docs/FRONTEND.md"
+ensure_file_from_asset "docs/PROGRESS.md"
+ensure_file_from_asset "docs/PRODUCT_SENSE.md"
+ensure_file_from_asset "docs/QUALITY_SCORE.md"
+ensure_file_from_asset "docs/RELIABILITY.md"
+ensure_file_from_asset "docs/SECURITY.md"
 
 printf '\nDone. created=%d skipped=%d\n' "$created_count" "$skipped_count"
-
