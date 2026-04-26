@@ -26,6 +26,7 @@ TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md.root}"
 
 MANIFEST_FILE="${TARGET_SKILLS_DIR}/.antarx-managed-skills"
 BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
+SKILL_IMPROVEMENT_AX_CONFIG="${TARGET_SKILLS_DIR}/skill-improvement-ax/.skill-improvement-ax.env"
 
 log() { echo "[sync] $*"; }
 
@@ -46,6 +47,27 @@ is_blacklisted() {
     fi
   done
   return 1
+}
+
+shell_quote() {
+  printf '%q' "$1"
+}
+
+write_skill_improvement_ax_config() {
+  local target_skill_dir="${TARGET_SKILLS_DIR}/skill-improvement-ax"
+  if [[ ! -d "$target_skill_dir" && "$DRY_RUN" -ne 1 ]]; then
+    return
+  fi
+
+  log "write skill-improvement-ax source repo config"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "[dry-run] write '$SKILL_IMPROVEMENT_AX_CONFIG'"
+  else
+    {
+      printf '# Local machine config written by antarx-dev-skills/scripts/sync_to_local.sh\n'
+      printf 'ANTARX_DEV_SKILLS_REPO=%s\n' "$(shell_quote "$REPO_ROOT")"
+    } > "$SKILL_IMPROVEMENT_AX_CONFIG"
+  fi
 }
 
 if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
@@ -89,6 +111,8 @@ while IFS= read -r -d '' src; do
     printf "managed-by=antarx-dev-skills\n" > "${dst}/.managed-by-antarx-dev-skills"
   fi
 done < <(find "$SRC_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+
+write_skill_improvement_ax_config
 
 if [[ -f "$MANIFEST_FILE" ]]; then
   while IFS= read -r old; do

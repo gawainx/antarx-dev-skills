@@ -78,7 +78,7 @@ while IFS= read -r -d '' src; do
     continue
   fi
 
-  if diff -qr -x '.managed-by-antarx-dev-skills' "$src" "$dst" >/dev/null; then
+  if diff -qr -x '.managed-by-antarx-dev-skills' -x '.skill-improvement-ax.env' "$src" "$dst" >/dev/null; then
     pass "skill in sync: $name"
   else
     fail "skill differs: $name"

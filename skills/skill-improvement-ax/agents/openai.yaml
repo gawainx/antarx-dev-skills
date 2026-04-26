@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Improvement AX"
+  short_description: "Improve and backfill Codex skills"
+  default_prompt: "Improve an existing Codex skill from this project context while keeping private project details out of the skill."
