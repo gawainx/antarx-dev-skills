@@ -1,0 +1,1 @@
+- (e799f837) : 2026.05.03 修复技能仓库同步脚本误覆盖 Codex 全局 AGENTS 的风险，调整 scripts/sync_to_local.sh 默认只同步 skills，新增 --sync-agents 与 --force-agents 作为显式受保护路径，并让 scripts/doctor.sh 默认跳过 AGENTS 校验、仅在 --check-agents 时检查模板一致性；同步更新 README.md、AGENTS.md 与 AGENTS.md.root，明确 AGENTS.md.root 只是模板，避免继续把系统级 AGENTS 当作默认受管内容。
