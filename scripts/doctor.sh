@@ -1,13 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+CHECK_AGENTS=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --check-agents)
+      CHECK_AGENTS=1
+      shift
+      ;;
+    *)
+      echo "Unknown argument: $1" >&2
+      exit 2
+      ;;
+  esac
+done
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SRC_SKILLS_DIR="${REPO_ROOT}/skills"
 SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
 
 TARGET_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
-TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md.root}"
+TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
 
 BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
 FAIL=0
@@ -31,7 +46,7 @@ if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
   fail "missing source skills dir: $SRC_SKILLS_DIR"
 fi
 
-if [[ ! -f "$SRC_AGENTS_FILE" ]]; then
+if [[ "$CHECK_AGENTS" -eq 1 && ! -f "$SRC_AGENTS_FILE" ]]; then
   fail "missing source AGENTS.md.root: $SRC_AGENTS_FILE"
 fi
 
@@ -57,14 +72,18 @@ else
   pass "target skills dir exists: $TARGET_SKILLS_DIR"
 fi
 
-if [[ ! -f "$TARGET_AGENTS_FILE" ]]; then
-  fail "target AGENTS.md.root missing: $TARGET_AGENTS_FILE"
-else
-  if cmp -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"; then
-    pass "AGENTS.md.root is in sync"
+if [[ "$CHECK_AGENTS" -eq 1 ]]; then
+  if [[ ! -f "$TARGET_AGENTS_FILE" ]]; then
+    fail "target AGENTS file missing: $TARGET_AGENTS_FILE"
   else
-    fail "AGENTS.md.root differs from source: $TARGET_AGENTS_FILE"
+    if cmp -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"; then
+      pass "AGENTS file is in sync"
+    else
+      fail "AGENTS file differs from source: $TARGET_AGENTS_FILE"
+    fi
   fi
+else
+  info "skip AGENTS check; use --check-agents to opt in"
 fi
 
 while IFS= read -r -d '' src; do

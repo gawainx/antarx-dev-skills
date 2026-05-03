@@ -4,28 +4,30 @@
 
 ## What
 
-- 本仓库是 skills 与 AGENTS 的单一事实源（SSOT）。
-- 受管内容仅包括：
+- 本仓库是 skills 的单一事实源（SSOT）。
+- 默认受管内容仅包括：
   - `skills/`: 表示所有执行的技能
-  - `AGENTS.md`
+- `AGENTS.md.root` 只是全局代理行为模板，默认不自动同步到 Codex 系统级 `AGENTS.md`。
 - 通过 `scripts/sync_to_local.sh` 将受管内容同步到本机。
 - 通过 `scripts/doctor.sh` 检查本机与仓库是否一致。
 
 ## Why
 
-- 保证跨设备获得一致的技能集合与代理行为。
+- 保证跨设备获得一致的技能集合。
 - 避免手工复制导致的遗漏、漂移和不可追踪修改。
+- 避免误覆盖 Codex 系统级 AGENTS 文件。
 
 ## How
 
 ### 1. 开发流程
 
-- 所有新增/编辑 skill 与 AGENTS 的动作，都在仓库内完成。
+- 所有新增/编辑 skill 的动作，都在仓库内完成。
 - 不直接手工修改 `~/.codex/skills` 中受管技能。
 - 修改后执行：
   1. `./scripts/sync_to_local.sh --dry-run`
   2. `./scripts/sync_to_local.sh`
   3. `./scripts/doctor.sh`
+- 如确需同步 `AGENTS.md.root`，必须显式执行 `./scripts/sync_to_local.sh --sync-agents`；目标文件已存在且内容不同时，必须先备份或审阅后才可加 `--force-agents`。
 
 ### 2. 跨设备同步流程
 
@@ -54,5 +56,4 @@
 
 - `./scripts/doctor.sh` 返回 0
 - `~/.codex/skills` 中受管技能与仓库一致
-- `AGENTS.md` 已同步到本机目标路径
-
+- 默认不要求 `AGENTS.md` 与仓库模板一致；如需检查 AGENTS 模板同步状态，显式运行 `./scripts/doctor.sh --check-agents`

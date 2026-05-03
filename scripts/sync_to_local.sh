@@ -2,11 +2,21 @@
 set -euo pipefail
 
 DRY_RUN=0
+SYNC_AGENTS=0
+FORCE_AGENTS=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run)
       DRY_RUN=1
+      shift
+      ;;
+    --sync-agents)
+      SYNC_AGENTS=1
+      shift
+      ;;
+    --force-agents)
+      FORCE_AGENTS=1
       shift
       ;;
     *)
@@ -22,7 +32,7 @@ SRC_SKILLS_DIR="${REPO_ROOT}/skills"
 SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
 
 TARGET_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
-TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md.root}"
+TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
 
 MANIFEST_FILE="${TARGET_SKILLS_DIR}/.antarx-managed-skills"
 BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
@@ -75,13 +85,17 @@ if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$SRC_AGENTS_FILE" ]]; then
+if [[ "$SYNC_AGENTS" -eq 1 && ! -f "$SRC_AGENTS_FILE" ]]; then
   echo "Source AGENTS.md.root not found: $SRC_AGENTS_FILE" >&2
   exit 1
 fi
 
+if [[ "$FORCE_AGENTS" -eq 1 && "$SYNC_AGENTS" -ne 1 ]]; then
+  echo "--force-agents requires --sync-agents" >&2
+  exit 2
+fi
+
 run_cmd mkdir -p "$TARGET_SKILLS_DIR"
-run_cmd mkdir -p "$(dirname "$TARGET_AGENTS_FILE")"
 
 declare -a MANAGED_NOW=()
 
@@ -144,11 +158,25 @@ else
   } > "$MANIFEST_FILE"
 fi
 
-log "sync AGENTS.md.root -> $TARGET_AGENTS_FILE"
-if [[ "$DRY_RUN" -eq 1 ]]; then
-  echo "[dry-run] cp '$SRC_AGENTS_FILE' '$TARGET_AGENTS_FILE'"
+if [[ "$SYNC_AGENTS" -eq 1 ]]; then
+  run_cmd mkdir -p "$(dirname "$TARGET_AGENTS_FILE")"
+
+  if [[ -f "$TARGET_AGENTS_FILE" ]] \
+    && ! cmp -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE" \
+    && [[ "$FORCE_AGENTS" -ne 1 ]]; then
+    echo "Refusing to overwrite existing AGENTS file: $TARGET_AGENTS_FILE" >&2
+    echo "Re-run with --sync-agents --force-agents only after backing up or reviewing the target." >&2
+    exit 1
+  fi
+
+  log "sync AGENTS.md.root -> $TARGET_AGENTS_FILE"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "[dry-run] cp '$SRC_AGENTS_FILE' '$TARGET_AGENTS_FILE'"
+  else
+    cp "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"
+  fi
 else
-  cp "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"
+  log "skip AGENTS sync; use --sync-agents to opt in"
 fi
 
 log "done"

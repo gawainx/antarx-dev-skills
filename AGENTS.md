@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-This repository is the single source of truth for managed Codex assets. The only managed content is `skills/` and `AGENTS.md.root`. Add or update reusable skill definitions under `skills/<skill-name>/SKILL.md`; keep supporting files next to the skill only when they are directly needed. Operational scripts live in `scripts/`, currently `sync_to_local.sh` for deployment and `doctor.sh` for consistency checks. Reference material and plans belong in `docs/`, for example `docs/plans/0001-init-structure.md`.
+This repository is the single source of truth for managed Codex skills. The default managed content is only `skills/`; `AGENTS.md.root` is a template and must not be synced unless the user explicitly opts in. Add or update reusable skill definitions under `skills/<skill-name>/SKILL.md`; keep supporting files next to the skill only when they are directly needed. Operational scripts live in `scripts/`, currently `sync_to_local.sh` for deployment and `doctor.sh` for consistency checks. Reference material and plans belong in `docs/`, for example `docs/plans/0001-init-structure.md`.
 
 ## Build, Test, and Development Commands
 Run all edits from the repository root.
@@ -9,12 +9,12 @@ Run all edits from the repository root.
 ```bash
 ./scripts/sync_to_local.sh --dry-run
 ```
-Preview what will be copied into `~/.codex/skills` and `~/.codex/AGENTS.md.root`.
+Preview what will be copied into `~/.codex/skills`.
 
 ```bash
 ./scripts/sync_to_local.sh
 ```
-Apply the managed content to the local Codex installation.
+Apply the managed skills to the local Codex installation.
 
 ```bash
 ./scripts/doctor.sh
@@ -31,4 +31,4 @@ There is no separate unit test suite yet; validation is command-based. Treat `./
 Commits must follow Conventional Commits: `feat: ...`, `refactor: ...`, `docs: ...`, `chore: ...`. The subject must be specific and at least 10 characters after the colon; vague messages like `fix` or `update` are not acceptable. Do not use `git commit --amend`. For pull requests, include the intent, affected paths such as `skills/` or `scripts/`, verification output from `./scripts/doctor.sh`, and screenshots only if the change affects rendered documentation.
 
 ## Agent-Specific Notes
-Do not manually edit managed copies under `~/.codex/skills`. Make changes in this repo, then run dry-run sync, real sync, and doctor in that order. Never add blacklisted skills to managed content: `skill-creator`, `skill-installer`, and `swiftui-macos-llm-chat-module`.
+Do not manually edit managed copies under `~/.codex/skills`. Make skill changes in this repo, then run dry-run sync, real sync, and doctor in that order. Do not sync `AGENTS.md.root` to a Codex global AGENTS file unless the user explicitly requests it and the target has been reviewed or backed up. Never add blacklisted skills to managed content: `skill-creator`, `skill-installer`, and `swiftui-macos-llm-chat-module`.
