@@ -1,0 +1,4 @@
+interface:
+  display_name: "Requirement Clarification"
+  short_description: "Clarify requirements against repo context"
+  default_prompt: "Use $requirement-clarification to clarify this requirement against the repository before design or implementation."
