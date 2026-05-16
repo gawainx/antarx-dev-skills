@@ -1,115 +1,115 @@
 ---
 name: writing-plans
-description: Use when you have a spec or requirements for a multi-step task, before touching code
+description: 在已有规格或需求、且任务需要多步骤实施时使用；必须在动代码前使用。
 ---
 
-# Writing Plans
+# 编写计划
 
-## Overview
+## 概览
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, testing/verification strategy, docs they might need to check, and how to validate results. DRY. YAGNI. Practical, risk-driven verification.
+编写完整的实现计划时，假设执行工程师完全不了解我们的代码库，并且工程判断不稳定。把他们需要知道的内容都写清楚：每个任务要改哪些文件、测试/验证策略、可能需要查阅的文档，以及如何验证结果。DRY。YAGNI。采用实用、风险驱动的验证方式。
 
-Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
+假设他们是熟练开发者，但几乎不了解我们的工具链或问题领域。也假设他们对良好测试设计并不熟悉。
 
-**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
+**开始时声明：** “我正在使用 writing-plans skill 来创建实现计划。”
 
-**Language rules:**
-- Use Simplified Chinese when interacting with the user while creating the plan.
-- Write the final development plan document primarily in Simplified Chinese.
+**语言规则：**
+- 创建计划期间，与用户交流时使用简体中文。
+- 最终开发计划文档主要使用简体中文编写。
 
-**Context:**
-- Preferred: run in a dedicated worktree for medium/large or high-risk changes.
-- Allowed: run in the current workspace for small, low-risk changes.
-- Use judgment based on change scope, migration risk, and cross-module impact.
+**上下文：**
+- 推荐：中大型或高风险改动在专用 worktree 中执行。
+- 允许：小型、低风险改动可以在当前工作区执行。
+- 根据改动范围、迁移风险和跨模块影响做判断。
 
-**Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
+**计划保存到：** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
-## Tech Stack Rules
+## 技术栈规则
 
-- Always follow the project's actual technology stack first.
-- If stack conventions are unclear, use user-preferred defaults where applicable (Python: `click`, `rich`, `loguru`, `uv`).
-- Never override explicit project constraints or existing conventions.
+- 始终优先遵循项目的实际技术栈。
+- 如果技术栈约定不清晰，在适用时使用用户偏好的默认值（Python：`click`、`rich`、`loguru`、`uv`）。
+- 不要覆盖明确的项目约束或既有约定。
 
-## Task Granularity
+## 任务粒度
 
-- Tasks should be independently verifiable and reasonably scoped.
-- Typical task size is 15-90 minutes depending on complexity and risk.
-- Do not force full RED-GREEN-REFACTOR for every task.
-- Require a minimal verification strategy per task, scaled by risk.
+- 任务应能独立验证，并且范围合理。
+- 典型任务规模为 15-90 分钟，具体取决于复杂度和风险。
+- 不要强制每个任务都完整执行 RED-GREEN-REFACTOR。
+- 每个任务都需要最低限度的验证策略，并按风险调整强度。
 
-## Plan Document Header
+## 计划文档头部
 
-**Every plan MUST start with this header:**
+**每份计划都必须以这个头部开始：**
 
 ```markdown
-# [Feature Name] Implementation Plan
+# [功能名称] 实现计划
 
-> **For Claude:** REQUIRED WORKFLOW: Use superpowers:executing-plans to implement this plan task-by-task.
+> **给 Claude：** 必需工作流：使用 superpowers:executing-plans 逐任务实现此计划。
 
-**Goal:** [One sentence describing what this builds]
+**目标：** [用一句话描述要构建的内容]
 
-**Related Design Doc:** [Exact path to approved design doc]
+**相关设计文档：** [已批准设计文档的精确路径]
 
-**Architecture:** [2-3 sentences about approach]
+**架构：** [用 2-3 句话说明实现方式]
 
-**Tech Stack:** [Key technologies/libraries]
+**技术栈：** [关键技术/库]
 
-**Scope / Out of Scope:** [Explicit boundaries]
+**范围 / 非范围：** [明确边界]
 
 ---
 ```
 
-## Task Structure
+## 任务结构
 
 ````markdown
-## Phase #N: [Phase Name]
+## Phase #N: [阶段名称]
 
-### Task #N: [Component Name]
+### Task #N: [组件名称]
 
-**Status:** Desinged | Coding | Finished
+**状态：** Desinged | Coding | Finished
 
-**Files:**
-- Create: `exact/path/to/new.file` (if needed)
-- Modify: `exact/path/to/existing.file`
-- Verify: `exact/path/to/tests/or/manual-checklist` (if applicable)
+**文件：**
+- 创建：`exact/path/to/new.file`（如需要）
+- 修改：`exact/path/to/existing.file`
+- 验证：`exact/path/to/tests/or/manual-checklist`（如适用）
 
-- Function: [What this task delivers]
-- Implementation Notes: [Key technical decisions and constraints]
-- Expected Verification Result: [What must pass or be observed]
-- Completed At: [Optional timestamp when finished]
+- 功能：[此任务交付什么]
+- 实现说明：[关键技术决策和约束]
+- 预期验证结果：[必须通过或观察到什么]
+- 完成时间：[完成时可选填写时间戳]
 ````
 
-## Plan Management Requirements
+## 计划管理要求
 
-- The plan MUST be organized into one or more phases (`Phase #1`, `Phase #2`, ...).
-- Each phase MUST contain one or more tasks (`Task #1`, `Task #2`, ...).
-- Every task MUST include:
-  - Task content
-  - Implementation notes
-  - Expected result
-  - Status: `Desinged | Coding | Finished`
-- Verification must be risk-driven:
-  - High-risk changes (schema migration, cross-module refactor, data sync): require stronger verification (automated tests and/or migration checks).
-  - Medium/low-risk changes: allow targeted build checks plus key manual-path verification.
-- Update task status promptly as work progresses.
+- 计划必须组织为一个或多个阶段（`Phase #1`、`Phase #2`、...）。
+- 每个阶段必须包含一个或多个任务（`Task #1`、`Task #2`、...）。
+- 每个任务必须包含：
+  - 任务内容
+  - 实现说明
+  - 预期结果
+  - 状态：`Desinged | Coding | Finished`
+- 验证必须由风险驱动：
+  - 高风险改动（schema 迁移、跨模块重构、数据同步）：需要更强验证（自动化测试和/或迁移检查）。
+  - 中低风险改动：允许使用定向构建检查加关键手动路径验证。
+- 随工作推进及时更新任务状态。
 
-## Remember
-- Exact file paths always
-- Include concrete implementation notes, not vague statements
-- Include exact verification commands/checklists with expected outcomes when applicable
-- Use Simplified Chinese as the primary language for any saved plan document
-- Reference relevant skills with @ syntax
-- DRY, YAGNI, practical verification, clear scope boundaries
+## 记住
+- 始终使用精确文件路径
+- 包含具体实现说明，不写模糊表述
+- 在适用时包含精确验证命令/检查清单和预期结果
+- 所有保存的计划文档都以简体中文为主要语言
+- 使用 @ 语法引用相关 skills
+- DRY、YAGNI、实用验证、清晰范围边界
 
-## Execution Handoff
+## 执行交接
 
-After saving the plan, provide a single execution handoff (no execution mode choices):
+保存计划后，提供单一执行交接（不提供执行模式选项）：
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Next step: execute this plan with `superpowers:executing-plans`.**
+**“计划已完成并保存到 `docs/plans/<filename>.md`。下一步：使用 `superpowers:executing-plans` 执行此计划。”**
 
-**Would you like me to prepare the execution handoff prompt now?"**
+**“现在需要我准备执行交接提示词吗？”**
 
-**Execution handoff rules:**
-- Do not offer subagent-driven or other alternative execution paths.
-- Guide them to open a new session in worktree.
-- **REQUIRED WORKFLOW:** New session uses superpowers:executing-plans.
+**执行交接规则：**
+- 不提供 subagent 驱动或其他替代执行路径。
+- 引导他们在 worktree 中打开新会话。
+- **必需工作流：** 新会话使用 superpowers:executing-plans。

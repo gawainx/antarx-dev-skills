@@ -1,37 +1,37 @@
 ---
 name: skill-improvement-ax
-description: Use when Codex should capture, improve, or backfill reusable workflow knowledge into the antarx-dev-skills repository from any project session. Triggers include requests to “沉淀技能”, “改良技能”, “同步回技能仓库”, “把这个流程做成 skill”, or update an existing Codex skill while also syncing the local installed skill and opening a GitHub PR.
+description: 当 Codex 需要从任意项目会话中捕获、改进或回填可复用工作流知识到 antarx-dev-skills 仓库时使用。触发场景包括“沉淀技能”“改良技能”“同步回技能仓库”“把这个流程做成 skill”，或更新现有 Codex skill，并同步本地安装副本、打开 GitHub PR。
 ---
 
-# Skill Improvement AX
+# 技能改进 AX
 
-Use this skill to improve managed Codex skills from the current project context without switching sessions.
+使用这个技能，在不切换会话的情况下，基于当前项目上下文改进托管的 Codex skills。
 
-## Required Order
+## 必须顺序
 
-1. Clarify before writing anything.
-2. Separate reusable workflow knowledge from project-specific information.
-3. Resolve the source repository with `scripts/resolve_source_repo.sh`.
-4. Inspect the target skill in the source repo and installed local copy.
-5. Present the intended patch scope and get user confirmation.
-6. Edit the source repo first.
-7. Run source repo validation and `scripts/sync_to_local.sh`.
-8. Create a non-protected branch, commit, push, and open a PR with `gh`.
+1. 在写入任何内容前先澄清需求。
+2. 将可复用的工作流知识与项目特定信息分离。
+3. 使用 `scripts/resolve_source_repo.sh` 解析源仓库。
+4. 检查源仓库中的目标 skill 和本地已安装副本。
+5. 说明计划修改的补丁范围，并获得用户确认。
+6. 先编辑源仓库。
+7. 运行源仓库验证和 `scripts/sync_to_local.sh`。
+8. 创建非受保护分支，commit、push，并使用 `gh` 打开 PR。
 
-## Guardrails
+## 保护规则
 
-- Do not write current project business content, private paths, customer data, secrets, or internal implementation details into a skill.
-- Existing skills are updated in place with patches. Do not overwrite or recreate an existing skill directory.
-- If the source repo copy and local installed copy differ, stop and ask which side is authoritative.
-- Never commit directly to `master`, `main`, `dev`, or other long-lived integration branches.
-- Run `git worktree list` before any branch-changing operation.
-- Use Conventional Commits and never use `git commit --amend`.
-- Prefer `gh` for PR creation; use the GitHub connector only if `gh` is unavailable or fails.
+- 不要把当前项目的业务内容、私有路径、客户数据、密钥或内部实现细节写入 skill。
+- 现有 skills 必须通过补丁原地更新。不要覆盖或重新创建已有的 skill 目录。
+- 如果源仓库副本和本地已安装副本存在差异，停止并询问哪一侧是权威版本。
+- 不要直接提交到 `master`、`main`、`dev` 或其他长期集成分支。
+- 在任何会改变分支的操作前运行 `git worktree list`。
+- 使用 Conventional Commits，并且不要使用 `git commit --amend`。
+- PR 创建优先使用 `gh`；只有在 `gh` 不可用或失败时，才使用 GitHub connector。
 
-## Resources
+## 资源
 
-- Read `references/workflow.md` for the full clarification, writeback, sync, Git, and PR workflow.
-- Use `scripts/resolve_source_repo.sh` to read `.skill-improvement-ax.env` and validate the source repo.
-- Use `scripts/compare_skill_copies.sh <skill-name>` before editing an existing skill.
-- Use `assets/clarification-template.md` to structure the pre-write clarification.
-- Use `assets/pr-body-template.md` when creating the PR body.
+- 阅读 `references/workflow.md`，了解完整的澄清、写回、同步、Git 和 PR 工作流。
+- 使用 `scripts/resolve_source_repo.sh` 读取 `.skill-improvement-ax.env` 并验证源仓库。
+- 编辑现有 skill 前，使用 `scripts/compare_skill_copies.sh <skill-name>`。
+- 使用 `assets/clarification-template.md` 组织写入前的澄清内容。
+- 创建 PR 正文时使用 `assets/pr-body-template.md`。

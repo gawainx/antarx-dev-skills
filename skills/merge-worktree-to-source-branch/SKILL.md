@@ -1,25 +1,25 @@
 ---
 name: merge-worktree-to-source-branch
-description: Use when the user asks to 回合根源分支, 合回根源分支, 合并回主分支, 回到真正代码目录, merge a temporary worktree branch back to its source/root branch, or otherwise integrate worktree changes into the main code directory.
+description: 当用户要求“回合根源分支”“合回根源分支”“合并回主分支”“回到真正代码目录”，或要求把临时 worktree 分支合回源分支/根分支、把 worktree 改动集成回主代码目录时使用。
 ---
 
-# Merge Worktree To Source Branch
+# 将 Worktree 合回源分支
 
-## Hard Rule
+## 硬规则
 
-When the current directory is a temporary worktree and the user asks to merge back to the source/root/main branch, never switch the branch of the source worktree, the real code directory, or any existing worktree. Automatic integration is allowed only when the target branch can be fast-forwarded to the source branch by updating the target branch ref directly.
+当当前目录是临时 worktree，且用户要求合回源分支、根分支或主分支时，绝不切换源 worktree、真实代码目录或任何既有 worktree 的分支。只有目标分支可以通过直接更新目标分支 ref 快进到源分支时，才允许自动集成。
 
-Use this ref-only fast-forward form for automatic integration:
+自动集成时只能使用这种仅更新 ref 的快进形式：
 
 ```bash
 git fetch . <source-branch>:<target-branch>
 ```
 
-If the target branch cannot be fast-forwarded to the source branch, stop and print manual merge commands for user review. Do not run `git merge`, create worktrees, or switch branches.
+如果目标分支无法快进到源分支，停止并打印手动合并命令供用户审阅。不要运行 `git merge`，不要创建 worktree，也不要切换分支。
 
-## Trigger Phrases
+## 触发短语
 
-Use this skill for requests containing any equivalent of:
+请求中包含以下任意等价表达时使用本技能：
 
 - 回合根源分支
 - 合回根源分支
@@ -29,68 +29,68 @@ Use this skill for requests containing any equivalent of:
 - merge the worktree branch into the source branch
 - integrate this worktree into the main/root/source branch
 
-## Required Workflow
+## 必需工作流
 
-1. Inspect worktrees and branches without changing state:
+1. 在不改变状态的前提下检查 worktree 和分支：
    - `git worktree list --porcelain`
    - `git status --short --branch`
    - `git branch --show-current`
-2. Identify:
-   - current temporary worktree path;
-   - source branch to merge from;
-   - target/root branch;
-   - real code directory;
-   - current branch of the real code directory.
-3. Confirm the current temporary source worktree is clean:
+2. 识别：
+   - 当前临时 worktree 路径；
+   - 要合入来源的源分支；
+   - 目标/根分支；
+   - 真实代码目录；
+   - 真实代码目录的当前分支。
+3. 确认当前临时源 worktree 干净：
    - `git status --short --branch`
-4. Confirm both branches exist without changing checkout state:
+4. 在不改变 checkout 状态的前提下确认两个分支都存在：
    - `git rev-parse --verify <source-branch>`
    - `git rev-parse --verify <target-branch>`
-5. Check whether the target branch can be fast-forwarded to the source branch:
+5. 检查目标分支是否可以快进到源分支：
    - `git merge-base --is-ancestor <target-branch> <source-branch>`
-6. If the fast-forward check succeeds, state the action and update only the target branch ref:
+6. 如果快进检查通过，说明动作并只更新目标分支 ref：
    - `git fetch . <source-branch>:<target-branch>`
-7. If the fast-forward check fails, stop and print manual commands for user review. Do not execute them:
+7. 如果快进检查失败，停止并打印手动命令供用户审阅。不要执行它们：
 
    ```bash
-   # Option A: use an existing target-branch worktree
+   # 方案 A：使用已有目标分支 worktree
    cd <target-branch-worktree>
    git status --short --branch
    git merge <source-branch>
 
-   # Option B: create a temporary target worktree
+   # 方案 B：创建临时目标 worktree
    git worktree add <temporary-target-worktree> <target-branch>
    cd <temporary-target-worktree>
    git status --short --branch
    git merge <source-branch>
    ```
 
-8. After a successful ref-only fast-forward update, verify:
+8. 仅更新 ref 的快进成功后，验证：
    - `git rev-parse <target-branch>`
    - `git rev-parse <source-branch>`
    - `git status --short --branch`
    - `git log --oneline --decorate -5`
-9. Report the source branch, target branch, target ref update result, and that no worktree branch was switched.
+9. 报告源分支、目标分支、目标 ref 更新结果，并说明没有切换任何 worktree 分支。
 
-## Stop Conditions
+## 停止条件
 
-Stop and ask the user instead of guessing when:
+遇到以下情况时停止并询问用户，不要猜测：
 
-- the real code directory cannot be identified from `git worktree list --porcelain`;
-- the target/root branch is ambiguous;
-- the source worktree has uncommitted changes;
-- either source or target branch cannot be verified;
-- the target branch cannot be fast-forwarded to the source branch;
-- updating the target branch would require force, rebase, merge commit creation, conflict resolution, branch switching, or worktree creation;
-- the requested action requires pushing to a remote and the user has not explicitly requested that push.
+- 无法从 `git worktree list --porcelain` 识别真实代码目录；
+- 目标/根分支存在歧义；
+- 源 worktree 有未提交改动；
+- 源分支或目标分支无法验证；
+- 目标分支无法快进到源分支；
+- 更新目标分支需要 force、rebase、创建 merge commit、解决冲突、切换分支或创建 worktree；
+- 请求的动作需要推送到远端，但用户没有明确要求推送。
 
-## Correct Command Placement
+## 正确命令位置
 
-Source worktree commands are only for inspection and source branch commits.
+源 worktree 中的命令只用于检查和源分支提交。
 
-Automatic target updates must use ref-only fast-forward commands. They may run from any clean worktree in the repository because they update refs without changing the current checkout.
+自动更新目标分支时必须使用仅更新 ref 的快进命令。这些命令可以从仓库中的任意干净 worktree 运行，因为它们只更新 ref，不改变当前 checkout。
 
-Do not run these during the automatic path:
+自动路径中不要运行这些命令：
 
 - `git switch <target-branch>`
 - `git checkout <target-branch>`
@@ -98,14 +98,14 @@ Do not run these during the automatic path:
 - `git worktree add <path> <target-branch>`
 - `git push`
 
-## Minimal User-Facing Summary Before Acting
+## 执行前给用户的最小摘要
 
-Before performing the fast-forward ref update, state:
+执行快进 ref 更新前，说明：
 
-- Source branch: `<source-branch>` at `<source-worktree-path>`
-- Target branch: `<target-branch>`
-- Real code directory current branch: `<current-branch>`
-- Action: fast-forward `<target-branch>` to `<source-branch>` by updating the target ref only
-- Safety: no worktree branch will be switched
+- 源分支：`<source-branch>`，位于 `<source-worktree-path>`
+- 目标分支：`<target-branch>`
+- 真实代码目录当前分支：`<current-branch>`
+- 动作：仅通过更新目标 ref，将 `<target-branch>` 快进到 `<source-branch>`
+- 安全性：不会切换任何 worktree 分支
 
-Then execute only that plan.
+然后只执行这份计划。

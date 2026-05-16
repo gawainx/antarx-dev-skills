@@ -1,121 +1,121 @@
 ---
 name: using-git-worktrees
-description: Use only when isolation is clearly needed (parallel work, dirty workspace risk, or user request). Ask for user approval before creating a worktree and explain why it is needed.
+description: 仅在明确需要隔离时使用（并行工作、脏工作区风险，或用户要求）。创建 worktree 前先请求用户批准，并说明为什么需要它。
 ---
 
-# Using Git Worktrees
+# 使用 Git Worktrees
 
-## Overview
+## 概览
 
-Git worktrees create isolated workspaces sharing the same repository, allowing work on multiple branches simultaneously without switching.
+Git worktree 会创建共享同一个仓库的隔离工作区，让你可以同时在多个分支上工作，而不需要来回切换。
 
-**Core principle:** Systematic directory selection + safety verification = reliable isolation.
+**核心原则：** 系统化选择目录 + 安全验证 = 可靠隔离。
 
-**Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
+**开始时说明：** “我正在使用 using-git-worktrees 技能来设置一个隔离工作区。”
 
-## Trigger Conditions (Narrow Scope)
+## 触发条件（窄范围）
 
-Use this skill only when at least one condition is true:
+仅当至少满足以下一个条件时使用此技能：
 
-1. User explicitly asks to use a worktree or isolated workspace.
-2. You must run parallel/independent implementation streams that would conflict in one working tree.
-3. Current workspace is intentionally dirty and isolating new changes is necessary to avoid cross-contamination.
-4. A parent workflow explicitly requires isolation and user agrees after explanation.
+1. 用户明确要求使用 worktree 或隔离工作区。
+2. 你必须运行并行/独立的实现流，而这些工作在同一个工作树中会互相冲突。
+3. 当前工作区有意保持脏状态，并且必须隔离新改动以避免交叉污染。
+4. 上层工作流明确要求隔离，并且用户在说明后同意。
 
-Do not auto-trigger for every implementation plan.
+不要为每个实现计划自动触发。
 
-### Do Not Trigger
+### 不要触发
 
-- Read-only tasks (review, analysis, explanation, planning-only).
-- Small scoped edits that do not need branch isolation.
-- Cases where current workspace is clean and no parallel work is needed.
-- When user prefers staying in the current workspace.
+- 只读任务（审查、分析、解释、仅规划）。
+- 不需要分支隔离的小范围编辑。
+- 当前工作区干净且不需要并行工作的情况。
+- 用户偏好留在当前工作区的情况。
 
-## User Consent Before Creation (Mandatory)
+## 创建前获取用户同意（强制）
 
-Before any `git worktree add`, explain necessity and ask for confirmation.
+在任何 `git worktree add` 之前，先说明必要性并请求确认。
 
-Use this format:
+使用这个格式：
 
 ```
-I recommend creating a git worktree for this task because <specific reason>.
-This adds setup overhead (directory setup, optional dependency install, optional baseline checks).
-Do you want me to create it now?
+我建议为这个任务创建 git worktree，因为<具体原因>。
+这会增加设置成本（目录设置、可选依赖安装、可选基线检查）。
+现在要创建吗？
 ```
 
-If user does not explicitly approve, do not create a worktree.
+如果用户没有明确批准，不要创建 worktree。
 
-## Directory Selection Process
+## 目录选择流程
 
-Follow this priority order:
+按以下优先级执行：
 
-### 1. Check Existing Directories
+### 1. 检查现有目录
 
 ```bash
-# Check in priority order
-ls -d .worktrees 2>/dev/null     # Preferred (hidden)
-ls -d worktrees 2>/dev/null      # Alternative
+# 按优先级检查
+ls -d .worktrees 2>/dev/null     # 首选（隐藏目录）
+ls -d worktrees 2>/dev/null      # 备选
 ```
 
-**If found:** Use that directory. If both exist, `.worktrees` wins.
+**如果找到：** 使用该目录。如果两者都存在，优先使用 `.worktrees`。
 
-### 2. Check CLAUDE.md
+### 2. 检查 CLAUDE.md
 
 ```bash
 grep -i "worktree.*director" CLAUDE.md 2>/dev/null
 ```
 
-**If preference specified:** Use it without asking.
+**如果指定了偏好：** 直接使用，不需要再询问。
 
-### 3. Ask User
+### 3. 询问用户
 
-If no directory exists and no CLAUDE.md preference:
+如果不存在目录，并且 CLAUDE.md 中也没有偏好：
 
 ```
-No worktree directory found. Where should I create worktrees?
+没有找到 worktree 目录。应该在哪里创建 worktree？
 
-1. .worktrees/ (project-local, hidden)
-2. ~/.config/superpowers/worktrees/<project-name>/ (global location)
+1. .worktrees/（项目本地，隐藏目录）
+2. ~/.config/superpowers/worktrees/<project-name>/（全局位置）
 
-Which would you prefer?
+你倾向哪一个？
 ```
 
-## Safety Verification
+## 安全验证
 
-### For Project-Local Directories (.worktrees or worktrees)
+### 对项目本地目录（.worktrees 或 worktrees）
 
-**MUST verify directory is ignored before creating worktree:**
+**创建 worktree 前必须确认目录已被忽略：**
 
 ```bash
-# Check if directory is ignored (respects local, global, and system gitignore)
+# 检查目录是否已被忽略（遵循本地、全局和系统 gitignore）
 git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/dev/null
 ```
 
-**If NOT ignored:**
+**如果没有被忽略：**
 
-Per Jesse's rule "Fix broken things immediately":
-1. Add appropriate line to .gitignore
-2. Commit the change
-3. Proceed with worktree creation
+遵循 Jesse 的规则“立即修复坏掉的东西”：
+1. 向 .gitignore 添加合适的行
+2. 提交该改动
+3. 继续创建 worktree
 
-**Why critical:** Prevents accidentally committing worktree contents to repository.
+**为什么重要：** 防止意外把 worktree 内容提交到仓库。
 
-### For Global Directory (~/.config/superpowers/worktrees)
+### 对全局目录（~/.config/superpowers/worktrees）
 
-No .gitignore verification needed - outside project entirely.
+不需要 .gitignore 验证，因为它完全位于项目之外。
 
-## Creation Steps (After User Approval)
+## 创建步骤（用户批准后）
 
-### 1. Detect Project Name
+### 1. 检测项目名
 
 ```bash
 project=$(basename "$(git rev-parse --show-toplevel)")
 ```
 
-### 2. Create Worktree
+### 2. 创建 Worktree
 
 ```bash
-# Determine full path
+# 确定完整路径
 case $LOCATION in
   .worktrees|worktrees)
     path="$LOCATION/$BRANCH_NAME"
@@ -125,16 +125,16 @@ case $LOCATION in
     ;;
 esac
 
-# Create worktree with new branch
+# 使用新分支创建 worktree
 git worktree add "$path" -b "$BRANCH_NAME"
 cd "$path"
 ```
 
-### 3. Run Project Setup (Minimal by Default)
+### 3. 运行项目设置（默认最小化）
 
-Default to minimal setup. Run dependency installation only if user requested it, or if the next confirmed task requires it immediately.
+默认采用最小设置。只有在用户要求时，或者下一个已确认任务马上需要时，才运行依赖安装。
 
-Auto-detect commands when needed:
+需要时自动检测命令：
 
 ```bash
 # Node.js
@@ -151,112 +151,112 @@ if [ -f pyproject.toml ]; then poetry install; fi
 if [ -f go.mod ]; then go mod download; fi
 ```
 
-### 4. Verify Baseline (On Demand)
+### 4. 验证基线（按需）
 
-Do not run full baseline tests automatically. Propose baseline verification and run it only after user confirmation, unless a parent workflow mandates it.
+不要自动运行完整基线测试。先提议进行基线验证，并且只在用户确认后运行，除非上层工作流强制要求。
 
-When approved, run project-appropriate command:
+获得批准后，运行适合项目的命令：
 
 ```bash
-# Examples - use project-appropriate command
+# 示例：使用适合项目的命令
 npm test
 cargo test
 pytest
 go test ./...
 ```
 
-**If tests fail:** Report failures, ask whether to proceed or investigate.
+**如果测试失败：** 报告失败内容，并询问是继续还是排查。
 
-**If tests pass:** Report ready.
+**如果测试通过：** 报告已准备好。
 
-### 5. Report Location
+### 5. 报告位置
 
 ```
-Worktree ready at <full-path>
-Tests passing (<N> tests, 0 failures)
-Ready to implement <feature-name>
+Worktree 已就绪：<full-path>
+测试通过（<N> 个测试，0 个失败）
+可以开始实现 <feature-name>
 ```
 
-## Quick Reference
+## 快速参考
 
-| Situation | Action |
+| 情况 | 动作 |
 |-----------|--------|
-| `.worktrees/` exists | Use it (verify ignored) |
-| `worktrees/` exists | Use it (verify ignored) |
-| Both exist | Use `.worktrees/` |
-| Neither exists | Check CLAUDE.md → Ask user |
-| Directory not ignored | Add to .gitignore + commit |
-| Worktree not explicitly approved | Do not create; continue in current workspace |
-| Setup/test cost seems high | Explain cost and ask before running |
-| Tests fail during baseline | Report failures + ask |
-| No package.json/Cargo.toml | Skip dependency install |
+| `.worktrees/` 存在 | 使用它（验证已忽略） |
+| `worktrees/` 存在 | 使用它（验证已忽略） |
+| 两者都存在 | 使用 `.worktrees/` |
+| 两者都不存在 | 检查 CLAUDE.md → 询问用户 |
+| 目录未被忽略 | 添加到 .gitignore + 提交 |
+| Worktree 未被明确批准 | 不创建；继续在当前工作区工作 |
+| 设置/测试成本看起来很高 | 说明成本并在运行前询问 |
+| 基线测试失败 | 报告失败 + 询问 |
+| 没有 package.json/Cargo.toml | 跳过依赖安装 |
 
-## Common Mistakes
+## 常见错误
 
-### Skipping ignore verification
+### 跳过忽略验证
 
-- **Problem:** Worktree contents get tracked, pollute git status
-- **Fix:** Always use `git check-ignore` before creating project-local worktree
+- **问题：** Worktree 内容被跟踪，污染 git status
+- **修复：** 创建项目本地 worktree 前，始终使用 `git check-ignore`
 
-### Assuming directory location
+### 假设目录位置
 
-- **Problem:** Creates inconsistency, violates project conventions
-- **Fix:** Follow priority: existing > CLAUDE.md > ask
+- **问题：** 造成不一致，违反项目约定
+- **修复：** 遵循优先级：现有目录 > CLAUDE.md > 询问
 
-### Proceeding with failing tests
+### 测试失败后继续推进
 
-- **Problem:** Can't distinguish new bugs from pre-existing issues
-- **Fix:** Report failures, get explicit permission to proceed
+- **问题：** 无法区分新 bug 和既有问题
+- **修复：** 报告失败，并获得继续推进的明确许可
 
-### Creating worktree without consent
+### 未经同意创建 worktree
 
-- **Problem:** Adds unnecessary overhead and may violate user preference
-- **Fix:** Explain why isolation is needed, then get explicit approval first
+- **问题：** 增加不必要的成本，并且可能违背用户偏好
+- **修复：** 说明为什么需要隔离，然后先获得明确批准
 
-### Hardcoding setup commands
+### 硬编码设置命令
 
-- **Problem:** Breaks on projects using different tools
-- **Fix:** Auto-detect from project files (package.json, etc.)
+- **问题：** 在使用不同工具的项目中失效
+- **修复：** 从项目文件自动检测（package.json 等）
 
-## Example Workflow
+## 示例工作流
 
 ```
-You: I'm using the using-git-worktrees skill to set up an isolated workspace.
+你：我正在使用 using-git-worktrees 技能来设置隔离工作区。
 
-[Check .worktrees/ - exists]
-[Verify ignored - git check-ignore confirms .worktrees/ is ignored]
-[Create worktree: git worktree add .worktrees/auth -b feature/auth]
-[Run npm install]
-[Run npm test - 47 passing]
+[检查 .worktrees/ - 存在]
+[验证已忽略 - git check-ignore 确认 .worktrees/ 已被忽略]
+[创建 worktree：git worktree add .worktrees/auth -b feature/auth]
+[运行 npm install]
+[运行 npm test - 47 个测试通过]
 
-Worktree ready at /Users/jesse/myproject/.worktrees/auth
-Tests passing (47 tests, 0 failures)
-Ready to implement auth feature
+Worktree 已就绪：/Users/jesse/myproject/.worktrees/auth
+测试通过（47 个测试，0 个失败）
+可以开始实现 auth 功能
 ```
 
-## Red Flags
+## 危险信号
 
-**Never:**
-- Create worktree without verifying it's ignored (project-local)
-- Create worktree without explicit user approval
-- Skip baseline test verification
-- Proceed with failing tests without asking
-- Assume directory location when ambiguous
-- Skip CLAUDE.md check
+**绝不：**
+- 在未验证已被忽略的情况下创建 worktree（项目本地）
+- 在没有用户明确批准的情况下创建 worktree
+- 跳过基线测试验证
+- 在测试失败时不询问就继续推进
+- 在目录位置有歧义时自行假设
+- 跳过 CLAUDE.md 检查
 
-**Always:**
-- Check trigger conditions first; skip when isolation is unnecessary
-- Explain necessity and overhead, then ask for consent before creation
-- Follow directory priority: existing > CLAUDE.md > ask
-- Verify directory is ignored for project-local
-- Run setup and baseline verification only as needed/approved
+**始终：**
+- 先检查触发条件；不需要隔离时跳过
+- 说明必要性和成本，然后在创建前请求同意
+- 遵循目录优先级：现有目录 > CLAUDE.md > 询问
+- 对项目本地目录验证其已被忽略
+- 仅在需要/已批准时运行设置和基线验证
 
-## Integration
+## 集成
 
-**Called by:**
-- **brainstorming** (Phase 4) - OPTIONAL when approved design requires isolated implementation
-- **executing-plans** - OPTIONAL when plan indicates isolation benefits
-- Any skill needing isolated workspace after user consent
+**调用方：**
+- **brainstorming**（Phase 4）- 当已批准的设计需要隔离实现时，可选使用
+- **executing-plans** - 当计划表明隔离有收益时，可选使用
+- 任何在用户同意后需要隔离工作区的技能
 
-**Pairs with:**
-- **finishing-a-development-branch** - REQUIRED for cleanup after work complete
+**配合：**
+- **finishing-a-development-branch** - 工作完成后必须用于清理

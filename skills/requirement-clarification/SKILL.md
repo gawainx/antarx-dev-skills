@@ -1,6 +1,6 @@
 ---
 name: requirement-clarification
-description: 用于仓库需求澄清。Use when the user explicitly asks for “需求澄清”, “重新澄清”, “继续澄清”, “帮我澄清需求”, “重新梳理需求边界”, or similar requirement clarification before design, planning, or implementation.
+description: 用于仓库需求澄清。当用户明确要求“需求澄清”“重新澄清”“继续澄清”“帮我澄清需求”“重新梳理需求边界”，或在设计、规划、实现前提出类似澄清诉求时使用。
 ---
 
 # 需求澄清
