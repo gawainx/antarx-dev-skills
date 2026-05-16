@@ -1,0 +1,4 @@
+interface:
+  display_name: "完成前验证"
+  short_description: "在声明完成前运行并核对必要验证"
+  default_prompt: "使用 $verification-before-completion 在声称完成、修复或通过之前运行验证命令并核对输出。"

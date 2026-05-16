@@ -1,0 +1,4 @@
+interface:
+  display_name: "Using Git Worktrees"
+  short_description: "Create isolated Git worktrees only when the task needs separation"
+  default_prompt: "Use $using-git-worktrees to decide whether a worktree is needed, ask for approval, and set up isolated work safely."

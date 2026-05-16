@@ -1,0 +1,4 @@
+interface:
+  display_name: "并行子代理派发"
+  short_description: "将独立任务拆分给并行子代理执行"
+  default_prompt: "使用 $dispatching-parallel-agents 判断任务是否适合并行派发，并为独立子任务安排清晰边界。"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Merge Worktree To Source Branch"
+  short_description: "Safely merge temporary worktree changes back to the source branch"
+  default_prompt: "Use $merge-worktree-to-source-branch to inspect worktree ownership and merge completed work back to the source branch safely."

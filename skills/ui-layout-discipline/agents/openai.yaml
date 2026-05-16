@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI Layout Discipline"
+  short_description: "Prevent UI layout hacks and padding stacks"
+  default_prompt: "Use this skill to audit UI layout responsibilities before creating, refactoring, or fixing SwiftUI, web UI, or declarative UI code."

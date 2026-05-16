@@ -1,0 +1,4 @@
+interface:
+  display_name: "经验分诊"
+  short_description: "判断经验应沉淀到 AGENTS、skill 或项目文档"
+  default_prompt: "使用 $experience-triage 分析本次经验的适用范围，并建议应沉淀到哪一层 Codex 工作流。"

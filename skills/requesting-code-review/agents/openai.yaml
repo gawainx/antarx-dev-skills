@@ -1,0 +1,4 @@
+interface:
+  display_name: "发起代码评审"
+  short_description: "在完成实现或合并前请求结构化代码评审"
+  default_prompt: "使用 $requesting-code-review 在任务完成后发起代码评审，并优先检查风险、回归和测试缺口。"

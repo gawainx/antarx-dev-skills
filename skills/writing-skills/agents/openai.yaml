@@ -1,0 +1,4 @@
+interface:
+  display_name: "编写技能"
+  short_description: "创建、修改并验证 Codex skill 的有效性"
+  default_prompt: "使用 $writing-skills 创建或更新 Codex skill，并按技能编写规范验证结构和触发条件。"

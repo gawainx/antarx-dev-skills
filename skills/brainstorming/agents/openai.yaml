@@ -1,0 +1,4 @@
+interface:
+  display_name: "Brainstorming"
+  short_description: "Collaboratively refine unclear ideas into actionable designs"
+  default_prompt: "Use $brainstorming to explore options, clarify tradeoffs, and converge on an approved design before implementation."

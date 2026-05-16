@@ -1,0 +1,4 @@
+interface:
+  display_name: "接收代码评审"
+  short_description: "验证并落地可执行的代码评审意见"
+  default_prompt: "使用 $receiving-code-review 先验证评审意见是否成立，再按最小改动实现必要修复。"

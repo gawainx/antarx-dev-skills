@@ -1,0 +1,4 @@
+interface:
+  display_name: "Writing Plans"
+  short_description: "Create concrete multi-step implementation plans before coding"
+  default_prompt: "Use $writing-plans to turn confirmed requirements into a concise implementation plan with verification steps."
