@@ -1,1 +1,2 @@
 - (04fa2980) : 2026.05.16 新增 requirement-clarification 技能，覆盖用户提及需求澄清、重新澄清、继续澄清时的仓库调研、术语搜索、范围确认和最多五个决策问题输出规则，并同步生成 agents/openai.yaml；已完成技能结构校验、本地同步和 doctor 检查。
+- (c1997c1) : 2026.05.16 将系统中的 ui-layout-discipline 技能纳入本仓库托管，补齐 SKILL.md 与 agents/openai.yaml，使其由 skills/ui-layout-discipline 统一追踪；同时把已存在于本地托管副本中的多个技能 agents/openai.yaml 元数据纳入版本控制，减少仓库源内容与本地安装副本之间的追踪差异。
