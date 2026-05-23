@@ -1,54 +1,56 @@
-# Design And Plan Drafting Framework
+# 设计与计划文档编写框架
 
-## Trigger Pattern
+## 触发模式
 
-Use this skill when:
-- requirements clarification has finished or the user has explicitly confirmed the direction is stable
-- the user explicitly asks to write a design doc, development plan, or both
-- the repository expects design docs under `docs/design-docs/` and plans under `docs/exec-plans/active/`
-- you should now transition from clarified requirements into repository documents
+在以下情况使用本技能：
+- 需求澄清已完成，或用户已明确确认方向稳定。
+- 用户明确要求撰写设计文档、开发计划，或二者同时产出。
+- 仓库约定设计文档位于 `docs/design-docs/`，计划位于 `docs/exec-plans/active/`。
+- 当前应从已澄清的需求转入仓库文档沉淀。
 
-Do not use this skill when:
-- the user is still exploring requirements and has not confirmed direction
-- the session is pure implementation with no documentation request
-- the user only wants a brief chat summary rather than repository docs
+不要在以下情况使用本技能：
+- 用户仍在探索需求，尚未确认方向。
+- 当前会话是纯实现任务，没有文档编写请求。
+- 用户只需要简短聊天总结，而不是仓库文档。
 
-## Category Placement
+## 分类与落点
 
-- default output roots:
-  - design docs: `docs/design-docs/`
-  - active plans: `docs/exec-plans/active/`
-  - completed plans: `docs/exec-plans/completed/`
-- if no clear subfolder convention exists, keep files in the default output roots above
-- if the repository defines extra subfolders under these roots, follow those conventions consistently
+- 默认输出根目录：
+  - 设计文档：`docs/design-docs/`
+  - 进行中计划：`docs/exec-plans/active/`
+  - 已完成计划：`docs/exec-plans/completed/`
+- 如果不存在明确的子目录约定，将文件保留在上述默认输出根目录。
+- 如果仓库在这些根目录下定义了额外子目录，需一致遵循既有约定。
 
-## Drafting Checklist
+## 编写检查清单
 
-1. Confirm requirements clarification is complete enough to freeze scope for the current draft.
-2. Read adjacent implementation files first.
-3. Read one or two nearby docs/plans from the same area to match house style.
-4. Check for same-prefix existing docs before creating new ones.
-5. If a same-prefix doc exists, compare it and ask append versus overwrite before writing.
-6. Write the design doc before the plan.
-7. State the current architecture and chosen direction.
-8. Separate in-scope work from deferred follow-ups.
-9. Add i18n expectations whenever user-facing text or controls are involved.
-10. Add compile, manual, and regression checks.
-11. Link the design doc from the plan.
-12. Keep wording concrete enough that implementation tasks can be derived directly.
+1. 确认需求澄清已足够完整，可以冻结当前草稿范围。
+2. 优先阅读相邻实现文件。
+3. 阅读同领域附近 1-2 份文档或计划，以匹配仓库风格。
+4. 创建新文档前，检查是否已有同前缀文档。
+5. 如果存在同前缀文档，先比较内容，再询问追加还是覆盖。
+6. 先写设计文档，再写开发计划。
+7. 说明当前架构与已选择的方向。
+8. 区分本轮范围内工作与延后处理事项。
+9. 涉及用户可见文案或控件时，补充 i18n 预期。
+10. 补充编译检查、手工检查与回归检查。
+11. 在计划中链接设计文档。
+12. 如果仓库使用需求编号管理，则在文件名、标题、设计-计划链接与相关计划条目中沿用需求编号，并使用仓库既有编号格式。
+13. 措辞需足够具体，使实现任务可以直接从文档中推导出来。
 
-## Good Design Doc Signals
+## 好的设计文档信号
 
-- It names the exact host views, models, and files likely to change.
-- It explains why the chosen UI/container pattern fits the current codebase.
-- It documents what will not be done in the current session.
-- It records width, toolbar, state, and empty-state behavior for UI work.
-- It includes forward-looking prewiring only when that directly supports the current scope.
+- 点名可能变更的具体宿主视图、模型与文件。
+- 解释所选 UI / 容器模式为什么适合当前代码库。
+- 记录当前会话不会处理的内容。
+- 针对 UI 工作记录宽度、工具栏、状态与空态行为。
+- 仅在直接支撑当前范围时，包含面向后续的预接线设计。
 
-## Good Plan Signals
+## 好的计划信号
 
-- Phase 1 sets up shell, state, and containers.
-- Later phases add placeholders or scoped follow-up wiring.
-- Final tasks validate build and update plan state.
-- Tasks are small enough to map cleanly to commits.
-- Each completed task is expected to end with one git commit so history stays atomic and reviewable.
+- 所有计划阶段标题与引用均使用 `Stage`，不要使用 `Phase`。
+- Stage 1 建立外壳、状态与容器。
+- 后续 Stage 增加占位结构或有边界的后续接线。
+- 最终任务验证构建并回写计划状态。
+- 任务粒度足够小，可以清晰映射到提交。
+- 每个已完成任务都应以 1 次 git 提交结束，使历史保持原子化且便于审查。

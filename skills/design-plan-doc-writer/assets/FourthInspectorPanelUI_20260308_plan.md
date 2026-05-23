@@ -3,9 +3,9 @@
 ## Related Design Doc
 - `/Users/yat/code/xcodeProjects/ArxivDailyReader/docs/design-docs/FourthInspectorPanelUI_20260308.md`
 
-## Phase
+## Stage
 
-### Phase 1: Inspector 基础容器落地
+### Stage 1: Inspector 基础容器落地
 
 ## Tasks
 
@@ -48,7 +48,7 @@
   - 若发生编译失败，先查阅 `build_failure_playbook.md` 再修复，并在通过后追加英文记录。
 - 预期测试结果：构建通过，无新增硬编码用户文案。
 
-### Phase 2: Panel 骨架与后续接线预留
+### Stage 2: Panel 骨架与后续接线预留
 
 6. [Task#6] 建立 Notes panel 占位骨架（状态：Designed）
 - 任务功能：为后续论文级 note 接线提供稳定的 inspector 子视图壳层。
