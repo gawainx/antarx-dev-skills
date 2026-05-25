@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Structure Migration"
+  short_description: "Migrate existing project docs into Codex workflow"
+  default_prompt: "Use $project-structure-migration to audit and migrate this project's docs into the init-project-bootstrap structure."
