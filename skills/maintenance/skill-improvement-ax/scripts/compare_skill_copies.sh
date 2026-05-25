@@ -14,9 +14,8 @@ fi
 
 SKILL_NAME="$1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SOURCE_REPO="$("${SCRIPT_DIR}/resolve_source_repo.sh")"
 LOCAL_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
-SOURCE_SKILL="${SOURCE_REPO}/skills/${SKILL_NAME}"
+SOURCE_SKILL="$("${SCRIPT_DIR}/find_source_skill.sh" "$SKILL_NAME")"
 LOCAL_SKILL="${LOCAL_SKILLS_DIR}/${SKILL_NAME}"
 
 if [[ ! -d "$SOURCE_SKILL" ]]; then

@@ -1,34 +1,34 @@
-# Repository Guidelines
+# 仓库指南
 
-## Project Structure & Module Organization
-This repository is the single source of truth for managed Codex skills. The default managed content is only `skills/`; `AGENTS.md.root` is a template and must not be synced unless the user explicitly opts in. Add or update reusable skill definitions under `skills/<skill-name>/SKILL.md`; keep supporting files next to the skill only when they are directly needed. Operational scripts live in `scripts/`, currently `sync_to_local.sh` for deployment and `doctor.sh` for consistency checks. Reference material and plans belong in `docs/`, for example `docs/plans/0001-init-structure.md`.
+## 项目结构与模块组织
+本仓库是托管 Codex skills 的单一事实源。默认托管内容仅包含 `skills/`；`AGENTS.md.root` 是模板，除非用户明确选择同步，否则不得同步。新增或更新可复用 skill 时，放在 `skills/<category>/<skill-name>/SKILL.md`；只有在直接需要时，才把配套文件放在对应 skill 旁边。运维脚本放在 `scripts/`，当前包括用于部署的 `sync_to_local.sh` 和用于一致性检查的 `doctor.sh`。参考资料和计划放在 `docs/`，例如 `docs/plans/0001-init-structure.md`。
 
-## Build, Test, and Development Commands
-Run all edits from the repository root.
+## 构建、测试与开发命令
+所有编辑和命令都从仓库根目录执行。
 
 ```bash
 ./scripts/sync_to_local.sh --dry-run
 ```
-Preview what will be copied into `~/.codex/skills`.
+预览将复制到 `~/.codex/skills` 的内容。
 
 ```bash
 ./scripts/sync_to_local.sh
 ```
-Apply the managed skills to the local Codex installation.
+将托管 skills 应用到本机 Codex 安装目录。
 
 ```bash
 ./scripts/doctor.sh
 ```
-Verify the repo and local managed copies are aligned; this should exit `0` before you claim completion.
+校验仓库源码和本地托管副本是否一致；在声明完成前，此命令应以 `0` 退出。
 
-## Coding Style & Naming Conventions
-Shell scripts use Bash with `set -euo pipefail`; keep new script changes consistent. Prefer ASCII unless a file already uses Chinese text, which this repository does in several core docs. Name skills with lowercase hyphenated directories such as `skills/requesting-code-review/`. Keep `SKILL.md` concise, action-oriented, and specific to the trigger condition it covers.
+## 编码风格与命名约定
+Shell 脚本使用 Bash，并启用 `set -euo pipefail`；新增脚本改动保持一致。除非文件已经使用中文文本，否则优先使用 ASCII，本仓库的若干核心文档已经使用中文。skill 目录使用小写短横线命名，例如 `skills/collaboration/requesting-code-review/`。`SKILL.md` 保持简洁、行动导向，并明确它覆盖的触发条件。
 
-## Testing Guidelines
-There is no separate unit test suite yet; validation is command-based. Treat `./scripts/doctor.sh` as the required verification gate, and use `./scripts/sync_to_local.sh --dry-run` as a safe preflight check before syncing. If you add automation, place tests under `tests/` and name them after the behavior or script they verify.
+## 测试指南
+当前还没有独立的单元测试套件；验证以命令为主。将 `./scripts/doctor.sh` 视为必需验证闸门，并在同步前使用 `./scripts/sync_to_local.sh --dry-run` 做安全预检。如果新增自动化测试，把测试放在 `tests/`，并按其验证的行为或脚本命名。
 
-## Commit & Pull Request Guidelines
-Commits must follow Conventional Commits: `feat: ...`, `refactor: ...`, `docs: ...`, `chore: ...`. The subject must be specific and at least 10 characters after the colon; vague messages like `fix` or `update` are not acceptable. Do not use `git commit --amend`. For pull requests, include the intent, affected paths such as `skills/` or `scripts/`, verification output from `./scripts/doctor.sh`, and screenshots only if the change affects rendered documentation.
+## Commit 与 Pull Request 指南
+提交必须遵循 Conventional Commits，例如 `feat: ...`、`refactor: ...`、`docs: ...`、`chore: ...`。冒号后的 subject 必须具体，且至少 10 个字符；不得使用 `fix` 或 `update` 这类含糊信息。不要使用 `git commit --amend`。Pull Request 需要包含变更意图、受影响路径（例如 `skills/` 或 `scripts/`）、`./scripts/doctor.sh` 的验证输出；只有在变更影响渲染文档时才附截图。
 
-## Agent-Specific Notes
-Do not manually edit managed copies under `~/.codex/skills`. Make skill changes in this repo, then run dry-run sync, real sync, and doctor in that order. Do not sync `AGENTS.md.root` to a Codex global AGENTS file unless the user explicitly requests it and the target has been reviewed or backed up. Never add blacklisted skills to managed content: `skill-creator`, `skill-installer`, and `swiftui-macos-llm-chat-module`.
+## Agent 专用说明
+不要手动编辑 `~/.codex/skills` 下的托管副本。修改 skill 时，只改本仓库的 `skills/<category>/<skill-name>/`，然后按顺序运行 dry-run sync、真实 sync 和 doctor。源码树按分类分组，但安装目录有意保持扁平：`~/.codex/skills/<skill-name>/`。除非用户明确要求，并且目标文件已经审阅或备份，否则不要把 `AGENTS.md.root` 同步到 Codex 全局 AGENTS 文件。禁止把黑名单 skills 加入托管内容：`skill-creator`、`skill-installer` 和 `swiftui-macos-llm-chat-module`。

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Creation Closeout"
+  short_description: "Ask whether new skills should be managed here."
+  default_prompt: "Use $skill-creation-closeout after creating a skill to decide whether to import it into antarx-dev-skills."

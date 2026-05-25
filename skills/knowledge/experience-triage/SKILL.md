@@ -51,8 +51,8 @@ description: 用于在完成真实任务后，判断经验、坑、约束或流�
 是：推荐写成 script、CLI、MCP tool、connector/plugin 工作流，再由 skill 调用。
 
 优先位置：
-- 脚本：`scripts/<action>.sh` 或 skill 内的 `skills/<skill-name>/scripts/<action>.sh`。
-- Skill：`skills/<skill-name>/SKILL.md` 只描述何时调用脚本、如何解释结果。
+- 脚本：`scripts/<action>.sh` 或 skill 内的 `skills/<category>/<skill-name>/scripts/<action>.sh`。
+- Skill：`skills/<category>/<skill-name>/SKILL.md` 只描述何时调用脚本、如何解释结果。
 - Connector/plugin：当任务依赖 GitHub、Notion、Gmail 等外部服务时，优先使用已有 Codex App connector 或插件能力。
 
 例子：
@@ -81,7 +81,7 @@ description: 用于在完成真实任务后，判断经验、坑、约束或流�
 例子：
 ```markdown
 ## Skills 仓库约定
-只在 `skills/<skill-name>/SKILL.md` 中维护可复用技能正文；不要手动修改 `~/.codex/skills` 下的托管副本。
+只在 `skills/<category>/<skill-name>/SKILL.md` 中维护可复用技能正文；不要手动修改 `~/.codex/skills` 下的托管副本。
 ```
 
 反例：
@@ -93,8 +93,8 @@ description: 用于在完成真实任务后，判断经验、坑、约束或流�
 是：推荐写成新的 Codex skill，或更新已有 skill。
 
 优先位置：
-- 新技能：`skills/<skill-name>/SKILL.md`。
-- 既有技能：直接补到对应 `skills/<skill-name>/SKILL.md`。
+- 新技能：`skills/<category>/<skill-name>/SKILL.md`。
+- 既有技能：直接补到对应 `skills/<category>/<skill-name>/SKILL.md`。
 - 长模板、脚本、参考资料：放到该 skill 的 `assets/`、`scripts/` 或 `references/`。
 
 写法重点：

@@ -42,15 +42,16 @@ For an existing skill:
 
 1. Run `scripts/compare_skill_copies.sh <skill-name>`.
 2. If local and source copies differ, stop and ask which side is authoritative.
-3. Read the source repo copy.
+3. Read the source repo copy reported by `scripts/find_source_skill.sh <skill-name>`.
 4. Patch only the needed files.
 5. Preserve the skill structure. Keep long templates in `assets/`, deterministic operations in `scripts/`, and detailed guidance in `references/`.
 
 For a new skill:
 
-1. Create `skills/<skill-name>/SKILL.md`.
+1. Create `skills/<category>/<skill-name>/SKILL.md`.
 2. Add only required `assets/`, `scripts/`, or `references/`.
 3. Keep frontmatter to `name` and `description`.
+4. Keep the installed skill name stable; source categories are for repository organization only.
 
 ## Writeback And Sync
 

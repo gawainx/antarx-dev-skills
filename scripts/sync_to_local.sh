@@ -63,6 +63,44 @@ shell_quote() {
   printf '%q' "$1"
 }
 
+##
+# Print the install skill name for a source skill directory.
+##
+skill_name_from_dir() {
+  basename "$1"
+}
+
+##
+# Print source skill directories that contain SKILL.md, separated by NUL bytes.
+##
+find_source_skills() {
+  find "$SRC_SKILLS_DIR" -mindepth 2 -name SKILL.md -type f -print0 \
+    | while IFS= read -r -d '' skill_file; do
+        printf '%s\0' "$(dirname "$skill_file")"
+      done \
+    | sort -z
+}
+
+##
+# Fail before syncing if two grouped source skills would share one install name.
+##
+validate_source_skills() {
+  local seen=()
+  local src name existing
+  while IFS= read -r -d '' src; do
+    name="$(skill_name_from_dir "$src")"
+    if [[ "${#seen[@]}" -gt 0 ]]; then
+      for existing in "${seen[@]}"; do
+        if [[ "$existing" == "$name" ]]; then
+          echo "Duplicate source skill name: $name" >&2
+          exit 1
+        fi
+      done
+    fi
+    seen+=("$name")
+  done < <(find_source_skills)
+}
+
 write_skill_improvement_ax_config() {
   local target_skill_dir="${TARGET_SKILLS_DIR}/skill-improvement-ax"
   if [[ ! -d "$target_skill_dir" && "$DRY_RUN" -ne 1 ]]; then
@@ -95,19 +133,22 @@ if [[ "$FORCE_AGENTS" -eq 1 && "$SYNC_AGENTS" -ne 1 ]]; then
   exit 2
 fi
 
+validate_source_skills
+
 run_cmd mkdir -p "$TARGET_SKILLS_DIR"
 
 declare -a MANAGED_NOW=()
 
 while IFS= read -r -d '' src; do
-  name="$(basename "$src")"
+  name="$(skill_name_from_dir "$src")"
   if is_blacklisted "$name"; then
     log "skip blacklisted skill: $name"
     continue
   fi
   MANAGED_NOW+=("$name")
   dst="${TARGET_SKILLS_DIR}/${name}"
-  log "sync skill: $name"
+  rel_src="${src#${REPO_ROOT}/}"
+  log "sync skill: $name from $rel_src"
   if [[ "$DRY_RUN" -eq 1 ]]; then
     if command -v rsync >/dev/null 2>&1; then
       echo "[dry-run] rsync -a --delete '$src/' '$dst/'"
@@ -124,7 +165,7 @@ while IFS= read -r -d '' src; do
     fi
     printf "managed-by=antarx-dev-skills\n" > "${dst}/.managed-by-antarx-dev-skills"
   fi
-done < <(find "$SRC_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+done < <(find_source_skills)
 
 write_skill_improvement_ax_config
 

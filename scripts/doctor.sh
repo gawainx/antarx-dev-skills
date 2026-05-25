@@ -42,6 +42,43 @@ is_blacklisted() {
   return 1
 }
 
+##
+# Print the install skill name for a source skill directory.
+##
+skill_name_from_dir() {
+  basename "$1"
+}
+
+##
+# Print source skill directories that contain SKILL.md, separated by NUL bytes.
+##
+find_source_skills() {
+  find "$SRC_SKILLS_DIR" -mindepth 2 -name SKILL.md -type f -print0 \
+    | while IFS= read -r -d '' skill_file; do
+        printf '%s\0' "$(dirname "$skill_file")"
+      done \
+    | sort -z
+}
+
+##
+# Report duplicate source skill names that would collide during flat install.
+##
+check_duplicate_source_skills() {
+  local seen=()
+  local src name existing
+  while IFS= read -r -d '' src; do
+    name="$(skill_name_from_dir "$src")"
+    if [[ "${#seen[@]}" -gt 0 ]]; then
+      for existing in "${seen[@]}"; do
+        if [[ "$existing" == "$name" ]]; then
+          fail "duplicate source skill name: $name"
+        fi
+      done
+    fi
+    seen+=("$name")
+  done < <(find_source_skills)
+}
+
 if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
   fail "missing source skills dir: $SRC_SKILLS_DIR"
 fi
@@ -51,12 +88,14 @@ if [[ "$CHECK_AGENTS" -eq 1 && ! -f "$SRC_AGENTS_FILE" ]]; then
 fi
 
 for bad in "${BLACKLIST[@]}"; do
-  if [[ -e "${SRC_SKILLS_DIR}/${bad}" ]]; then
-    fail "blacklisted skill exists in repo: ${SRC_SKILLS_DIR}/${bad}"
+  if find "$SRC_SKILLS_DIR" -type d -name "$bad" -exec test -f '{}/SKILL.md' ';' -print -quit | grep -q .; then
+    fail "blacklisted skill exists in repo: $bad"
   else
     pass "blacklisted skill absent in repo: $bad"
   fi
 done
+
+check_duplicate_source_skills
 
 BROKEN_LINKS="$(find "$SRC_SKILLS_DIR" -xtype l 2>/dev/null || true)"
 if [[ -n "$BROKEN_LINKS" ]]; then
@@ -87,7 +126,7 @@ else
 fi
 
 while IFS= read -r -d '' src; do
-  name="$(basename "$src")"
+  name="$(skill_name_from_dir "$src")"
   if is_blacklisted "$name"; then
     continue
   fi
@@ -97,12 +136,13 @@ while IFS= read -r -d '' src; do
     continue
   fi
 
+  rel_src="${src#${REPO_ROOT}/}"
   if diff -qr -x '.managed-by-antarx-dev-skills' -x '.skill-improvement-ax.env' "$src" "$dst" >/dev/null; then
-    pass "skill in sync: $name"
+    pass "skill in sync: $name ($rel_src)"
   else
-    fail "skill differs: $name"
+    fail "skill differs: $name ($rel_src)"
   fi
-done < <(find "$SRC_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+done < <(find_source_skills)
 
 if [[ "$FAIL" -ne 0 ]]; then
   info "doctor found issues"
