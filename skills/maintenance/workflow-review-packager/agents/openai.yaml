@@ -1,0 +1,4 @@
+interface:
+  display_name: "Workflow Review Packager"
+  short_description: "Review work for reusable workflows"
+  default_prompt: "Use $workflow-review-packager to review recent work and create high-confidence missing reusable workflow assets."

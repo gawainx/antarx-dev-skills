@@ -1,0 +1,4 @@
+interface:
+  display_name: "SwiftUI macOS Settings Pattern"
+  short_description: "Build native SwiftUI macOS settings"
+  default_prompt: "Use $swiftui-macos-settings-window-pattern to create or refactor a SwiftUI macOS Settings window with stable layout, correct form fields, and appropriate persistence."
