@@ -2,3 +2,4 @@
 - (c1997c1) : 2026.05.16 将系统中的 ui-layout-discipline 技能纳入本仓库托管，补齐 SKILL.md 与 agents/openai.yaml，使其由 skills/ui-layout-discipline 统一追踪；同时把已存在于本地托管副本中的多个技能 agents/openai.yaml 元数据纳入版本控制，减少仓库源内容与本地安装副本之间的追踪差异。
 - (f88d3da) : 2026.05.23 精简 completion-progress-recorder 技能主文档，将默认加载内容收束为目标、渐进披露触发、主流程、硬性规则和完成校验，并把需求编号、二级章节、哈希、去重、拆分提交和推送等审计细则拆入 references/progress-audit.md，降低常规收尾场景的阅读负担，同时保留复杂场景的可追溯规则。
 - (92c388f) : 2026.05.25 将托管 skills 从一级平铺迁移为 `skills/<category>/<skill-name>` 二级分类结构，同时保持安装目录扁平同步到 `~/.codex/skills/<skill-name>`；同步改造 sync、doctor 和 skill-improvement-ax 路径解析，新增 skill-creation-closeout 用于在 skill-creator 创建技能后询问是否纳入本仓库托管，并将 AGENTS.md 改为简体中文以贴合仓库协作约定。
+- (d177a2c) : 2026.05.26 新增 workflow-review-packager 技能，用于按用户指定时间范围或默认最近 30 天复盘近期 Codex 工作、记忆和现有资产，筛选值得封装的重复 workflow；同时将 swiftui-macos-settings-window-pattern 纳入本仓库托管，并补充 SwiftUI Settings 表单字段组合规则，明确已带 label 的行使用 `TextField("", text: ..., prompt:)`，禁止用 URL/API 示例值预填持久化状态。
