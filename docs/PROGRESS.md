@@ -7,3 +7,4 @@
 - (ece7a21e) : 2026.05.28 更新 requirement-clarification 技能的图示表达要求，在执行流程中要求识别适合可视化说明的 UI 布局、页面流转、状态转移、模块关联、数据流和执行流程，并新增 Mermaid、ASCII 图和分层列表图的使用规则，确保需求澄清阶段能用图示降低复杂关系的理解成本。
 - (9b66521) : 2026.05.30 为 init-project-bootstrap 技能新增轻量 harness 初始化分支，默认保持全量文档结构，仅在用户明确提及 simple、lightweight、轻量或极简 harness 时使用 `--simple`；轻量模板以 `REQ-0001` 编号跟踪需求，并将澄清、功能设计、开发计划、验证和验收记录合并到同一需求文件，同时整理全量与轻量 AGENTS 模板的章节层级。
 - (30f0c14) : 2026.05.30 更新 init-project-bootstrap 初始化脚本，在目标目录不属于 Git 仓库时先执行 `git init`，完成 full 或 simple harness 文档创建后只提交本轮新增文档，并固定使用 `chore: initialize antarx harness docs`，避免混入目标项目已有业务改动或生成空提交。
+- (b523754) : 2026.05.30 新增 architecture-design 技能，用于在用户提及架构设计、模块设计、模块划分、职责边界、依赖方向或数据流设计时完成顶层模块设计和职责划分；技能要求先给基本方案再提问，鼓励用 Mermaid 表达模块关系，并通过收敛标准、提问预算和硬边界禁止下钻到代码实现细节、开发计划或除 `docs/ARCHITECTURE.md` 之外的文件写入。
