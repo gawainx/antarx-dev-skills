@@ -13,9 +13,11 @@ FULL_ASSETS_DIR="${SKILL_DIR}/assets"
 SIMPLE_ASSETS_DIR="${SKILL_DIR}/assets-simple"
 MODE="full"
 ASSETS_DIR="${FULL_ASSETS_DIR}"
+COMMIT_MESSAGE="chore: initialize antarx harness docs"
 
 created_count=0
 skipped_count=0
+created_paths=()
 
 usage() {
   printf 'Usage: %s [--simple]\n' "$(basename "$0")"
@@ -107,7 +109,45 @@ ensure_file_from_asset() {
   fi
 
   cp "$asset_path" "$target_path"
+  created_paths+=("$target_path")
   log_create "$target_path"
+}
+
+##
+# Ensure the current directory is inside a Git repository.
+# Inputs: none.
+# Outputs: runs git init when needed and logs the Git action.
+##
+ensure_git_repository() {
+  if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    printf 'GIT    repository exists\n'
+    return
+  fi
+
+  git init >/dev/null
+  printf 'GIT    initialized repository\n'
+}
+
+##
+# Commit files created by this initialization run.
+# Inputs: created_paths array.
+# Outputs: creates one Git commit when new files were created.
+##
+commit_created_files() {
+  if [[ ${#created_paths[@]} -eq 0 ]]; then
+    printf 'GIT    no created files to commit\n'
+    return
+  fi
+
+  git add -- "${created_paths[@]}"
+
+  if git diff --cached --quiet -- "${created_paths[@]}"; then
+    printf 'GIT    no staged initialization changes\n'
+    return
+  fi
+
+  git commit -m "$COMMIT_MESSAGE" -- "${created_paths[@]}" >/dev/null
+  printf 'GIT    committed initialization docs\n'
 }
 
 ##
@@ -155,6 +195,7 @@ init_simple() {
 }
 
 parse_args "$@"
+ensure_git_repository
 
 case "$MODE" in
   full)
@@ -164,5 +205,7 @@ case "$MODE" in
     init_simple
     ;;
 esac
+
+commit_created_files
 
 printf '\nDone. created=%d skipped=%d\n' "$created_count" "$skipped_count"
