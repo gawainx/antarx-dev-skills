@@ -1,0 +1,4 @@
+interface:
+  display_name: "Architecture Design"
+  short_description: "Design module architecture without implementation details"
+  default_prompt: "使用 $architecture-design 和我讨论架构设计，先给出顶层模块方案并收敛职责边界，只问会改变顶层架构的关键问题，严格避免代码实现细节。"
