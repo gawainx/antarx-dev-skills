@@ -1,4 +1,4 @@
-# REQ-0001: Short Title
+# REQ-NNNN: Short Title
 
 ## 状态
 

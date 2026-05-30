@@ -2,8 +2,8 @@
 
 ## 编号规则
 
-- 需求编号使用 `REQ-0001` 格式，按创建顺序递增。
-- 需求文件放在 `docs/requirements/`，文件名使用 `REQ-0001-short-title.md`。
+- 需求编号使用 `REQ-NNNN` 格式，按创建顺序递增；新需求必须使用当前最大编号加一。
+- 需求文件放在 `docs/requirements/`，文件名使用 `REQ-NNNN-short-title.md`，其中 `REQ-NNNN` 必须替换为实际递增编号。
 - 同一需求的澄清、设计、开发计划和验证记录写入同一个文件。
 
 ## 状态说明

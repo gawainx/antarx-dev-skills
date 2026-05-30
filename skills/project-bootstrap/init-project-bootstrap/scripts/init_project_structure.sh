@@ -189,9 +189,10 @@ init_simple() {
   ensure_dir "docs/requirements"
 
   ensure_file_from_asset "AGENTS.md" "AGENTS.simple.md"
-  ensure_file_from_asset "ARCHITECTURE.md"
+  ensure_file_from_asset "docs/ARCHITECTURE.md"
+  ensure_file_from_asset "docs/PROGRESS.md"
   ensure_file_from_asset "docs/requirements/index.md"
-  ensure_file_from_asset "docs/requirements/REQ-0001-template.md"
+  ensure_file_from_asset "docs/requirements/requirement-template.md"
 }
 
 parse_args "$@"

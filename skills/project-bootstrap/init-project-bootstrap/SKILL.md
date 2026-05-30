@@ -39,10 +39,11 @@ description: 当用户提及“代码仓初始化”“初始化代码仓”“�
 
 - 在当前项目根目录创建以下结构，缺失才创建，已有必须 SKIP：
   - `AGENTS.md`，从 `assets-simple/AGENTS.simple.md` 复制而来。
-  - `ARCHITECTURE.md`
+  - `docs/ARCHITECTURE.md`
+  - `docs/PROGRESS.md`
   - `docs/requirements/index.md`
-  - `docs/requirements/REQ-0001-template.md`
-- 轻量流程使用 `REQ-0001` 形式的需求编号跟踪开发活动。
+  - `docs/requirements/requirement-template.md`
+- 轻量流程使用 `REQ-NNNN` 形式的递增需求编号跟踪开发活动；创建新需求前必须检查 `docs/requirements/index.md` 和已有需求文件，使用当前最大编号加一。
 - 单个需求的需求澄清、设计文档、开发计划、验证记录和验收记录必须放在同一个需求文件中。
 - 轻量流程不创建全量流程中的 request-clarify、design-docs、exec-plans、product-specs、generated、references 等目录，除非用户另行要求。
 
