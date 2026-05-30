@@ -1,13 +1,19 @@
 ---
 name: init-project-bootstrap
-description: 当用户提及“代码仓初始化”“初始化代码仓”“初始化目录”“初始化项目结构”“初始化项目文档路径”“初始化 Codex 持续开发工作流”“初始化antarx-harness文档体系”或明确要求执行 `/init` 命令时触发。用于在当前项目目录创建 AGENTS.md、ARCHITECTURE.md 与 docs 分层目录及持续开发工作流基础文档；若目标文件或目录已存在则直接跳过，严禁覆盖已有内容，且不执行具体需求开发。
+description: 当用户提及“代码仓初始化”“初始化代码仓”“初始化目录”“初始化项目结构”“初始化项目文档路径”“初始化 Codex 持续开发工作流”“初始化 antarx-harness 文档体系”或明确要求执行 `/init` 命令时触发；若同时提及 simple、lightweight、轻量、极简、轻量 harness、初始化轻量 harness、轻量化 agent 流程等表达，则使用轻量分支。用于在当前项目目录创建缺失的 AGENTS.md、ARCHITECTURE.md 与 docs 工作流骨架；已有内容必须跳过，严禁覆盖。
 ---
 
 # Codex 持续开发工作流初始化
 
 这个技能只初始化持续开发工作流骨架，不执行具体需求开发。
 
-## 执行目标
+## 分支选择
+
+- 默认走全量初始化流程。
+- 只有用户在初始化请求中明确提及 `simple`、`lightweight`、`轻量`、`极简`、`轻量 harness`、`初始化轻量 harness`、`轻量化 agent 流程` 等表达时，才走轻量初始化流程。
+- 不要把拼写错误或无关近似词当作轻量分支触发词；分支选择必须能从用户原话中直接看出轻量意图。
+
+## 全量执行目标
 
 - 在当前项目根目录创建以下结构，缺失才创建，已有必须 SKIP：
   - `AGENTS.md`
@@ -29,13 +35,27 @@ description: 当用户提及“代码仓初始化”“初始化代码仓”“�
   - `docs/RELIABILITY.md`
   - `docs/SECURITY.md`
 
+## 轻量执行目标
+
+- 在当前项目根目录创建以下结构，缺失才创建，已有必须 SKIP：
+  - `AGENTS.md`，从 `assets-simple/AGENTS.simple.md` 复制而来。
+  - `ARCHITECTURE.md`
+  - `docs/requirements/index.md`
+  - `docs/requirements/REQ-0001-template.md`
+- 轻量流程使用 `REQ-0001` 形式的需求编号跟踪开发活动。
+- 单个需求的需求澄清、设计文档、开发计划、验证记录和验收记录必须放在同一个需求文件中。
+- 轻量流程不创建全量流程中的 request-clarify、design-docs、exec-plans、product-specs、generated、references 等目录，除非用户另行要求。
+
 ## 执行步骤
 
 1. 读取并确认当前工作目录（项目根目录）。
-2. 运行 `scripts/init_project_structure.sh` 创建目录与文件。
+2. 根据分支选择运行初始化脚本：
+   - 全量流程：运行 `scripts/init_project_structure.sh`。
+   - 轻量流程：运行 `scripts/init_project_structure.sh --simple`。
 3. 脚本内必须遵守：
    - 目录：使用 `mkdir -p`，天然幂等。
-   - 文件：从 `assets/` 中按相同相对路径复制模板。
+   - 全量文件：从 `assets/` 中按相同相对路径复制模板。
+   - 轻量文件：从 `assets-simple/` 中复制模板，其中 `AGENTS.simple.md` 必须落到目标项目的 `AGENTS.md`。
    - 文件仅在目标不存在时复制；若已存在则打印 `SKIP` 并保持原内容不变。
    - 禁止删除、重命名、覆盖现有文件。
 4. 执行后输出简要结果：
@@ -45,7 +65,8 @@ description: 当用户提及“代码仓初始化”“初始化代码仓”“�
 
 ## 资产组织
 
-- 模板文件放在 `assets/` 下，路径与目标项目内的落点保持一致。
+- 全量模板文件放在 `assets/` 下，路径与目标项目内的落点保持一致。
+- 轻量模板文件放在 `assets-simple/` 下，路径与目标项目内的落点保持一致；只有 `AGENTS.simple.md` 例外，它复制到目标项目根目录 `AGENTS.md`。
 - 例如 `assets/AGENTS.md` 复制到项目根目录 `AGENTS.md`。
 - 例如 `assets/docs/PROGRESS.md` 复制到项目内 `docs/PROGRESS.md`。
 - 调整初始化模板时优先编辑 `assets/`，不要把长模板内联进脚本或 `SKILL.md`。
