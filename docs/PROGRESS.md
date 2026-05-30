@@ -5,3 +5,4 @@
 - (d177a2c) : 2026.05.26 新增 workflow-review-packager 技能，用于按用户指定时间范围或默认最近 30 天复盘近期 Codex 工作、记忆和现有资产，筛选值得封装的重复 workflow；同时将 swiftui-macos-settings-window-pattern 纳入本仓库托管，并补充 SwiftUI Settings 表单字段组合规则，明确已带 label 的行使用 `TextField("", text: ..., prompt:)`，禁止用 URL/API 示例值预填持久化状态。
 - (2105b89) : 2026.05.28 强化 requirement-clarification 技能的澄清纪律，要求先围绕用户目标、使用场景和成功标准定义需求，再结合仓库结构判断支持与限制；复合型需求需先校准关键概念和边界，行业实践与既有实现只能作为参考，用户纠正方向后必须停止沿用被否定的拆分方式并重新组织澄清。
 - (ece7a21e) : 2026.05.28 更新 requirement-clarification 技能的图示表达要求，在执行流程中要求识别适合可视化说明的 UI 布局、页面流转、状态转移、模块关联、数据流和执行流程，并新增 Mermaid、ASCII 图和分层列表图的使用规则，确保需求澄清阶段能用图示降低复杂关系的理解成本。
+- (9b66521) : 2026.05.30 为 init-project-bootstrap 技能新增轻量 harness 初始化分支，默认保持全量文档结构，仅在用户明确提及 simple、lightweight、轻量或极简 harness 时使用 `--simple`；轻量模板以 `REQ-0001` 编号跟踪需求，并将澄清、功能设计、开发计划、验证和验收记录合并到同一需求文件，同时整理全量与轻量 AGENTS 模板的章节层级。
