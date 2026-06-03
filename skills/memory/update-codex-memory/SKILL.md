@@ -13,7 +13,8 @@ description: 判断已完成任务是否产生了长期有效知识，并更新 
 
 1. 用户明确提供的路径。
 2. shell 环境变量 `CODEX_MEMORY_DIR`。
-3. 默认路径 `/Users/yat/notes/ClawNotes/CodexMemory`。
+
+如果两者都不存在，停止并请用户先设置 `CODEX_MEMORY_DIR`，或提供正确路径。
 
 写入前必须验证所选路径存在，并且包含 `AGENTS.md`。如果不满足，停止并请用户先初始化 Codex Memory 或提供正确路径。
 

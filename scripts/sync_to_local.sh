@@ -4,6 +4,8 @@ set -euo pipefail
 DRY_RUN=0
 SYNC_AGENTS=0
 FORCE_AGENTS=0
+SKIP_SHELL_ENV=0
+CODEX_MEMORY_DIR_CONFIG="${CODEX_MEMORY_DIR:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -18,6 +20,18 @@ while [[ $# -gt 0 ]]; do
     --force-agents)
       FORCE_AGENTS=1
       shift
+      ;;
+    --skip-shell-env)
+      SKIP_SHELL_ENV=1
+      shift
+      ;;
+    --codex-memory-dir)
+      if [[ $# -lt 2 ]]; then
+        echo "--codex-memory-dir requires a path" >&2
+        exit 2
+      fi
+      CODEX_MEMORY_DIR_CONFIG="$2"
+      shift 2
       ;;
     *)
       echo "Unknown argument: $1" >&2
@@ -37,6 +51,8 @@ TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
 MANIFEST_FILE="${TARGET_SKILLS_DIR}/.antarx-managed-skills"
 BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
 SKILL_IMPROVEMENT_AX_CONFIG="${TARGET_SKILLS_DIR}/skill-improvement-ax/.skill-improvement-ax.env"
+ENV_BLOCK_BEGIN="# >>> antarx-dev-skills env >>>"
+ENV_BLOCK_END="# <<< antarx-dev-skills env <<<"
 
 log() { echo "[sync] $*"; }
 
@@ -61,6 +77,113 @@ is_blacklisted() {
 
 shell_quote() {
   printf '%q' "$1"
+}
+
+shell_export_line() {
+  local name="$1"
+  local value="$2"
+  printf 'export %s=%s\n' "$name" "$(shell_quote "$value")"
+}
+
+detect_shell_rc_file() {
+  local shell_name
+  shell_name="$(basename "${SHELL:-}")"
+  case "$shell_name" in
+    zsh)
+      printf '%s\n' "$HOME/.zshrc"
+      ;;
+    bash)
+      printf '%s\n' "$HOME/.bashrc"
+      ;;
+    fish)
+      printf '%s\n' "$HOME/.config/fish/config.fish"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+print_shell_env_commands() {
+  shell_export_line "ANTARX_DEV_SKILLS_REPO" "$REPO_ROOT"
+  shell_export_line "CODEX_SKILLS_DIR" "$TARGET_SKILLS_DIR"
+  shell_export_line "CODEX_AGENTS_FILE" "$TARGET_AGENTS_FILE"
+  if [[ -n "$CODEX_MEMORY_DIR_CONFIG" ]]; then
+    shell_export_line "CODEX_MEMORY_DIR" "$CODEX_MEMORY_DIR_CONFIG"
+  fi
+}
+
+print_fish_env_commands() {
+  printf 'set -gx ANTARX_DEV_SKILLS_REPO %s\n' "$(shell_quote "$REPO_ROOT")"
+  printf 'set -gx CODEX_SKILLS_DIR %s\n' "$(shell_quote "$TARGET_SKILLS_DIR")"
+  printf 'set -gx CODEX_AGENTS_FILE %s\n' "$(shell_quote "$TARGET_AGENTS_FILE")"
+  if [[ -n "$CODEX_MEMORY_DIR_CONFIG" ]]; then
+    printf 'set -gx CODEX_MEMORY_DIR %s\n' "$(shell_quote "$CODEX_MEMORY_DIR_CONFIG")"
+  fi
+}
+
+build_shell_env_block() {
+  local shell_name
+  shell_name="$(basename "${SHELL:-}")"
+  printf '%s\n' "$ENV_BLOCK_BEGIN"
+  if [[ "$shell_name" == "fish" ]]; then
+    print_fish_env_commands
+  else
+    print_shell_env_commands
+  fi
+  printf '%s\n' "$ENV_BLOCK_END"
+}
+
+write_shell_env_config() {
+  if [[ "$SKIP_SHELL_ENV" -eq 1 ]]; then
+    log "skip shell env config; --skip-shell-env was provided"
+    return
+  fi
+
+  local rc_file
+  if ! rc_file="$(detect_shell_rc_file)"; then
+    log "unable to detect shell rc file; copy these commands into your shell profile:"
+    print_shell_env_commands
+    if [[ -z "$CODEX_MEMORY_DIR_CONFIG" ]]; then
+      printf 'export CODEX_MEMORY_DIR=<absolute/path/to/CodexMemory>\n'
+    fi
+    return
+  fi
+
+  if [[ -n "$CODEX_MEMORY_DIR_CONFIG" ]]; then
+    if [[ ! -d "$CODEX_MEMORY_DIR_CONFIG" ]]; then
+      echo "CODEX_MEMORY_DIR does not exist: $CODEX_MEMORY_DIR_CONFIG" >&2
+      exit 1
+    fi
+    if [[ ! -f "${CODEX_MEMORY_DIR_CONFIG}/AGENTS.md" ]]; then
+      echo "CODEX_MEMORY_DIR is missing AGENTS.md: $CODEX_MEMORY_DIR_CONFIG" >&2
+      exit 1
+    fi
+  fi
+
+  log "configure shell env in $rc_file"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "[dry-run] update managed env block in '$rc_file'"
+    build_shell_env_block
+    if [[ -z "$CODEX_MEMORY_DIR_CONFIG" ]]; then
+      echo "[dry-run] CODEX_MEMORY_DIR is unset; set it before syncing if you want it written to the shell rc file."
+    fi
+    return
+  fi
+
+  mkdir -p "$(dirname "$rc_file")"
+  if [[ -f "$rc_file" ]]; then
+    awk -v begin="$ENV_BLOCK_BEGIN" -v end="$ENV_BLOCK_END" '
+      $0 == begin { skip = 1; next }
+      $0 == end { skip = 0; next }
+      skip != 1 { print }
+    ' "$rc_file" > "${rc_file}.antarx.tmp"
+    mv "${rc_file}.antarx.tmp" "$rc_file"
+  fi
+  {
+    printf '\n'
+    build_shell_env_block
+  } >> "$rc_file"
 }
 
 ##
@@ -168,6 +291,7 @@ while IFS= read -r -d '' src; do
 done < <(find_source_skills)
 
 write_skill_improvement_ax_config
+write_shell_env_config
 
 if [[ -f "$MANIFEST_FILE" ]]; then
   while IFS= read -r old; do

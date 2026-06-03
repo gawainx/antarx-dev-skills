@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 
 
@@ -106,7 +107,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--vault-path", required=True, help="Path to the Obsidian vault directory.")
     parser.add_argument(
         "--global-agents-path",
-        default="/Users/yat/.codex/AGENTS.md",
+        default=os.environ.get("CODEX_AGENTS_FILE", str(Path.home() / ".codex" / "AGENTS.md")),
         help="Path to the global Codex AGENTS.md file to update.",
     )
     parser.add_argument(

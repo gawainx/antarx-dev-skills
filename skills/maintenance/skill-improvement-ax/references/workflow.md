@@ -69,7 +69,7 @@ After editing, validate and sync:
 ./scripts/doctor.sh
 ```
 
-The sync step updates `~/.codex/skills` and rewrites the local `.skill-improvement-ax.env`.
+The sync step updates `~/.codex/skills`, rewrites the local `.skill-improvement-ax.env`, and maintains a managed shell rc block for `ANTARX_DEV_SKILLS_REPO`, `CODEX_SKILLS_DIR`, and `CODEX_AGENTS_FILE`. Pass `--codex-memory-dir <path>` when the install should also persist `CODEX_MEMORY_DIR`.
 
 ## Git And PR
 

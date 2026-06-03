@@ -14,13 +14,13 @@ Use this skill to initialize a user-specified Obsidian vault with a `CodexMemory
    - It must exist.
    - It must be a directory.
    - Prefer paths that contain `.obsidian/`, but do not require it if the user explicitly says the directory is the vault.
-3. Run the initializer script:
+3. Run the initializer script from this installed skill:
 
 ```bash
-python3 /Users/yat/.codex/skills/obsidian-codex-memory-init/scripts/init_obsidian_codex_memory.py --vault-path "<vault-path>"
+python3 <skill-dir>/scripts/init_obsidian_codex_memory.py --vault-path "<vault-path>"
 ```
 
-4. If the user provides a custom global AGENTS.md path, pass it with `--global-agents-path`.
+4. If the user provides a custom global AGENTS.md path, pass it with `--global-agents-path`; otherwise the script uses `CODEX_AGENTS_FILE` and falls back to `$HOME/.codex/AGENTS.md`.
 5. Verify the script output and, when useful, confirm with `find <vault-path>/CodexMemory -maxdepth 2 -print` and `rg -n "Obsidian Codex 记忆|CodexMemory" <global-agents-path>`.
 6. Report:
    - The created or existing memory files.
@@ -30,7 +30,7 @@ python3 /Users/yat/.codex/skills/obsidian-codex-memory-init/scripts/init_obsidia
 ## Defaults
 
 - Memory directory name: `CodexMemory`
-- Default global instruction file: `/Users/yat/.codex/AGENTS.md`
+- Default global instruction file: `CODEX_AGENTS_FILE`, falling back to `$HOME/.codex/AGENTS.md`
 - Initialization is idempotent: existing files are preserved, and the global Obsidian memory section is not duplicated.
 
 ## Safety Rules
