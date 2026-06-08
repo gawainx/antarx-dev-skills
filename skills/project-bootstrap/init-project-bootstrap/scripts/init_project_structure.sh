@@ -4,7 +4,7 @@ set -euo pipefail
 ##
 # Initialize Codex continuous development workflow structure in current working directory.
 # Inputs: optional --simple flag (uses current working directory; reads templates from sibling assets/).
-# Outputs: creates missing directories/files, prints CREATE/SKIP logs only.
+# Outputs: creates missing directories/files, prints CREATE/SKIP/DIFF logs only.
 ##
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -17,6 +17,7 @@ COMMIT_MESSAGE="chore: initialize antarx harness docs"
 
 created_count=0
 skipped_count=0
+diff_count=0
 created_paths=()
 
 usage() {
@@ -70,6 +71,16 @@ log_skip() {
 }
 
 ##
+# Record a path whose existing content differs from the selected template.
+# Inputs: path printed to stdout.
+# Outputs: increments diff_count.
+##
+log_diff() {
+  printf 'DIFF   %s\n' "$1"
+  diff_count=$((diff_count + 1))
+}
+
+##
 # Ensure a directory exists without changing existing content.
 # Inputs: target directory path.
 # Outputs: creates the directory if missing and logs CREATE/SKIP.
@@ -111,6 +122,35 @@ ensure_file_from_asset() {
   cp "$asset_path" "$target_path"
   created_paths+=("$target_path")
   log_create "$target_path"
+}
+
+##
+# Ensure AGENTS.md exists and report template differences when it already exists.
+# Inputs: target path, optional source path relative to ASSETS_DIR.
+# Outputs: creates the file when missing, otherwise logs SKIP or DIFF without editing it.
+##
+ensure_agents_from_asset() {
+  local target_path="$1"
+  local source_path="${2:-$target_path}"
+  local asset_path="${ASSETS_DIR}/${source_path}"
+
+  if [[ ! -f "$asset_path" ]]; then
+    printf 'Missing asset template: %s\n' "$asset_path" >&2
+    exit 1
+  fi
+
+  if [[ ! -e "$target_path" ]]; then
+    cp "$asset_path" "$target_path"
+    created_paths+=("$target_path")
+    log_create "$target_path"
+    return
+  fi
+
+  if cmp -s "$asset_path" "$target_path"; then
+    log_skip "$target_path"
+  else
+    log_diff "$target_path"
+  fi
 }
 
 ##
@@ -164,7 +204,7 @@ init_full() {
   ensure_dir "docs/product-specs"
   ensure_dir "docs/references"
 
-  ensure_file_from_asset "AGENTS.md"
+  ensure_agents_from_asset "AGENTS.md"
   ensure_file_from_asset "ARCHITECTURE.md"
   ensure_file_from_asset "docs/request-clarify/index.md"
   ensure_file_from_asset "docs/design-docs/index.md"
@@ -188,7 +228,7 @@ init_full() {
 init_simple() {
   ensure_dir "docs/requirements"
 
-  ensure_file_from_asset "AGENTS.md" "AGENTS.simple.md"
+  ensure_agents_from_asset "AGENTS.md" "AGENTS.simple.md"
   ensure_file_from_asset "docs/ARCHITECTURE.md"
   ensure_file_from_asset "docs/PROGRESS.md"
   ensure_file_from_asset "docs/requirements/index.md"
@@ -209,4 +249,4 @@ esac
 
 commit_created_files
 
-printf '\nDone. created=%d skipped=%d\n' "$created_count" "$skipped_count"
+printf '\nDone. created=%d diff=%d skipped=%d\n' "$created_count" "$diff_count" "$skipped_count"
