@@ -1,6 +1,6 @@
-# Grouped Skills Flat Install 实现计划
+# Grouped Skills Flat Install
 
-> **给 Claude：** 必需工作流：使用 superpowers:executing-plans 逐任务实现此计划。
+> **给 Codex：** 必须逐任务实现此计划。
 
 **目标：** 将仓库内 skills 整理为二级分类目录，同时保持本地 Codex 安装目录扁平，避免改变 skill 名称和触发方式。
 
@@ -8,17 +8,17 @@
 
 **架构：** 源码目录采用 `skills/<category>/<skill-name>/SKILL.md`。同步脚本递归发现包含 `SKILL.md` 的 skill 目录，并复制到 `~/.codex/skills/<skill-name>/`。校验脚本使用同一发现模型，防止同名 skill 覆盖。
 
-**技术栈：** Bash, rsync/cp, diff, Codex Agent Skills 文件结构。
+**技术栈：** Bash、`rsync`、`cp`、`diff`、Codex Agent Skills 文件结构。
 
 **范围 / 非范围：** 本次只迁移仓库组织和同步/校验脚本，不改 skill frontmatter 的 `name`，不改 Codex 全局 AGENTS 同步策略，不引入新的打包格式。
 
 ---
 
-## Phase #1: 分组迁移与扁平安装兼容
+## 阶段 #1：分组迁移与扁平安装兼容
 
-### Task #1: 改造同步与校验脚本
+### 任务 #1：改造同步与校验脚本
 
-**状态：** Finished
+**状态：** 已完成
 
 **文件：**
 - 修改：`scripts/sync_to_local.sh`
@@ -29,12 +29,12 @@
 
 - 功能：递归发现源码 skill，安装时保持 `~/.codex/skills/<skill-name>/` 扁平结构。
 - 实现说明：以包含 `SKILL.md` 的目录作为 skill 源目录，使用目录 basename 作为安装名；发现同名源码 skill 时失败，避免覆盖。
-- 预期验证结果：dry-run 能列出所有二级目录中的 skill，doctor 能比较源码目录与扁平安装目录。
+- 预期验证结果：`dry-run` 能列出所有二级目录中的 skill，`doctor` 能比较源码目录与扁平安装目录。
 - 完成时间：2026-05-25
 
-### Task #2: 移动 skills 到二级分组
+### 任务 #2：移动 skills 到二级分组
 
-**状态：** Finished
+**状态：** 已完成
 
 **文件：**
 - 修改：`skills/**`
@@ -45,9 +45,9 @@
 - 预期验证结果：所有 skill 均位于 `skills/<category>/<skill-name>/SKILL.md`。
 - 完成时间：2026-05-25
 
-### Task #3: 更新仓库文档和内部引用
+### 任务 #3：更新仓库文档和内部引用
 
-**状态：** Finished
+**状态：** 已完成
 
 **文件：**
 - 修改：`README.md`
