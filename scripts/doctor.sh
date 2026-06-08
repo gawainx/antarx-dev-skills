@@ -43,6 +43,20 @@ is_blacklisted() {
 }
 
 ##
+# Print the absolute target path for a symlink.
+##
+resolve_symlink_target() {
+  local link_path="$1"
+  local target
+  target="$(readlink "$link_path")"
+  (
+    cd "$(dirname "$link_path")"
+    cd "$(dirname "$target")"
+    printf '%s/%s\n' "$(pwd -P)" "$(basename "$target")"
+  )
+}
+
+##
 # Print the install skill name for a source skill directory.
 ##
 skill_name_from_dir() {
@@ -137,10 +151,28 @@ while IFS= read -r -d '' src; do
   fi
 
   rel_src="${src#${REPO_ROOT}/}"
-  if diff -qr -x '.managed-by-antarx-dev-skills' -x '.skill-improvement-ax.env' "$src" "$dst" >/dev/null; then
-    pass "skill in sync: $name ($rel_src)"
+  if [[ ! -L "$dst" ]]; then
+    fail "target skill is not a symlink: $name ($dst)"
+    continue
+  fi
+
+  resolved_dst="$(resolve_symlink_target "$dst" 2>/dev/null || true)"
+  if [[ "$resolved_dst" != "$src" ]]; then
+    fail "skill symlink target differs: $name ($rel_src)"
+    echo "  expected: $src"
+    echo "  actual:   ${resolved_dst:-<unresolved>}"
+    continue
+  fi
+
+  if [[ ! -f "${resolved_dst}/SKILL.md" ]]; then
+    fail "skill symlink target missing SKILL.md: $name ($resolved_dst)"
+    continue
+  fi
+
+  if [[ -f "$dst/.managed-by-antarx-dev-skills" ]]; then
+    fail "legacy managed marker exists in source-linked skill: $name"
   else
-    fail "skill differs: $name ($rel_src)"
+    pass "skill symlink valid: $name ($rel_src)"
   fi
 done < <(find_source_skills)
 

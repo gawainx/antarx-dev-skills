@@ -59,7 +59,7 @@ description: 当本轮使用 skill-creator 创建或更新 skill 后使用；询
 
 1. 解析 `antarx-dev-skills` 仓库路径：
    - 优先使用当前工作目录。
-   - 否则读取 `~/.codex/skills/skill-improvement-ax/.skill-improvement-ax.env` 中的 `ANTARX_DEV_SKILLS_REPO`。
+   - 否则运行 `~/.codex/skills/skill-improvement-ax/scripts/resolve_source_repo.sh`。
    - 如果无法解析，停止并请用户提供仓库路径。
 
 2. 检查：
@@ -70,7 +70,7 @@ description: 当本轮使用 skill-creator 创建或更新 skill 后使用；询
 
 3. 导入：
    - 运行 `scripts/import_installed_skill.sh <skill-name> <category>`。
-   - 脚本只复制安装目录中的 skill 到仓库源码目录。
+   - 脚本只把尚未托管的已安装 skill 导入仓库源码目录。
    - 脚本不删除安装目录中的原 skill。
 
 4. 验证：

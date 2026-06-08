@@ -8,13 +8,14 @@
 - 默认受管内容仅包括：
   - `skills/`: 表示所有执行的技能
 - `AGENTS.md.root` 只是全局代理行为模板，默认不自动同步到 Codex 系统级 `AGENTS.md`。
-- 通过 `scripts/sync_to_local.sh` 将受管内容同步到本机。
-- 通过 `scripts/doctor.sh` 检查本机与仓库是否一致。
+- 通过 `scripts/sync_to_local.sh` 将受管 skills 链接安装到本机。
+- 通过 `scripts/doctor.sh` 检查本机安装链接是否指向仓库源码。
 
 ## Why
 
 - 保证跨设备获得一致的技能集合。
 - 避免手工复制导致的遗漏、漂移和不可追踪修改。
+- 让本地安装目录直接指向仓库源码，减少副本一致性问题。
 - 避免误覆盖 Codex 系统级 AGENTS 文件。
 
 ## How
@@ -22,7 +23,7 @@
 ### 1. 开发流程
 
 - 所有新增/编辑 skill 的动作，都在仓库内完成。
-- 不直接手工修改 `~/.codex/skills` 中受管技能。
+- 不把 `~/.codex/skills` 当成受管技能源码位置；受管安装项应是指向仓库源码的符号链接。
 - 修改后执行：
   1. `./scripts/sync_to_local.sh --dry-run`
   2. `./scripts/sync_to_local.sh`
@@ -55,5 +56,5 @@
 ### 5. 验证清单
 
 - `./scripts/doctor.sh` 返回 0
-- `~/.codex/skills` 中受管技能与仓库一致
+- `~/.codex/skills` 中受管技能链接指向仓库源码
 - 默认不要求 `AGENTS.md` 与仓库模板一致；如需检查 AGENTS 模板同步状态，显式运行 `./scripts/doctor.sh --check-agents`

@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ##
-# Compare a managed skill in the source repository with the installed local copy.
+# Verify that a managed skill's installed entry links to the source repository.
 # Inputs: skill name as $1.
-# Outputs: diff summary or an in-sync message.
+# Outputs: linked status or mismatch details.
 ##
 
 if [[ $# -ne 1 ]]; then
@@ -18,6 +18,17 @@ LOCAL_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 SOURCE_SKILL="$("${SCRIPT_DIR}/find_source_skill.sh" "$SKILL_NAME")"
 LOCAL_SKILL="${LOCAL_SKILLS_DIR}/${SKILL_NAME}"
 
+resolve_symlink_target() {
+  local link_path="$1"
+  local target
+  target="$(readlink "$link_path")"
+  (
+    cd "$(dirname "$link_path")"
+    cd "$(dirname "$target")"
+    printf '%s/%s\n' "$(pwd -P)" "$(basename "$target")"
+  )
+}
+
 if [[ ! -d "$SOURCE_SKILL" ]]; then
   printf 'Source skill missing: %s\n' "$SOURCE_SKILL" >&2
   exit 3
@@ -28,16 +39,18 @@ if [[ ! -d "$LOCAL_SKILL" ]]; then
   exit 3
 fi
 
-if diff -qr \
-  -x '.managed-by-antarx-dev-skills' \
-  -x '.skill-improvement-ax.env' \
-  "$SOURCE_SKILL" "$LOCAL_SKILL" >/dev/null; then
-  printf 'IN_SYNC %s\n' "$SKILL_NAME"
-else
-  printf 'DIFF %s\n' "$SKILL_NAME"
-  diff -qr \
-    -x '.managed-by-antarx-dev-skills' \
-    -x '.skill-improvement-ax.env' \
-    "$SOURCE_SKILL" "$LOCAL_SKILL"
+if [[ ! -L "$LOCAL_SKILL" ]]; then
+  printf 'NOT_LINKED %s\n' "$SKILL_NAME" >&2
+  printf 'Installed entry is not a symlink: %s\n' "$LOCAL_SKILL" >&2
   exit 1
 fi
+
+RESOLVED_LOCAL="$(resolve_symlink_target "$LOCAL_SKILL")"
+if [[ "$RESOLVED_LOCAL" != "$SOURCE_SKILL" ]]; then
+  printf 'LINK_MISMATCH %s\n' "$SKILL_NAME" >&2
+  printf '  expected: %s\n' "$SOURCE_SKILL" >&2
+  printf '  actual:   %s\n' "$RESOLVED_LOCAL" >&2
+  exit 1
+fi
+
+printf 'LINKED %s %s\n' "$SKILL_NAME" "$SOURCE_SKILL"

@@ -28,7 +28,7 @@ description: 在创建新技能、修改已有技能或发布前验证技能有�
 - 可用机械校验替代的人肉规范。
 
 ## 目录约定
-- `skills/<category>/<skill-name>/SKILL.md` 必需；安装后仍会同步到 `~/.codex/skills/<skill-name>/`。
+- `skills/<category>/<skill-name>/SKILL.md` 必需；安装后 `~/.codex/skills/<skill-name>/` 应是指向该源码目录的符号链接。
 - 仅在必要时增加辅助文件。
 - 重资源（长参考、脚本、模板）拆分到独立文件。
 

@@ -4,7 +4,7 @@ set -euo pipefail
 ##
 # Import one installed skill into the grouped antarx-dev-skills source tree.
 # Inputs: skill name as $1 and category as $2.
-# Outputs: copied source path on success.
+# Outputs: imported source path on success.
 ##
 
 if [[ $# -ne 2 ]]; then
@@ -33,7 +33,7 @@ is_blacklisted() {
 }
 
 ##
-# Resolve the antarx-dev-skills repository from cwd, env, or installed config.
+# Resolve the antarx-dev-skills repository from cwd, env, or installed skill link.
 ##
 resolve_repo() {
   if [[ -f "scripts/sync_to_local.sh" && -d "skills" ]]; then
@@ -46,14 +46,10 @@ resolve_repo() {
     return
   fi
 
-  local config="${LOCAL_SKILLS_DIR}/skill-improvement-ax/.skill-improvement-ax.env"
-  if [[ -f "$config" ]]; then
-    # shellcheck disable=SC1090
-    source "$config"
-    if [[ -n "${ANTARX_DEV_SKILLS_REPO:-}" ]]; then
-      printf '%s\n' "$ANTARX_DEV_SKILLS_REPO"
-      return
-    fi
+  local resolver="${LOCAL_SKILLS_DIR}/skill-improvement-ax/scripts/resolve_source_repo.sh"
+  if [[ -x "$resolver" ]]; then
+    "$resolver"
+    return
   fi
 
   printf 'Unable to resolve antarx-dev-skills repo path\n' >&2
@@ -111,11 +107,10 @@ mkdir -p "$(dirname "$TARGET_SKILL")"
 if command -v rsync >/dev/null 2>&1; then
   rsync -a \
     --exclude '.managed-by-antarx-dev-skills' \
-    --exclude '.skill-improvement-ax.env' \
     "$SOURCE_SKILL/" "$TARGET_SKILL/"
 else
   cp -R "$SOURCE_SKILL" "$TARGET_SKILL"
-  rm -f "${TARGET_SKILL}/.managed-by-antarx-dev-skills" "${TARGET_SKILL}/.skill-improvement-ax.env"
+  rm -f "${TARGET_SKILL}/.managed-by-antarx-dev-skills"
 fi
 
 printf '%s\n' "$TARGET_SKILL"

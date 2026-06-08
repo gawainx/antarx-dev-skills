@@ -50,7 +50,6 @@ TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
 
 MANIFEST_FILE="${TARGET_SKILLS_DIR}/.antarx-managed-skills"
 BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
-SKILL_IMPROVEMENT_AX_CONFIG="${TARGET_SKILLS_DIR}/skill-improvement-ax/.skill-improvement-ax.env"
 ENV_BLOCK_BEGIN="# >>> antarx-dev-skills env >>>"
 ENV_BLOCK_END="# <<< antarx-dev-skills env <<<"
 
@@ -224,21 +223,58 @@ validate_source_skills() {
   done < <(find_source_skills)
 }
 
-write_skill_improvement_ax_config() {
-  local target_skill_dir="${TARGET_SKILLS_DIR}/skill-improvement-ax"
-  if [[ ! -d "$target_skill_dir" && "$DRY_RUN" -ne 1 ]]; then
-    return
+manifest_contains() {
+  local name="$1"
+  [[ -f "$MANIFEST_FILE" ]] || return 1
+  grep -Fxq "$name" "$MANIFEST_FILE"
+}
+
+is_managed_install_entry() {
+  local name="$1"
+  local dst="$2"
+  if manifest_contains "$name"; then
+    return 0
+  fi
+  [[ ! -L "$dst" && -f "${dst}/.managed-by-antarx-dev-skills" ]]
+}
+
+##
+# Install one managed skill as a symlink to its source directory.
+##
+install_skill_link() {
+  local src="$1"
+  local name="$2"
+  local dst="$3"
+  local rel_src="${src#${REPO_ROOT}/}"
+  local resolved_dst
+
+  log "link skill: $name from $rel_src"
+
+  if [[ -L "$dst" ]]; then
+    resolved_dst="$(cd "$(dirname "$dst")" && cd "$(dirname "$(readlink "$dst")")" 2>/dev/null && printf '%s/%s\n' "$(pwd -P)" "$(basename "$(readlink "$dst")")")" || true
+    if [[ "$resolved_dst" == "$src" ]]; then
+      if [[ "$DRY_RUN" -eq 1 ]]; then
+        echo "[dry-run] symlink already correct: '$dst' -> '$src'"
+      fi
+      return
+    fi
+
+    if is_managed_install_entry "$name" "$dst"; then
+      run_cmd rm -f "$dst"
+    else
+      echo "Refusing to replace unmanaged symlink: $dst" >&2
+      exit 1
+    fi
+  elif [[ -e "$dst" ]]; then
+    if is_managed_install_entry "$name" "$dst"; then
+      run_cmd rm -rf "$dst"
+    else
+      echo "Refusing to replace unmanaged install entry: $dst" >&2
+      exit 1
+    fi
   fi
 
-  log "write skill-improvement-ax source repo config"
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    echo "[dry-run] write '$SKILL_IMPROVEMENT_AX_CONFIG'"
-  else
-    {
-      printf '# Local machine config written by antarx-dev-skills/scripts/sync_to_local.sh\n'
-      printf 'ANTARX_DEV_SKILLS_REPO=%s\n' "$(shell_quote "$REPO_ROOT")"
-    } > "$SKILL_IMPROVEMENT_AX_CONFIG"
-  fi
+  run_cmd ln -s "$src" "$dst"
 }
 
 if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
@@ -271,26 +307,9 @@ while IFS= read -r -d '' src; do
   MANAGED_NOW+=("$name")
   dst="${TARGET_SKILLS_DIR}/${name}"
   rel_src="${src#${REPO_ROOT}/}"
-  log "sync skill: $name from $rel_src"
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    if command -v rsync >/dev/null 2>&1; then
-      echo "[dry-run] rsync -a --delete '$src/' '$dst/'"
-    else
-      echo "[dry-run] replace '$dst' with copy from '$src'"
-    fi
-  else
-    if command -v rsync >/dev/null 2>&1; then
-      mkdir -p "$dst"
-      rsync -a --delete "$src/" "$dst/"
-    else
-      rm -rf "$dst"
-      cp -R "$src" "$dst"
-    fi
-    printf "managed-by=antarx-dev-skills\n" > "${dst}/.managed-by-antarx-dev-skills"
-  fi
+  install_skill_link "$src" "$name" "$dst"
 done < <(find_source_skills)
 
-write_skill_improvement_ax_config
 write_shell_env_config
 
 if [[ -f "$MANIFEST_FILE" ]]; then
@@ -305,7 +324,7 @@ if [[ -f "$MANIFEST_FILE" ]]; then
     done
     if [[ "$keep" -eq 0 ]]; then
       stale_path="${TARGET_SKILLS_DIR}/${old}"
-      if [[ -e "$stale_path" ]]; then
+      if [[ -e "$stale_path" || -L "$stale_path" ]]; then
         log "remove stale managed skill: $old"
         run_cmd rm -rf "$stale_path"
       fi

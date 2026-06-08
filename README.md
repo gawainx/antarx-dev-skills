@@ -11,7 +11,7 @@
 ## 目录结构
 
 - `.codex/`：Codex 安装与接入说明
-- `skills/`：技能定义（核心），源码按二级分类目录整理，安装后仍扁平化到 Codex skills 目录
+- `skills/`：技能定义（核心），源码按二级分类目录整理，安装后通过符号链接扁平化到 Codex skills 目录
 - `scripts/`：本地同步与校验脚本
 - `AGENTS.md.root`：全局代理行为模板（默认不自动同步）
 - `docs/`：设计文档与计划
@@ -34,19 +34,19 @@ git clone <your-repo-url> ~/code/vibeProjects/antarx-dev-skills
 cd ~/code/vibeProjects/antarx-dev-skills
 ```
 
-### 2. 同步到本机 Codex
+### 2. 安装到本机 Codex
 顺序执行如下脚本：
 
 ```bash
 # 预览所有技能
 ./scripts/sync_to_local.sh --dry-run
-# 执行同步动作
+# 执行链接安装动作
 ./scripts/sync_to_local.sh
 ```
 
 说明：
-- 默认递归发现 `skills/**/SKILL.md`，并同步到 `~/.codex/skills/<skill-name>`
-- 源码目录可以按二级分类整理；本地安装目录保持扁平，便于 Codex 发现和触发
+- 默认递归发现 `skills/**/SKILL.md`，并在 `~/.codex/skills/<skill-name>` 创建指向源码 skill 目录的符号链接
+- 源码目录可以按二级分类整理；本地安装目录通过链接保持扁平，便于 Codex 发现和触发
 - 默认不同步 `AGENTS.md.root`，避免覆盖 Codex 系统级 `AGENTS.md`
 - 可通过环境变量覆盖目标路径：
 

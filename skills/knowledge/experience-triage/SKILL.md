@@ -58,7 +58,7 @@ description: 用于在完成真实任务后，判断经验、坑、约束或流�
 例子：
 ```markdown
 ## 验证步骤
-运行 `scripts/compare_skill_copies.sh <skill-name>` 比较仓库版本和本地安装版本。若存在差异，停止并询问哪一份是权威来源。
+运行 `scripts/compare_skill_copies.sh <skill-name>` 校验本地安装项是否链接到仓库源码。若链接缺失或目标不一致，先修复安装链接，再继续修改源码。
 ```
 
 反例：
@@ -81,7 +81,7 @@ description: 用于在完成真实任务后，判断经验、坑、约束或流�
 例子：
 ```markdown
 ## Skills 仓库约定
-只在 `skills/<category>/<skill-name>/SKILL.md` 中维护可复用技能正文；不要手动修改 `~/.codex/skills` 下的托管副本。
+只在 `skills/<category>/<skill-name>/SKILL.md` 中维护可复用技能正文；`~/.codex/skills` 下的受管安装项应是指向仓库源码的符号链接。
 ```
 
 反例：
