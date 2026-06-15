@@ -32,4 +32,4 @@
 1. 不要把 `~/.codex/skills` 当成源码编辑位置。
 2. 受管 skill 的安装项是指向本仓库 `skills/<category>/<skill-name>/` 的符号链接；
 3. 修改 skill 时，只改本仓库源码，然后按顺序运行 dry-run sync、真实 sync 和 doctor。源码树按分类分组，但安装目录有意保持扁平：`~/.codex/skills/<skill-name>/`。
-4. 除非用户明确要求，并且目标文件已经审阅或备份，否则不要把 `AGENTS.md.root` 同步到 Codex 全局 AGENTS 文件。禁止把黑名单 skills 加入托管内容：`skill-creator`、`skill-installer` 和 `swiftui-macos-llm-chat-module`。
+4. 除非用户明确要求，并且目标文件已经审阅或备份，否则不要把 `AGENTS.md.root` 同步到 Codex 全局 AGENTS 文件。
