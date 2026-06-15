@@ -1,4 +1,4 @@
 interface:
-  display_name: "滴答清单任务创建器"
+  display_name: "Dida Task Creator"
   short_description: "基于 Codex 上下文创建滴答清单任务"
   default_prompt: "使用 $dida-task-creator 为当前项目创建一条滴答清单任务。"

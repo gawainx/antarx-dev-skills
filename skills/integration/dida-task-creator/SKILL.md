@@ -3,10 +3,6 @@ name: dida-task-creator
 description: 使用本地 dida CLI 创建滴答清单任务。适用于用户提示词同时提到“滴答清单”和“创建任务”，或明确要求 Codex 基于当前项目和对话上下文创建滴答清单任务。
 ---
 
-# 滴答清单任务创建器
-
-## 概览
-
 使用本地 `dida` 命令，在匹配当前代码项目的滴答清单项目中创建一条任务。先从仓库上下文推断滴答清单项目名；如果对应项目不存在就创建；再创建包含 `title`、`desc` 和 `tags` 的任务。
 
 ## 工作流
@@ -20,38 +16,30 @@ description: 使用本地 dida CLI 创建滴答清单任务。适用于用户提
    - 按当前项目实际情况检查当前文件夹、仓库根目录、本地说明文件和源码元数据。
    - 可参考的信号包括 `AGENTS.md`、README、`package.json`、`pyproject.toml`、`Cargo.toml`、`Package.swift`、Xcode project/workspace 名称、git 根目录名和当前目录名。
    - 优先使用仓库文件中明确声明的项目名或软件包名，不要优先使用泛化的父目录名。
-   - 不要写死单一语言、单一 manifest 文件或僵硬的提取函数；根据当前仓库选择最可靠的信号。
+   - 根据当前仓库选择最可靠的信号。
    - 保持项目名对人类可读，因为没有匹配项目时会用它创建滴答清单项目。
 
 3. 查找或创建滴答清单项目。
    - 运行 `dida project list --json`。
    - 使用上一步推断出的项目名匹配滴答清单项目。
    - 先做精确名称匹配；如果失败，再做归一化匹配，忽略大小写以及空格、短横线、下划线等常见分隔符差异。
-   - 如果没有匹配项目，使用下面的命令创建：
-
-```bash
-dida project create --name "<projectName>" --view-mode list --kind TASK --json
-```
+   - 如果没有匹配项目，使用下面的命令创建： `dida project create --name "<projectName>" --view-mode list --kind TASK --json`
 
 4. 组织任务字段。
    - `title`：简短、可执行，并且足够具体，能独立出现在任务列表里。
-   - `desc`：先写简短自然语言摘要，再附加必要上下文，例如当前路径、相关文件、用户意图或关键对话事实。不要粘贴完整对话，也不要把滴答清单当成长文档存储。
-   - `tags`：始终包含 `codex`；追加归一化后的项目标签；当请求中的任务类型清晰时，再追加任务类型标签，例如 `bug`、`docs`、`feature`、`refactor`、`test`、`chore` 或其他简短领域标签。
+   - `desc`：先写简短自然语言摘要，再附加必要上下文，例如当前路径、相关文件、用户意图或关键对话事实。不要粘贴完整对话，也不要把滴答清单当成长文档存储。本字段必须填写，不允许为空。
+   - `tags`：始终包含 `codex`；追加归一化后的项目标签；当请求中的任务类型清晰时，再追加任务类型标签，例如 `bug`、`docs`、`feature`、`refactor`、`test`、`chore` 或模块名，但是不允许把项目名等重复作为标签。
 
 5. 创建任务。
    - 使用已匹配或刚创建的项目 id。
    - 用英文逗号分隔标签。
-   - 优先使用 `--json`，便于验证创建结果。
-
-```bash
-dida task create --title "<title>" --project "<projectId>" --desc "<desc>" --tags "codex,<projectTag>,<typeTag>" --json
-```
+   - 优先使用 `--json`，便于验证创建结果：`dida task create --title "<title>" --project "<projectId>" --desc "<desc>" --tags "codex,<projectTag>,<typeTag>" --json`
 
 ## 字段规则
 
 - `title` 要比描述更短，避免 `Update` 或 `Fix issue` 这类模糊标题。
-- `desc` 保持简短。只有当上下文能帮助用户记住任务原因或继续位置时，才写入上下文。
-- 标签尽量归一化为简短小写标签。遇到 scoped package 或嵌套名称时，选择最容易识别的项目标签。
+- `desc` 保持简短。必须提供上下文能帮助用户记住任务原因或继续位置。
+- 标签尽量归一化为简短小写标签。遇到 scoped package 或嵌套名称时，选择最容易识别的项目标签；不要把项目名重复作为标签。
 - 如果任务类型不明确，不要强行编造类型标签；`codex` 和项目标签已经足够。
 
 ## 安全边界
