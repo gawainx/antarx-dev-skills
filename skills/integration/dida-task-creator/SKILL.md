@@ -1,62 +1,62 @@
 ---
 name: dida-task-creator
-description: Create Dida/TickTick tasks with the local dida CLI. Use when the user prompt simultaneously mentions "滴答清单" and "创建任务", or explicitly asks Codex to create a Dida task from the current project and conversation context.
+description: 使用本地 dida CLI 创建滴答清单任务。适用于用户提示词同时提到“滴答清单”和“创建任务”，或明确要求 Codex 基于当前项目和对话上下文创建滴答清单任务。
 ---
 
-# Dida Task Creator
+# 滴答清单任务创建器
 
-## Overview
+## 概览
 
-Use the local `dida` command to create one task in the Dida project that matches the current code project. Infer the Dida project name from the repository context, create the Dida project when missing, then create a task with `title`, `desc`, and `tags`.
+使用本地 `dida` 命令，在匹配当前代码项目的滴答清单项目中创建一条任务。先从仓库上下文推断滴答清单项目名；如果对应项目不存在就创建；再创建包含 `title`、`desc` 和 `tags` 的任务。
 
-## Workflow
+## 工作流
 
-1. Confirm the request is in scope.
-   - Proceed only when the prompt mentions both `滴答清单` and `创建任务`, or the user explicitly invokes this skill.
-   - Create one task unless the user explicitly asks for multiple tasks.
-   - Assume `dida` is installed and authenticated. If a `dida` command fails because authentication is missing, stop and report the login issue.
+1. 确认请求在范围内。
+   - 仅当用户提示词同时提到 `滴答清单` 和 `创建任务`，或用户明确调用本技能时继续。
+   - 默认只创建一条任务，除非用户明确要求创建多条任务。
+   - 默认 `dida` 已安装且已登录；如果 `dida` 命令因为认证缺失失败，停止并报告登录问题。
 
-2. Infer the code project name dynamically.
-   - Inspect the current folder, repository root, local instructions, and source metadata as appropriate for the project.
-   - Useful signals include `AGENTS.md`, README files, `package.json`, `pyproject.toml`, `Cargo.toml`, `Package.swift`, Xcode project/workspace names, git root name, and the current directory name.
-   - Prefer an explicit project or package name from repository files over a generic parent directory.
-   - Do not hard-code a single language, manifest file, or rigid extraction function; choose the best signal for the current repository.
-   - Keep the chosen project name human-readable because it will be used as the Dida project name when a project must be created.
+2. 动态推断代码项目名。
+   - 按当前项目实际情况检查当前文件夹、仓库根目录、本地说明文件和源码元数据。
+   - 可参考的信号包括 `AGENTS.md`、README、`package.json`、`pyproject.toml`、`Cargo.toml`、`Package.swift`、Xcode project/workspace 名称、git 根目录名和当前目录名。
+   - 优先使用仓库文件中明确声明的项目名或软件包名，不要优先使用泛化的父目录名。
+   - 不要写死单一语言、单一 manifest 文件或僵硬的提取函数；根据当前仓库选择最可靠的信号。
+   - 保持项目名对人类可读，因为没有匹配项目时会用它创建滴答清单项目。
 
-3. Find or create the Dida project.
-   - Run `dida project list --json`.
-   - Match the Dida project using the inferred project name.
-   - First try exact name matching. If that fails, try normalized matching that ignores case and common separators such as spaces, hyphens, and underscores.
-   - If no project matches, create one with:
+3. 查找或创建滴答清单项目。
+   - 运行 `dida project list --json`。
+   - 使用上一步推断出的项目名匹配滴答清单项目。
+   - 先做精确名称匹配；如果失败，再做归一化匹配，忽略大小写以及空格、短横线、下划线等常见分隔符差异。
+   - 如果没有匹配项目，使用下面的命令创建：
 
 ```bash
 dida project create --name "<projectName>" --view-mode list --kind TASK --json
 ```
 
-4. Compose task fields.
-   - `title`: concise, actionable, and specific enough to stand alone in a task list.
-   - `desc`: write a short natural-language summary, then append only necessary context such as current path, relevant files, user intent, or key conversation facts. Do not paste the full conversation or turn Dida into a long-form document store.
-   - `tags`: always include `codex`; add a normalized project tag; add a task-type tag when it is clear from the request, such as `bug`, `docs`, `feature`, `refactor`, `test`, `chore`, or another concise domain tag.
+4. 组织任务字段。
+   - `title`：简短、可执行，并且足够具体，能独立出现在任务列表里。
+   - `desc`：先写简短自然语言摘要，再附加必要上下文，例如当前路径、相关文件、用户意图或关键对话事实。不要粘贴完整对话，也不要把滴答清单当成长文档存储。
+   - `tags`：始终包含 `codex`；追加归一化后的项目标签；当请求中的任务类型清晰时，再追加任务类型标签，例如 `bug`、`docs`、`feature`、`refactor`、`test`、`chore` 或其他简短领域标签。
 
-5. Create the task.
-   - Use the matched or newly created project id.
-   - Pass tags as a comma-separated list.
-   - Prefer `--json` so the result can be verified.
+5. 创建任务。
+   - 使用已匹配或刚创建的项目 id。
+   - 用英文逗号分隔标签。
+   - 优先使用 `--json`，便于验证创建结果。
 
 ```bash
 dida task create --title "<title>" --project "<projectId>" --desc "<desc>" --tags "codex,<projectTag>,<typeTag>" --json
 ```
 
-## Field Guidelines
+## 字段规则
 
-- Keep `title` shorter than the description and avoid vague titles such as `Update` or `Fix issue`.
-- Keep `desc` brief. Include context only when it helps the user remember why the task exists or where to continue.
-- Normalize tags to short lowercase labels when practical. For scoped packages or nested names, choose the most recognizable project label.
-- If the task type is ambiguous, omit the type tag instead of inventing one; `codex` and the project tag are enough.
+- `title` 要比描述更短，避免 `Update` 或 `Fix issue` 这类模糊标题。
+- `desc` 保持简短。只有当上下文能帮助用户记住任务原因或继续位置时，才写入上下文。
+- 标签尽量归一化为简短小写标签。遇到 scoped package 或嵌套名称时，选择最容易识别的项目标签。
+- 如果任务类型不明确，不要强行编造类型标签；`codex` 和项目标签已经足够。
 
-## Safety
+## 安全边界
 
-- Do not create reminders, due dates, priorities, repeats, parent tasks, or multiple tasks unless the user explicitly asks.
-- Do not modify, delete, complete, or move existing Dida tasks.
-- Do not expose tokens or account details in task descriptions.
-- Report the created task id and project name after successful creation.
+- 除非用户明确要求，不创建提醒、截止日期、优先级、重复规则、父子任务或多条任务。
+- 不修改、删除、完成或移动已有滴答清单任务。
+- 不在任务描述中暴露 token 或账号细节。
+- 成功创建后，报告创建出的任务 id 和项目名。
