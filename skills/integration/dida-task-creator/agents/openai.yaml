@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dida Task Creator"
+  short_description: "Create Dida tasks from Codex context"
+  default_prompt: "Use $dida-task-creator to create a Dida task for the current project."
