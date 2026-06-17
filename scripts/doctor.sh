@@ -20,6 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SRC_SKILLS_DIR="${REPO_ROOT}/skills"
 SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
+PLUGIN_MANIFEST="${REPO_ROOT}/.claude-plugin/plugin.json"
 
 TARGET_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
@@ -93,6 +94,107 @@ check_duplicate_source_skills() {
   done < <(find_source_skills)
 }
 
+##
+# Print plugin manifest skill paths, one per line.
+##
+plugin_skill_paths() {
+  python3 - "$PLUGIN_MANIFEST" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+manifest_path = Path(sys.argv[1])
+try:
+    data = json.loads(manifest_path.read_text())
+except Exception as exc:
+    print(f"invalid plugin manifest JSON: {exc}", file=sys.stderr)
+    sys.exit(1)
+
+name = data.get("name")
+if not isinstance(name, str) or not name.strip():
+    print("plugin manifest must contain a non-empty string name", file=sys.stderr)
+    sys.exit(1)
+
+skills = data.get("skills")
+if not isinstance(skills, list):
+    print("plugin manifest must contain a skills array", file=sys.stderr)
+    sys.exit(1)
+
+for skill_path in skills:
+    if not isinstance(skill_path, str):
+        print("plugin manifest skills entries must be strings", file=sys.stderr)
+        sys.exit(1)
+    print(skill_path)
+PY
+}
+
+##
+# Report plugin manifest entries that cannot be installed by skills.sh.
+##
+check_plugin_manifest() {
+  if [[ ! -f "$PLUGIN_MANIFEST" ]]; then
+    fail "missing plugin manifest: ${PLUGIN_MANIFEST#${REPO_ROOT}/}"
+    return
+  fi
+
+  local paths
+  if ! paths="$(plugin_skill_paths 2>&1)"; then
+    fail "$paths"
+    return
+  fi
+
+  pass "plugin manifest JSON valid: ${PLUGIN_MANIFEST#${REPO_ROOT}/}"
+
+  local seen=()
+  local manifest_path abs_path skill_file name existing
+  while IFS= read -r manifest_path; do
+    [[ -n "$manifest_path" ]] || continue
+    if [[ "$manifest_path" != ./* ]]; then
+      fail "plugin skill path must be repo-relative with ./ prefix: $manifest_path"
+      continue
+    fi
+
+    abs_path="${REPO_ROOT}/${manifest_path#./}"
+    if [[ ! -d "$abs_path" ]]; then
+      fail "plugin skill path missing directory: $manifest_path"
+      continue
+    fi
+
+    skill_file="${abs_path}/SKILL.md"
+    if [[ ! -f "$skill_file" ]]; then
+      fail "plugin skill path missing SKILL.md: $manifest_path"
+      continue
+    fi
+
+    name="$(skill_name_from_dir "$abs_path")"
+    if is_blacklisted "$name"; then
+      fail "plugin manifest includes blacklisted skill: $name"
+      continue
+    fi
+
+    if [[ "${#seen[@]}" -gt 0 ]]; then
+      for existing in "${seen[@]}"; do
+        if [[ "$existing" == "$manifest_path" ]]; then
+          fail "plugin manifest duplicate path: $manifest_path"
+        fi
+      done
+    fi
+    seen+=("$manifest_path")
+
+    if ! grep -Eq '^name:[[:space:]]*"?'"$name"'"?[[:space:]]*$' "$skill_file"; then
+      fail "plugin skill frontmatter name does not match directory: $manifest_path"
+      continue
+    fi
+
+    if ! grep -Eq '^description:[[:space:]]*.+' "$skill_file"; then
+      fail "plugin skill missing frontmatter description: $manifest_path"
+      continue
+    fi
+
+    pass "plugin skill valid: $manifest_path"
+  done <<< "$paths"
+}
+
 if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
   fail "missing source skills dir: $SRC_SKILLS_DIR"
 fi
@@ -110,6 +212,7 @@ for bad in "${BLACKLIST[@]}"; do
 done
 
 check_duplicate_source_skills
+check_plugin_manifest
 
 BROKEN_LINKS="$(find "$SRC_SKILLS_DIR" -xtype l 2>/dev/null || true)"
 if [[ -n "$BROKEN_LINKS" ]]; then

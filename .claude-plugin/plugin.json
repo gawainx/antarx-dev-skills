@@ -1,0 +1,25 @@
+{
+  "name": "antarx-dev-skills",
+  "skills": [
+    "./skills/collaboration/brainstorming",
+    "./skills/collaboration/dispatching-parallel-agents",
+    "./skills/collaboration/receiving-code-review",
+    "./skills/collaboration/requesting-code-review",
+    "./skills/git/merge-worktree-to-source-branch",
+    "./skills/git/using-git-worktrees",
+    "./skills/knowledge/experience-triage",
+    "./skills/maintenance/writing-skills",
+    "./skills/planning/architecture-design",
+    "./skills/planning/design-plan-doc-writer",
+    "./skills/planning/requirement-clarification",
+    "./skills/planning/writing-plans",
+    "./skills/project-bootstrap/init-project-bootstrap",
+    "./skills/project-bootstrap/project-structure-migration",
+    "./skills/quality/systematic-debugging",
+    "./skills/quality/test-driven-development",
+    "./skills/quality/verification-before-completion",
+    "./skills/schema/json-schema-design-assistant",
+    "./skills/ui/swiftui-macos-settings-window-pattern",
+    "./skills/ui/ui-layout-discipline"
+  ]
+}
