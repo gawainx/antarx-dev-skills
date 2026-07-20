@@ -1,4 +1,0 @@
-interface:
-  display_name: "Obsidian Codex Memory Init"
-  short_description: "Initialize an Obsidian vault as Codex memory."
-  default_prompt: "Use $obsidian-codex-memory-init to initialize Obsidian Codex memory for my vault."

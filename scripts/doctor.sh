@@ -2,12 +2,22 @@
 set -euo pipefail
 
 CHECK_AGENTS=0
+# Default: verify every supported agent. Override with --targets or ANTARX_SKILL_TARGETS.
+TARGETS_SPEC="${ANTARX_SKILL_TARGETS:-all}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --check-agents)
       CHECK_AGENTS=1
       shift
+      ;;
+    --targets)
+      if [[ $# -lt 2 ]]; then
+        echo "--targets requires a comma-separated list (codex,grok,claude) or all" >&2
+        exit 2
+      fi
+      TARGETS_SPEC="$2"
+      shift 2
       ;;
     *)
       echo "Unknown argument: $1" >&2
@@ -22,10 +32,17 @@ SRC_SKILLS_DIR="${REPO_ROOT}/skills"
 SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
 PLUGIN_MANIFEST="${REPO_ROOT}/.claude-plugin/plugin.json"
 
-TARGET_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
+CODEX_SKILLS_DIR_RESOLVED="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
+GROK_SKILLS_DIR_RESOLVED="${GROK_SKILLS_DIR:-$HOME/.grok/skills}"
+CLAUDE_SKILLS_DIR_RESOLVED="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
 
 BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
+CODEX_ONLY_SKILLS=(
+  "skill-creation-closeout"
+  "skill-improvement-ax"
+  "workflow-review-packager"
+)
 FAIL=0
 
 info() { echo "[doctor] $*"; }
@@ -41,6 +58,26 @@ is_blacklisted() {
     fi
   done
   return 1
+}
+
+is_codex_only_skill() {
+  local name="$1"
+  local x
+  for x in "${CODEX_ONLY_SKILLS[@]}"; do
+    if [[ "$name" == "$x" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+skill_allowed_for_target() {
+  local name="$1"
+  local target="$2"
+  if is_codex_only_skill "$name" && [[ "$target" != "codex" ]]; then
+    return 1
+  fi
+  return 0
 }
 
 ##
@@ -73,6 +110,61 @@ find_source_skills() {
         printf '%s\0' "$(dirname "$skill_file")"
       done \
     | sort -z
+}
+
+##
+# Expand TARGETS_SPEC into the global TARGETS array.
+##
+parse_targets() {
+  local raw item
+  TARGETS=()
+  raw="$(printf '%s' "$TARGETS_SPEC" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+  if [[ -z "$raw" ]]; then
+    echo "Empty --targets / ANTARX_SKILL_TARGETS value" >&2
+    exit 2
+  fi
+  if [[ "$raw" == "all" ]]; then
+    TARGETS=("codex" "grok" "claude")
+    return
+  fi
+  IFS=',' read -r -a TARGETS <<< "$raw"
+  if [[ "${#TARGETS[@]}" -eq 0 ]]; then
+    echo "No install targets resolved from: $TARGETS_SPEC" >&2
+    exit 2
+  fi
+  for item in "${TARGETS[@]}"; do
+    case "$item" in
+      codex|grok|claude) ;;
+      *)
+        echo "Unknown install target: $item (expected codex, grok, claude, or all)" >&2
+        exit 2
+        ;;
+    esac
+  done
+}
+
+skills_dir_for_target() {
+  case "$1" in
+    codex) printf '%s\n' "$CODEX_SKILLS_DIR_RESOLVED" ;;
+    grok) printf '%s\n' "$GROK_SKILLS_DIR_RESOLVED" ;;
+    claude) printf '%s\n' "$CLAUDE_SKILLS_DIR_RESOLVED" ;;
+    *)
+      echo "Unknown target: $1" >&2
+      return 1
+      ;;
+  esac
+}
+
+array_contains() {
+  local needle="$1"
+  shift
+  local item
+  for item in "$@"; do
+    if [[ "$item" == "$needle" ]]; then
+      return 0
+    fi
+  done
+  return 1
 }
 
 ##
@@ -195,6 +287,86 @@ check_plugin_manifest() {
   done <<< "$paths"
 }
 
+##
+# Verify managed symlinks for one agent install root.
+##
+check_target_installs() {
+  local agent="$1"
+  local target_dir
+  local src name dst rel_src resolved_dst
+  local expected_count=0
+  local ok_count=0
+
+  target_dir="$(skills_dir_for_target "$agent")"
+  info "[$agent] checking install root: $target_dir"
+
+  if [[ ! -d "$target_dir" ]]; then
+    fail "[$agent] target skills dir missing: $target_dir"
+    return
+  fi
+  pass "[$agent] target skills dir exists: $target_dir"
+
+  while IFS= read -r -d '' src; do
+    name="$(skill_name_from_dir "$src")"
+    if is_blacklisted "$name"; then
+      continue
+    fi
+    if ! skill_allowed_for_target "$name" "$agent"; then
+      dst="${target_dir}/${name}"
+      if [[ -e "$dst" || -L "$dst" ]]; then
+        if [[ ! -L "$dst" && -f "${dst}/.managed-by-antarx-dev-skills" ]]; then
+          fail "[$agent] codex-only skill still present as legacy managed copy: $name"
+        elif [[ -L "$dst" ]]; then
+          fail "[$agent] codex-only skill should not be installed here: $name"
+        else
+          info "[$agent] unmanaged entry named like codex-only skill left alone: $name"
+        fi
+      else
+        pass "[$agent] codex-only skill correctly absent: $name"
+      fi
+      continue
+    fi
+
+    expected_count=$((expected_count + 1))
+    dst="${target_dir}/${name}"
+    if [[ ! -e "$dst" && ! -L "$dst" ]]; then
+      fail "[$agent] missing target skill: $name"
+      continue
+    fi
+
+    rel_src="${src#${REPO_ROOT}/}"
+    if [[ ! -L "$dst" ]]; then
+      fail "[$agent] target skill is not a symlink: $name ($dst)"
+      continue
+    fi
+
+    resolved_dst="$(resolve_symlink_target "$dst" 2>/dev/null || true)"
+    if [[ "$resolved_dst" != "$src" ]]; then
+      fail "[$agent] skill symlink target differs: $name ($rel_src)"
+      echo "  expected: $src"
+      echo "  actual:   ${resolved_dst:-<unresolved>}"
+      continue
+    fi
+
+    if [[ ! -f "${resolved_dst}/SKILL.md" ]]; then
+      fail "[$agent] skill symlink target missing SKILL.md: $name ($resolved_dst)"
+      continue
+    fi
+
+    if [[ -f "$dst/.managed-by-antarx-dev-skills" ]]; then
+      fail "[$agent] legacy managed marker exists in source-linked skill: $name"
+      continue
+    fi
+
+    ok_count=$((ok_count + 1))
+    pass "[$agent] skill symlink valid: $name ($rel_src)"
+  done < <(find_source_skills)
+
+  info "[$agent] ${ok_count}/${expected_count} portable/managed skills verified"
+}
+
+parse_targets
+
 if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
   fail "missing source skills dir: $SRC_SKILLS_DIR"
 fi
@@ -202,6 +374,8 @@ fi
 if [[ "$CHECK_AGENTS" -eq 1 && ! -f "$SRC_AGENTS_FILE" ]]; then
   fail "missing source AGENTS.md.root: $SRC_AGENTS_FILE"
 fi
+
+info "targets: ${TARGETS[*]}"
 
 for bad in "${BLACKLIST[@]}"; do
   if find "$SRC_SKILLS_DIR" -type d -name "$bad" -exec test -f '{}/SKILL.md' ';' -print -quit | grep -q .; then
@@ -222,62 +396,27 @@ else
   pass "no broken symlink in source skills"
 fi
 
-if [[ ! -d "$TARGET_SKILLS_DIR" ]]; then
-  fail "target skills dir missing: $TARGET_SKILLS_DIR"
-else
-  pass "target skills dir exists: $TARGET_SKILLS_DIR"
-fi
-
 if [[ "$CHECK_AGENTS" -eq 1 ]]; then
-  if [[ ! -f "$TARGET_AGENTS_FILE" ]]; then
-    fail "target AGENTS file missing: $TARGET_AGENTS_FILE"
-  else
-    if cmp -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"; then
-      pass "AGENTS file is in sync"
+  if array_contains "codex" "${TARGETS[@]}"; then
+    if [[ ! -f "$TARGET_AGENTS_FILE" ]]; then
+      fail "target AGENTS file missing: $TARGET_AGENTS_FILE"
     else
-      fail "AGENTS file differs from source: $TARGET_AGENTS_FILE"
+      if cmp -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"; then
+        pass "AGENTS file is in sync"
+      else
+        fail "AGENTS file differs from source: $TARGET_AGENTS_FILE"
+      fi
     fi
+  else
+    info "skip AGENTS check; codex is not among targets"
   fi
 else
   info "skip AGENTS check; use --check-agents to opt in"
 fi
 
-while IFS= read -r -d '' src; do
-  name="$(skill_name_from_dir "$src")"
-  if is_blacklisted "$name"; then
-    continue
-  fi
-  dst="${TARGET_SKILLS_DIR}/${name}"
-  if [[ ! -d "$dst" ]]; then
-    fail "missing target skill: $name"
-    continue
-  fi
-
-  rel_src="${src#${REPO_ROOT}/}"
-  if [[ ! -L "$dst" ]]; then
-    fail "target skill is not a symlink: $name ($dst)"
-    continue
-  fi
-
-  resolved_dst="$(resolve_symlink_target "$dst" 2>/dev/null || true)"
-  if [[ "$resolved_dst" != "$src" ]]; then
-    fail "skill symlink target differs: $name ($rel_src)"
-    echo "  expected: $src"
-    echo "  actual:   ${resolved_dst:-<unresolved>}"
-    continue
-  fi
-
-  if [[ ! -f "${resolved_dst}/SKILL.md" ]]; then
-    fail "skill symlink target missing SKILL.md: $name ($resolved_dst)"
-    continue
-  fi
-
-  if [[ -f "$dst/.managed-by-antarx-dev-skills" ]]; then
-    fail "legacy managed marker exists in source-linked skill: $name"
-  else
-    pass "skill symlink valid: $name ($rel_src)"
-  fi
-done < <(find_source_skills)
+for agent in "${TARGETS[@]}"; do
+  check_target_installs "$agent"
+done
 
 if [[ "$FAIL" -ne 0 ]]; then
   info "doctor found issues"

@@ -1,4 +1,0 @@
-interface:
-  display_name: "更新 Codex Memory"
-  short_description: "提炼长期知识并更新 Codex 记忆。"
-  default_prompt: "使用 $update-codex-memory 记录本次任务中长期有效的记忆。"

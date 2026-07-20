@@ -67,24 +67,33 @@ git clone <your-repo-url> ~/code/vibeProjects/antarx-dev-skills
 cd ~/code/vibeProjects/antarx-dev-skills
 ```
 
-### 2. 安装到本机 Codex
+### 2. 安装到本机 agents（Codex / Grok / Claude）
 顺序执行如下脚本：
 
 ```bash
 # 预览所有技能
 ./scripts/sync_to_local.sh --dry-run
-# 执行链接安装动作
+# 执行链接安装动作（默认 targets=all）
 ./scripts/sync_to_local.sh
 ```
 
 说明：
-- 默认递归发现 `skills/**/SKILL.md`，并在 `~/.codex/skills/<skill-name>` 创建指向源码 skill 目录的符号链接
-- 源码目录可以按二级分类整理；本地安装目录通过链接保持扁平，便于 Codex 发现和触发
+- 默认递归发现 `skills/**/SKILL.md`，并为每个目标创建指向源码 skill 目录的符号链接：
+  - Codex → `~/.codex/skills/<skill-name>`
+  - Grok Build → `~/.grok/skills/<skill-name>`
+  - Claude Code → `~/.claude/skills/<skill-name>`
+- 源码目录可以按二级分类整理；本地安装目录通过链接保持扁平
+- 强绑定 Codex 的技能默认只装到 Codex，不装到 Grok/Claude
 - 默认不同步 `AGENTS.md.root`，避免覆盖 Codex 系统级 `AGENTS.md`
-- 可通过环境变量覆盖目标路径：
+- 可通过参数或环境变量控制目标与路径：
 
 ```bash
-CODEX_SKILLS_DIR=/custom/skills ./scripts/sync_to_local.sh
+./scripts/sync_to_local.sh --targets grok
+./scripts/sync_to_local.sh --targets codex,claude
+CODEX_SKILLS_DIR=/custom/codex-skills \
+GROK_SKILLS_DIR=/custom/grok-skills \
+CLAUDE_SKILLS_DIR=/custom/claude-skills \
+./scripts/sync_to_local.sh
 ```
 
 如确需同步 AGENTS 模板，必须显式 opt in：
@@ -99,9 +108,11 @@ CODEX_AGENTS_FILE=/custom/AGENTS.md ./scripts/sync_to_local.sh --sync-agents
 
 ```bash
 ./scripts/doctor.sh
+# 或仅检查 Grok
+./scripts/doctor.sh --targets grok
 ```
 
-该命令会同时校验本地 Codex symlink 安装状态和 `.claude-plugin/plugin.json` 的公开发布清单。
+该命令会校验所选目标的 symlink 安装状态，以及 `.claude-plugin/plugin.json` 的公开发布清单。
 
 ### 4. 跨设备 skill 同步流程
 

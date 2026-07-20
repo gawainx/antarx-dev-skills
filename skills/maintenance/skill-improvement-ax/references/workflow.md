@@ -59,7 +59,7 @@ After editing, validate and sync:
 ./scripts/doctor.sh
 ```
 
-The sync step updates `~/.codex/skills` symlinks and maintains a managed shell rc block for `ANTARX_DEV_SKILLS_REPO`, `CODEX_SKILLS_DIR`, and `CODEX_AGENTS_FILE`. Pass `--codex-memory-dir <path>` when the install should also persist `CODEX_MEMORY_DIR`.
+The sync step updates managed skill symlinks for the selected agent targets and maintains a managed shell rc block for `ANTARX_DEV_SKILLS_REPO`, skill install roots, and `CODEX_AGENTS_FILE`.
 
 ## Git And PR
 

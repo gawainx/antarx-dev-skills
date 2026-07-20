@@ -5,7 +5,8 @@ DRY_RUN=0
 SYNC_AGENTS=0
 FORCE_AGENTS=0
 SKIP_SHELL_ENV=0
-CODEX_MEMORY_DIR_CONFIG="${CODEX_MEMORY_DIR:-}"
+# Default: install to every supported agent. Override with --targets or ANTARX_SKILL_TARGETS.
+TARGETS_SPEC="${ANTARX_SKILL_TARGETS:-all}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -25,12 +26,12 @@ while [[ $# -gt 0 ]]; do
       SKIP_SHELL_ENV=1
       shift
       ;;
-    --codex-memory-dir)
+    --targets)
       if [[ $# -lt 2 ]]; then
-        echo "--codex-memory-dir requires a path" >&2
+        echo "--targets requires a comma-separated list (codex,grok,claude) or all" >&2
         exit 2
       fi
-      CODEX_MEMORY_DIR_CONFIG="$2"
+      TARGETS_SPEC="$2"
       shift 2
       ;;
     *)
@@ -45,11 +46,18 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SRC_SKILLS_DIR="${REPO_ROOT}/skills"
 SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
 
-TARGET_SKILLS_DIR="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
+CODEX_SKILLS_DIR_RESOLVED="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
+GROK_SKILLS_DIR_RESOLVED="${GROK_SKILLS_DIR:-$HOME/.grok/skills}"
+CLAUDE_SKILLS_DIR_RESOLVED="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
 
-MANIFEST_FILE="${TARGET_SKILLS_DIR}/.antarx-managed-skills"
 BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
+# Strongly Codex-bound skills: install only to codex by default.
+CODEX_ONLY_SKILLS=(
+  "skill-creation-closeout"
+  "skill-improvement-ax"
+  "workflow-review-packager"
+)
 ENV_BLOCK_BEGIN="# >>> antarx-dev-skills env >>>"
 ENV_BLOCK_END="# <<< antarx-dev-skills env <<<"
 
@@ -72,6 +80,29 @@ is_blacklisted() {
     fi
   done
   return 1
+}
+
+is_codex_only_skill() {
+  local name="$1"
+  local x
+  for x in "${CODEX_ONLY_SKILLS[@]}"; do
+    if [[ "$name" == "$x" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+##
+# Return success when this skill should be installed for the given agent target.
+##
+skill_allowed_for_target() {
+  local name="$1"
+  local target="$2"
+  if is_codex_only_skill "$name" && [[ "$target" != "codex" ]]; then
+    return 1
+  fi
+  return 0
 }
 
 shell_quote() {
@@ -105,20 +136,20 @@ detect_shell_rc_file() {
 
 print_shell_env_commands() {
   shell_export_line "ANTARX_DEV_SKILLS_REPO" "$REPO_ROOT"
-  shell_export_line "CODEX_SKILLS_DIR" "$TARGET_SKILLS_DIR"
+  shell_export_line "CODEX_SKILLS_DIR" "$CODEX_SKILLS_DIR_RESOLVED"
+  shell_export_line "GROK_SKILLS_DIR" "$GROK_SKILLS_DIR_RESOLVED"
+  shell_export_line "CLAUDE_SKILLS_DIR" "$CLAUDE_SKILLS_DIR_RESOLVED"
   shell_export_line "CODEX_AGENTS_FILE" "$TARGET_AGENTS_FILE"
-  if [[ -n "$CODEX_MEMORY_DIR_CONFIG" ]]; then
-    shell_export_line "CODEX_MEMORY_DIR" "$CODEX_MEMORY_DIR_CONFIG"
-  fi
+  shell_export_line "ANTARX_SKILL_TARGETS" "$TARGETS_SPEC"
 }
 
 print_fish_env_commands() {
   printf 'set -gx ANTARX_DEV_SKILLS_REPO %s\n' "$(shell_quote "$REPO_ROOT")"
-  printf 'set -gx CODEX_SKILLS_DIR %s\n' "$(shell_quote "$TARGET_SKILLS_DIR")"
+  printf 'set -gx CODEX_SKILLS_DIR %s\n' "$(shell_quote "$CODEX_SKILLS_DIR_RESOLVED")"
+  printf 'set -gx GROK_SKILLS_DIR %s\n' "$(shell_quote "$GROK_SKILLS_DIR_RESOLVED")"
+  printf 'set -gx CLAUDE_SKILLS_DIR %s\n' "$(shell_quote "$CLAUDE_SKILLS_DIR_RESOLVED")"
   printf 'set -gx CODEX_AGENTS_FILE %s\n' "$(shell_quote "$TARGET_AGENTS_FILE")"
-  if [[ -n "$CODEX_MEMORY_DIR_CONFIG" ]]; then
-    printf 'set -gx CODEX_MEMORY_DIR %s\n' "$(shell_quote "$CODEX_MEMORY_DIR_CONFIG")"
-  fi
+  printf 'set -gx ANTARX_SKILL_TARGETS %s\n' "$(shell_quote "$TARGETS_SPEC")"
 }
 
 build_shell_env_block() {
@@ -143,30 +174,13 @@ write_shell_env_config() {
   if ! rc_file="$(detect_shell_rc_file)"; then
     log "unable to detect shell rc file; copy these commands into your shell profile:"
     print_shell_env_commands
-    if [[ -z "$CODEX_MEMORY_DIR_CONFIG" ]]; then
-      printf 'export CODEX_MEMORY_DIR=<absolute/path/to/CodexMemory>\n'
-    fi
     return
-  fi
-
-  if [[ -n "$CODEX_MEMORY_DIR_CONFIG" ]]; then
-    if [[ ! -d "$CODEX_MEMORY_DIR_CONFIG" ]]; then
-      echo "CODEX_MEMORY_DIR does not exist: $CODEX_MEMORY_DIR_CONFIG" >&2
-      exit 1
-    fi
-    if [[ ! -f "${CODEX_MEMORY_DIR_CONFIG}/AGENTS.md" ]]; then
-      echo "CODEX_MEMORY_DIR is missing AGENTS.md: $CODEX_MEMORY_DIR_CONFIG" >&2
-      exit 1
-    fi
   fi
 
   log "configure shell env in $rc_file"
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "[dry-run] update managed env block in '$rc_file'"
     build_shell_env_block
-    if [[ -z "$CODEX_MEMORY_DIR_CONFIG" ]]; then
-      echo "[dry-run] CODEX_MEMORY_DIR is unset; set it before syncing if you want it written to the shell rc file."
-    fi
     return
   fi
 
@@ -223,16 +237,79 @@ validate_source_skills() {
   done < <(find_source_skills)
 }
 
-manifest_contains() {
-  local name="$1"
-  [[ -f "$MANIFEST_FILE" ]] || return 1
-  grep -Fxq "$name" "$MANIFEST_FILE"
+##
+# Expand TARGETS_SPEC into the global TARGETS array.
+##
+parse_targets() {
+  local raw item
+  TARGETS=()
+  raw="$(printf '%s' "$TARGETS_SPEC" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+  if [[ -z "$raw" ]]; then
+    echo "Empty --targets / ANTARX_SKILL_TARGETS value" >&2
+    exit 2
+  fi
+  if [[ "$raw" == "all" ]]; then
+    TARGETS=("codex" "grok" "claude")
+    return
+  fi
+  IFS=',' read -r -a TARGETS <<< "$raw"
+  if [[ "${#TARGETS[@]}" -eq 0 ]]; then
+    echo "No install targets resolved from: $TARGETS_SPEC" >&2
+    exit 2
+  fi
+  for item in "${TARGETS[@]}"; do
+    case "$item" in
+      codex|grok|claude) ;;
+      *)
+        echo "Unknown install target: $item (expected codex, grok, claude, or all)" >&2
+        exit 2
+        ;;
+    esac
+  done
 }
 
+##
+# Print the skills install directory for one agent target.
+##
+skills_dir_for_target() {
+  case "$1" in
+    codex) printf '%s\n' "$CODEX_SKILLS_DIR_RESOLVED" ;;
+    grok) printf '%s\n' "$GROK_SKILLS_DIR_RESOLVED" ;;
+    claude) printf '%s\n' "$CLAUDE_SKILLS_DIR_RESOLVED" ;;
+    *)
+      echo "Unknown target: $1" >&2
+      return 1
+      ;;
+  esac
+}
+
+array_contains() {
+  local needle="$1"
+  shift
+  local item
+  for item in "$@"; do
+    if [[ "$item" == "$needle" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+manifest_contains() {
+  local manifest_file="$1"
+  local name="$2"
+  [[ -f "$manifest_file" ]] || return 1
+  grep -Fxq "$name" "$manifest_file"
+}
+
+##
+# True when an install entry is managed by this repo (manifest or legacy marker).
+##
 is_managed_install_entry() {
-  local name="$1"
-  local dst="$2"
-  if manifest_contains "$name"; then
+  local manifest_file="$1"
+  local name="$2"
+  local dst="$3"
+  if manifest_contains "$manifest_file" "$name"; then
     return 0
   fi
   [[ ! -L "$dst" && -f "${dst}/.managed-by-antarx-dev-skills" ]]
@@ -245,10 +322,12 @@ install_skill_link() {
   local src="$1"
   local name="$2"
   local dst="$3"
+  local manifest_file="$4"
+  local agent="$5"
   local rel_src="${src#${REPO_ROOT}/}"
   local resolved_dst
 
-  log "link skill: $name from $rel_src"
+  log "[$agent] link skill: $name from $rel_src"
 
   if [[ -L "$dst" ]]; then
     resolved_dst="$(cd "$(dirname "$dst")" && cd "$(dirname "$(readlink "$dst")")" 2>/dev/null && printf '%s/%s\n' "$(pwd -P)" "$(basename "$(readlink "$dst")")")" || true
@@ -259,14 +338,15 @@ install_skill_link() {
       return
     fi
 
-    if is_managed_install_entry "$name" "$dst"; then
+    if is_managed_install_entry "$manifest_file" "$name" "$dst"; then
       run_cmd rm -f "$dst"
     else
       echo "Refusing to replace unmanaged symlink: $dst" >&2
       exit 1
     fi
   elif [[ -e "$dst" ]]; then
-    if is_managed_install_entry "$name" "$dst"; then
+    if is_managed_install_entry "$manifest_file" "$name" "$dst"; then
+      log "[$agent] replace managed copy with symlink: $name"
       run_cmd rm -rf "$dst"
     else
       echo "Refusing to replace unmanaged install entry: $dst" >&2
@@ -275,6 +355,92 @@ install_skill_link() {
   fi
 
   run_cmd ln -s "$src" "$dst"
+}
+
+##
+# Remove stale managed installs for one agent target.
+##
+cleanup_stale_managed() {
+  local agent="$1"
+  local target_dir="$2"
+  local manifest_file="$3"
+  shift 3
+  local managed_now=("$@")
+  local old name stale_path
+
+  if [[ -f "$manifest_file" ]]; then
+    while IFS= read -r old; do
+      [[ -z "$old" ]] && continue
+      if array_contains "$old" "${managed_now[@]+"${managed_now[@]}"}"; then
+        continue
+      fi
+      stale_path="${target_dir}/${old}"
+      if [[ -e "$stale_path" || -L "$stale_path" ]]; then
+        log "[$agent] remove stale managed skill: $old"
+        run_cmd rm -rf "$stale_path"
+      fi
+    done < "$manifest_file"
+  fi
+
+  # Legacy copy installs (pre-symlink era) may only have the marker file.
+  if [[ -d "$target_dir" ]]; then
+    for stale_path in "$target_dir"/*; do
+      [[ -e "$stale_path" || -L "$stale_path" ]] || continue
+      name="$(basename "$stale_path")"
+      if array_contains "$name" "${managed_now[@]+"${managed_now[@]}"}"; then
+        continue
+      fi
+      if [[ ! -L "$stale_path" && -f "${stale_path}/.managed-by-antarx-dev-skills" ]]; then
+        log "[$agent] remove legacy managed copy: $name"
+        run_cmd rm -rf "$stale_path"
+      fi
+    done
+  fi
+}
+
+##
+# Sync all allowed source skills into one agent install directory.
+##
+sync_target() {
+  local agent="$1"
+  local target_dir
+  local manifest_file
+  local src name dst
+  local managed_now=()
+
+  target_dir="$(skills_dir_for_target "$agent")"
+  manifest_file="${target_dir}/.antarx-managed-skills"
+
+  log "[$agent] install root: $target_dir"
+  run_cmd mkdir -p "$target_dir"
+
+  while IFS= read -r -d '' src; do
+    name="$(skill_name_from_dir "$src")"
+    if is_blacklisted "$name"; then
+      log "[$agent] skip blacklisted skill: $name"
+      continue
+    fi
+    if ! skill_allowed_for_target "$name" "$agent"; then
+      log "[$agent] skip codex-only skill: $name"
+      continue
+    fi
+    managed_now+=("$name")
+    dst="${target_dir}/${name}"
+    install_skill_link "$src" "$name" "$dst" "$manifest_file" "$agent"
+  done < <(find_source_skills)
+
+  cleanup_stale_managed "$agent" "$target_dir" "$manifest_file" "${managed_now[@]+"${managed_now[@]}"}"
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    echo "[dry-run] write manifest: $manifest_file (${#managed_now[@]} skills)"
+  else
+    {
+      for name in "${managed_now[@]+"${managed_now[@]}"}"; do
+        printf "%s\n" "$name"
+      done
+    } > "$manifest_file"
+    log "[$agent] wrote manifest with ${#managed_now[@]} skills"
+  fi
 }
 
 if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
@@ -292,72 +458,37 @@ if [[ "$FORCE_AGENTS" -eq 1 && "$SYNC_AGENTS" -ne 1 ]]; then
   exit 2
 fi
 
+parse_targets
 validate_source_skills
 
-run_cmd mkdir -p "$TARGET_SKILLS_DIR"
+log "targets: ${TARGETS[*]}"
 
-declare -a MANAGED_NOW=()
-
-while IFS= read -r -d '' src; do
-  name="$(skill_name_from_dir "$src")"
-  if is_blacklisted "$name"; then
-    log "skip blacklisted skill: $name"
-    continue
-  fi
-  MANAGED_NOW+=("$name")
-  dst="${TARGET_SKILLS_DIR}/${name}"
-  rel_src="${src#${REPO_ROOT}/}"
-  install_skill_link "$src" "$name" "$dst"
-done < <(find_source_skills)
+for agent in "${TARGETS[@]}"; do
+  sync_target "$agent"
+done
 
 write_shell_env_config
 
-if [[ -f "$MANIFEST_FILE" ]]; then
-  while IFS= read -r old; do
-    [[ -z "$old" ]] && continue
-    keep=0
-    for current in "${MANAGED_NOW[@]}"; do
-      if [[ "$old" == "$current" ]]; then
-        keep=1
-        break
-      fi
-    done
-    if [[ "$keep" -eq 0 ]]; then
-      stale_path="${TARGET_SKILLS_DIR}/${old}"
-      if [[ -e "$stale_path" || -L "$stale_path" ]]; then
-        log "remove stale managed skill: $old"
-        run_cmd rm -rf "$stale_path"
-      fi
-    fi
-  done < "$MANIFEST_FILE"
-fi
-
-if [[ "$DRY_RUN" -eq 1 ]]; then
-  echo "[dry-run] write manifest: $MANIFEST_FILE"
-else
-  {
-    for name in "${MANAGED_NOW[@]}"; do
-      printf "%s\n" "$name"
-    done
-  } > "$MANIFEST_FILE"
-fi
-
 if [[ "$SYNC_AGENTS" -eq 1 ]]; then
-  run_cmd mkdir -p "$(dirname "$TARGET_AGENTS_FILE")"
-
-  if [[ -f "$TARGET_AGENTS_FILE" ]] \
-    && ! cmp -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE" \
-    && [[ "$FORCE_AGENTS" -ne 1 ]]; then
-    echo "Refusing to overwrite existing AGENTS file: $TARGET_AGENTS_FILE" >&2
-    echo "Re-run with --sync-agents --force-agents only after backing up or reviewing the target." >&2
-    exit 1
-  fi
-
-  log "sync AGENTS.md.root -> $TARGET_AGENTS_FILE"
-  if [[ "$DRY_RUN" -eq 1 ]]; then
-    echo "[dry-run] cp '$SRC_AGENTS_FILE' '$TARGET_AGENTS_FILE'"
+  if ! array_contains "codex" "${TARGETS[@]}"; then
+    log "skip AGENTS sync; --sync-agents only applies when codex is among targets"
   else
-    cp "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"
+    run_cmd mkdir -p "$(dirname "$TARGET_AGENTS_FILE")"
+
+    if [[ -f "$TARGET_AGENTS_FILE" ]] \
+      && ! cmp -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE" \
+      && [[ "$FORCE_AGENTS" -ne 1 ]]; then
+      echo "Refusing to overwrite existing AGENTS file: $TARGET_AGENTS_FILE" >&2
+      echo "Re-run with --sync-agents --force-agents only after backing up or reviewing the target." >&2
+      exit 1
+    fi
+
+    log "sync AGENTS.md.root -> $TARGET_AGENTS_FILE"
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+      echo "[dry-run] cp '$SRC_AGENTS_FILE' '$TARGET_AGENTS_FILE'"
+    else
+      cp "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"
+    fi
   fi
 else
   log "skip AGENTS sync; use --sync-agents to opt in"

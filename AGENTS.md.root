@@ -4,12 +4,12 @@
 
 ## What
 
-- 本仓库是 skills 的单一事实源（SSOT）。
+- 本仓库是 skills 的单一事实源（SSOT），面向 Codex / Grok Build / Claude Code。
 - 默认受管内容仅包括：
   - `skills/`: 表示所有执行的技能
 - `AGENTS.md.root` 只是全局代理行为模板，默认不自动同步到 Codex 系统级 `AGENTS.md`。
-- 通过 `scripts/sync_to_local.sh` 将受管 skills 链接安装到本机。
-- 通过 `scripts/doctor.sh` 检查本机安装链接是否指向仓库源码。
+- 通过 `scripts/sync_to_local.sh` 将受管 skills 链接安装到本机（默认 targets=all：codex/grok/claude）。
+- 通过 `scripts/doctor.sh` 检查各目标安装链接是否指向仓库源码。
 
 ## Why
 
@@ -23,11 +23,12 @@
 ### 1. 开发流程
 
 - 所有新增/编辑 skill 的动作，都在仓库内完成。
-- 不把 `~/.codex/skills` 当成受管技能源码位置；受管安装项应是指向仓库源码的符号链接。
+- 不把 `~/.codex/skills`、`~/.grok/skills`、`~/.claude/skills` 当成受管技能源码位置；受管安装项应是指向仓库源码的符号链接。
 - 修改后执行：
   1. `./scripts/sync_to_local.sh --dry-run`
   2. `./scripts/sync_to_local.sh`
   3. `./scripts/doctor.sh`
+- Codex 强绑定技能默认只装到 Codex；Grok/Claude 跳过。
 - 如确需同步 `AGENTS.md.root`，必须显式执行 `./scripts/sync_to_local.sh --sync-agents`；目标文件已存在且内容不同时，必须先备份或审阅后才可加 `--force-agents`。
 
 ### 2. 跨设备同步流程
