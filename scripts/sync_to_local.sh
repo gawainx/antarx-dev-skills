@@ -303,16 +303,12 @@ manifest_contains() {
 }
 
 ##
-# True when an install entry is managed by this repo (manifest or legacy marker).
+# True when an install entry is listed in this target's managed manifest.
 ##
 is_managed_install_entry() {
   local manifest_file="$1"
   local name="$2"
-  local dst="$3"
-  if manifest_contains "$manifest_file" "$name"; then
-    return 0
-  fi
-  [[ ! -L "$dst" && -f "${dst}/.managed-by-antarx-dev-skills" ]]
+  manifest_contains "$manifest_file" "$name"
 }
 
 ##
@@ -338,15 +334,15 @@ install_skill_link() {
       return
     fi
 
-    if is_managed_install_entry "$manifest_file" "$name" "$dst"; then
+    if is_managed_install_entry "$manifest_file" "$name"; then
       run_cmd rm -f "$dst"
     else
       echo "Refusing to replace unmanaged symlink: $dst" >&2
       exit 1
     fi
   elif [[ -e "$dst" ]]; then
-    if is_managed_install_entry "$manifest_file" "$name" "$dst"; then
-      log "[$agent] replace managed copy with symlink: $name"
+    if is_managed_install_entry "$manifest_file" "$name"; then
+      log "[$agent] replace managed install entry with symlink: $name"
       run_cmd rm -rf "$dst"
     else
       echo "Refusing to replace unmanaged install entry: $dst" >&2
@@ -358,7 +354,7 @@ install_skill_link() {
 }
 
 ##
-# Remove stale managed installs for one agent target.
+# Remove stale managed installs for one agent target (manifest-only).
 ##
 cleanup_stale_managed() {
   local agent="$1"
@@ -366,36 +362,23 @@ cleanup_stale_managed() {
   local manifest_file="$3"
   shift 3
   local managed_now=("$@")
-  local old name stale_path
+  local old stale_path
 
-  if [[ -f "$manifest_file" ]]; then
-    while IFS= read -r old; do
-      [[ -z "$old" ]] && continue
-      if array_contains "$old" "${managed_now[@]+"${managed_now[@]}"}"; then
-        continue
-      fi
-      stale_path="${target_dir}/${old}"
-      if [[ -e "$stale_path" || -L "$stale_path" ]]; then
-        log "[$agent] remove stale managed skill: $old"
-        run_cmd rm -rf "$stale_path"
-      fi
-    done < "$manifest_file"
+  if [[ ! -f "$manifest_file" ]]; then
+    return
   fi
 
-  # Legacy copy installs (pre-symlink era) may only have the marker file.
-  if [[ -d "$target_dir" ]]; then
-    for stale_path in "$target_dir"/*; do
-      [[ -e "$stale_path" || -L "$stale_path" ]] || continue
-      name="$(basename "$stale_path")"
-      if array_contains "$name" "${managed_now[@]+"${managed_now[@]}"}"; then
-        continue
-      fi
-      if [[ ! -L "$stale_path" && -f "${stale_path}/.managed-by-antarx-dev-skills" ]]; then
-        log "[$agent] remove legacy managed copy: $name"
-        run_cmd rm -rf "$stale_path"
-      fi
-    done
-  fi
+  while IFS= read -r old; do
+    [[ -z "$old" ]] && continue
+    if array_contains "$old" "${managed_now[@]+"${managed_now[@]}"}"; then
+      continue
+    fi
+    stale_path="${target_dir}/${old}"
+    if [[ -e "$stale_path" || -L "$stale_path" ]]; then
+      log "[$agent] remove stale managed skill: $old"
+      run_cmd rm -rf "$stale_path"
+    fi
+  done < "$manifest_file"
 }
 
 ##

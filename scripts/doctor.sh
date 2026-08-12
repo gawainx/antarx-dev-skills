@@ -313,14 +313,10 @@ check_target_installs() {
     fi
     if ! skill_allowed_for_target "$name" "$agent"; then
       dst="${target_dir}/${name}"
-      if [[ -e "$dst" || -L "$dst" ]]; then
-        if [[ ! -L "$dst" && -f "${dst}/.managed-by-antarx-dev-skills" ]]; then
-          fail "[$agent] codex-only skill still present as legacy managed copy: $name"
-        elif [[ -L "$dst" ]]; then
-          fail "[$agent] codex-only skill should not be installed here: $name"
-        else
-          info "[$agent] unmanaged entry named like codex-only skill left alone: $name"
-        fi
+      if [[ -L "$dst" ]]; then
+        fail "[$agent] codex-only skill should not be installed here: $name"
+      elif [[ -e "$dst" ]]; then
+        info "[$agent] unmanaged entry named like codex-only skill left alone: $name"
       else
         pass "[$agent] codex-only skill correctly absent: $name"
       fi
@@ -350,11 +346,6 @@ check_target_installs() {
 
     if [[ ! -f "${resolved_dst}/SKILL.md" ]]; then
       fail "[$agent] skill symlink target missing SKILL.md: $name ($resolved_dst)"
-      continue
-    fi
-
-    if [[ -f "$dst/.managed-by-antarx-dev-skills" ]]; then
-      fail "[$agent] legacy managed marker exists in source-linked skill: $name"
       continue
     fi
 

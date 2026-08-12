@@ -105,12 +105,9 @@ fi
 
 mkdir -p "$(dirname "$TARGET_SKILL")"
 if command -v rsync >/dev/null 2>&1; then
-  rsync -a \
-    --exclude '.managed-by-antarx-dev-skills' \
-    "$SOURCE_SKILL/" "$TARGET_SKILL/"
+  rsync -a "$SOURCE_SKILL/" "$TARGET_SKILL/"
 else
   cp -R "$SOURCE_SKILL" "$TARGET_SKILL"
-  rm -f "${TARGET_SKILL}/.managed-by-antarx-dev-skills"
 fi
 
 printf '%s\n' "$TARGET_SKILL"

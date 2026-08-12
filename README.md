@@ -32,7 +32,6 @@ npx skills@latest add gawainx/antarx-dev-skills
 - `architecture-design`：讨论模块边界、依赖方向和数据流
 - `design-plan-doc-writer`：需求澄清后产出设计文档与开发计划
 - `requirement-clarification`：结合仓库现状澄清需求
-- `writing-plans`：为多步骤实现编写开发计划
 - `init-project-bootstrap`：初始化 Codex 持续开发文档骨架
 - `project-structure-migration`：迁移已有项目文档结构
 - `systematic-debugging`：按根因调查流程处理 bug 和失败
