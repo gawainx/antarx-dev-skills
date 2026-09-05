@@ -1,64 +1,11 @@
-# AGENTS.md
+# 全局开发规范
 
-本文件用于统一 Codex 在本仓库及跨设备协作时的行为基线。
+## Markdown 文档规范
 
-## What
+Markdown 自然段保持为连续段落，不得为了控制行宽或适配编辑器显示插入硬换行。列表、表格、代码块、引用块及语义上确需换行的内容除外。
 
-- 本仓库是 skills 的单一事实源（SSOT），面向 Codex / Grok Build / Claude Code。
-- 默认受管内容仅包括：
-  - `skills/`: 表示所有执行的技能
-- `AGENTS.md.root` 只是全局代理行为模板，默认不自动同步到 Codex 系统级 `AGENTS.md`。
-- 通过 `scripts/sync_to_local.sh` 将受管 skills 链接安装到本机（默认 targets=all：codex/grok/claude）。
-- 通过 `scripts/doctor.sh` 检查各目标安装链接是否指向仓库源码。
+## Git 使用规范
 
-## Why
-
-- 保证跨设备获得一致的技能集合。
-- 避免手工复制导致的遗漏、漂移和不可追踪修改。
-- 让本地安装目录直接指向仓库源码，减少副本一致性问题。
-- 避免误覆盖 Codex 系统级 AGENTS 文件。
-
-## How
-
-### 1. 开发流程
-
-- 所有新增/编辑 skill 的动作，都在仓库内完成。
-- 不把 `~/.codex/skills`、`~/.grok/skills`、`~/.claude/skills` 当成受管技能源码位置；受管安装项应是指向仓库源码的符号链接。
-- 修改后执行：
-  1. `./scripts/sync_to_local.sh --dry-run`
-  2. `./scripts/sync_to_local.sh`
-  3. `./scripts/doctor.sh`
-- Codex 强绑定技能默认只装到 Codex；Grok/Claude 跳过。
-- 如确需同步 `AGENTS.md.root`，必须显式执行 `./scripts/sync_to_local.sh --sync-agents`；目标文件已存在且内容不同时，必须先备份或审阅后才可加 `--force-agents`。
-
-### 2. 跨设备同步流程
-
-- 任一设备修改仓库后：`git commit` + `git push`。
-- 另一台设备：`git pull` 后执行同步与校验脚本。
-
-### 3. 技能黑名单（禁止纳入本仓库受管）
-
-- `skill-creator`
-- `skill-installer`
-- `swiftui-macos-llm-chat-module`（Apple 平台相关）
-
-### 4. Git Commit 约束
-
-- Git 工作区必须正确维护 `.gitignore`，排除临时产物、本机配置和敏感信息。
-- 所有文件修改必须验证并提交本次任务改动后才能结束。
-
-- 禁止行为：
-  - 空提交信息或仅标点
-  - `update` / `fix` 这类泛化描述
-  - `git commit --amend`
-- 提交信息必须满足 Conventional Commits：
-  - 正则：`^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert): .{10,}$`
-- 描述要求：
-  - 冒号后至少 10 字符
-  - 必须包含具体技术信息（文件、模块、逻辑）
-
-### 5. 验证清单
-
-- `./scripts/doctor.sh` 返回 0
-- `~/.codex/skills` 中受管技能链接指向仓库源码
-- 默认不要求 `AGENTS.md` 与仓库模板一致；如需检查 AGENTS 模板同步状态，显式运行 `./scripts/doctor.sh --check-agents`
+1. Git 工作区必须正确维护 `.gitignore`，排除临时产物、本机配置和敏感信息。
+2. 所有文件修改必须验证并提交本次任务改动后才能结束；除非用户明确要求，否则禁止 `git commit --amend`。
+3. 所有 Git 命令必须串行执行，包括只读命令。
