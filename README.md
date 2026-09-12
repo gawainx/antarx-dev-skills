@@ -88,7 +88,12 @@ cp .env.example .env
 - 当目标包含 Codex 时，自动创建 `~/.codex/DESIGN.md` 指向仓库根目录 `DESIGN.md` 的符号链接
 - 默认不同步 `AGENTS.md.root`，避免覆盖 Codex 系统级 `AGENTS.md`
 - 安装配置只从仓库根目录的 `.env` 读取，不会写入 shell 配置或引入额外环境变量。首次使用时复制 `.env.example` 为 `.env`，再按注释填写需要覆盖的配置；`.env` 不纳入 Git。
-- 安装目标固定为 Codex、Grok Build 与 Claude Code，由脚本内的 `TARGETS` 数组统一维护；安装仅通过 `./scripts/sync_to_local.sh` 触发。
+- 安装仅通过 `./scripts/sync_to_local.sh` 触发；默认安装 Codex、Grok Build 与 Claude Code。只可通过脚本参数 `--targets` 配置安装范围，不能通过 `.env` 或环境变量配置：
+
+```bash
+./scripts/sync_to_local.sh --targets grok
+./scripts/sync_to_local.sh --targets codex,claude
+```
 
 如确需同步 AGENTS 模板，必须显式 opt in：
 
@@ -102,9 +107,11 @@ cp .env.example .env
 
 ```bash
 ./scripts/doctor.sh
+# 或仅校验 Grok
+./scripts/doctor.sh --targets grok
 ```
 
-该命令会校验脚本内置目标的 symlink 安装状态，以及 `.claude-plugin/plugin.json` 的公开发布清单。
+该命令会校验所选目标的 symlink 安装状态，以及 `.claude-plugin/plugin.json` 的公开发布清单。
 
 ### 4. 跨设备 skill 同步流程
 

@@ -4,6 +4,7 @@ set -euo pipefail
 DRY_RUN=0
 SYNC_AGENTS=0
 FORCE_AGENTS=0
+TARGETS_SPEC="all"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -73,6 +74,14 @@ while [[ $# -gt 0 ]]; do
     --force-agents)
       FORCE_AGENTS=1
       shift
+      ;;
+    --targets)
+      if [[ $# -lt 2 ]]; then
+        echo "--targets requires a comma-separated list (codex,grok,claude) or all" >&2
+        exit 2
+      fi
+      TARGETS_SPEC="$2"
+      shift 2
       ;;
     *)
       echo "Unknown argument: $1" >&2
@@ -159,6 +168,30 @@ validate_source_skills() {
     fi
     seen+=("$name")
   done < <(find_source_skills)
+}
+
+parse_targets() {
+  local raw item
+  TARGETS=()
+  raw="$(printf '%s' "$TARGETS_SPEC" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+  if [[ "$raw" == "all" ]]; then
+    TARGETS=("codex" "grok" "claude")
+    return
+  fi
+  IFS=',' read -r -a TARGETS <<< "$raw"
+  if [[ "${#TARGETS[@]}" -eq 0 ]]; then
+    echo "No install targets resolved from: $TARGETS_SPEC" >&2
+    exit 2
+  fi
+  for item in "${TARGETS[@]}"; do
+    case "$item" in
+      codex|grok|claude) ;;
+      *)
+        echo "Unknown install target: $item (expected codex, grok, claude, or all)" >&2
+        exit 2
+        ;;
+    esac
+  done
 }
 
 ##
@@ -365,10 +398,10 @@ if [[ "$FORCE_AGENTS" -eq 1 && "$SYNC_AGENTS" -ne 1 ]]; then
   exit 2
 fi
 
-TARGETS=("codex" "grok" "claude")
+parse_targets
 validate_source_skills
 
-log "configured targets: ${TARGETS[*]}"
+log "targets: ${TARGETS[*]}"
 
 for agent in "${TARGETS[@]}"; do
   sync_target "$agent"

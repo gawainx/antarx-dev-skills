@@ -2,6 +2,7 @@
 set -euo pipefail
 
 CHECK_AGENTS=0
+TARGETS_SPEC="all"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -67,6 +68,14 @@ while [[ $# -gt 0 ]]; do
     --check-agents)
       CHECK_AGENTS=1
       shift
+      ;;
+    --targets)
+      if [[ $# -lt 2 ]]; then
+        echo "--targets requires a comma-separated list (codex,grok,claude) or all" >&2
+        exit 2
+      fi
+      TARGETS_SPEC="$2"
+      shift 2
       ;;
     *)
       echo "Unknown argument: $1" >&2
@@ -136,6 +145,30 @@ find_source_skills() {
         printf '%s\0' "$(dirname "$skill_file")"
       done \
     | sort -z
+}
+
+parse_targets() {
+  local raw item
+  TARGETS=()
+  raw="$(printf '%s' "$TARGETS_SPEC" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+  if [[ "$raw" == "all" ]]; then
+    TARGETS=("codex" "grok" "claude")
+    return
+  fi
+  IFS=',' read -r -a TARGETS <<< "$raw"
+  if [[ "${#TARGETS[@]}" -eq 0 ]]; then
+    echo "No install targets resolved from: $TARGETS_SPEC" >&2
+    exit 2
+  fi
+  for item in "${TARGETS[@]}"; do
+    case "$item" in
+      codex|grok|claude) ;;
+      *)
+        echo "Unknown install target: $item (expected codex, grok, claude, or all)" >&2
+        exit 2
+        ;;
+    esac
+  done
 }
 
 skills_dir_for_target() {
@@ -351,7 +384,7 @@ check_target_installs() {
   info "[$agent] ${ok_count}/${expected_count} portable/managed skills verified"
 }
 
-TARGETS=("codex" "grok" "claude")
+parse_targets
 
 if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
   fail "missing source skills dir: $SRC_SKILLS_DIR"
@@ -365,7 +398,7 @@ if [[ ! -f "$SRC_DESIGN_FILE" ]]; then
   fail "missing source DESIGN.md: $SRC_DESIGN_FILE"
 fi
 
-info "configured targets: ${TARGETS[*]}"
+info "targets: ${TARGETS[*]}"
 
 for bad in "${BLACKLIST[@]}"; do
   if find "$SRC_SKILLS_DIR" -type d -name "$bad" -exec test -f '{}/SKILL.md' ';' -print -quit | grep -q .; then
