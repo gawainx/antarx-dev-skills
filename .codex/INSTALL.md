@@ -13,6 +13,7 @@ Enable local skills in Codex via native skill discovery.
 ```bash
 git clone <your-repo-url> ~/.codex/antarx-dev-skills
 cd ~/.codex/antarx-dev-skills
+cp .env.example .env
 ```
 
 2. Sync skills into the Codex skills directory:
@@ -32,7 +33,7 @@ cd ~/.codex/antarx-dev-skills
 
 The source repository can keep skills grouped under `skills/<category>/<skill-name>/`.
 The sync script installs them flat under `~/.codex/skills/<skill-name>/`.
-It also creates `~/.codex/DESIGN.md` as a symlink to the repository's root `DESIGN.md`. Set `CODEX_DESIGN_FILE` to use a different destination.
+It also creates `~/.codex/DESIGN.md` as a symlink to the repository's root `DESIGN.md`. Configure a different destination in the repository-local `.env`; use `.env.example` as the guide. The installer never writes shell configuration or adds environment variables.
 
 ## Update
 

@@ -65,6 +65,7 @@ npx skills@latest add gawainx/antarx-dev-skills
 ```bash
 git clone <your-repo-url> ~/code/vibeProjects/antarx-dev-skills
 cd ~/code/vibeProjects/antarx-dev-skills
+cp .env.example .env
 ```
 
 ### 2. 安装到本机 agents（Codex / Grok / Claude）
@@ -84,25 +85,20 @@ cd ~/code/vibeProjects/antarx-dev-skills
   - Claude Code → `~/.claude/skills/<skill-name>`
 - 源码目录可以按二级分类整理；本地安装目录通过链接保持扁平
 - 强绑定 Codex 的技能默认只装到 Codex，不装到 Grok/Claude
-- 当目标包含 Codex 时，自动创建 `~/.codex/DESIGN.md` 指向仓库根目录 `DESIGN.md` 的符号链接；可用 `CODEX_DESIGN_FILE` 指定其他目标路径
+- 当目标包含 Codex 时，自动创建 `~/.codex/DESIGN.md` 指向仓库根目录 `DESIGN.md` 的符号链接
 - 默认不同步 `AGENTS.md.root`，避免覆盖 Codex 系统级 `AGENTS.md`
-- 可通过参数或环境变量控制目标与路径：
+- 安装配置只从仓库根目录的 `.env` 读取，不会写入 shell 配置或引入额外环境变量。首次使用时复制 `.env.example` 为 `.env`，再按注释填写需要覆盖的配置；`.env` 不纳入 Git。
+- `--targets` 可临时覆盖 `.env` 中的 `ANTARX_SKILL_TARGETS`：
 
 ```bash
 ./scripts/sync_to_local.sh --targets grok
 ./scripts/sync_to_local.sh --targets codex,claude
-CODEX_SKILLS_DIR=/custom/codex-skills \
-GROK_SKILLS_DIR=/custom/grok-skills \
-CLAUDE_SKILLS_DIR=/custom/claude-skills \
-./scripts/sync_to_local.sh
-
-CODEX_DESIGN_FILE=/custom/DESIGN.md ./scripts/sync_to_local.sh --targets codex
 ```
 
 如确需同步 AGENTS 模板，必须显式 opt in：
 
 ```bash
-CODEX_AGENTS_FILE=/custom/AGENTS.md ./scripts/sync_to_local.sh --sync-agents
+./scripts/sync_to_local.sh --sync-agents
 ```
 
 如果目标 AGENTS 文件已存在且内容不同，脚本会拒绝覆盖。确认已备份并接受覆盖风险后，才使用 `--sync-agents --force-agents`。

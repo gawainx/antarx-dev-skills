@@ -2,8 +2,68 @@
 set -euo pipefail
 
 CHECK_AGENTS=0
-# Default: verify every supported agent. Override with --targets or ANTARX_SKILL_TARGETS.
+TARGETS_SPEC="all"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+SRC_SKILLS_DIR="${REPO_ROOT}/skills"
+SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
+SRC_DESIGN_FILE="${REPO_ROOT}/DESIGN.md"
+PLUGIN_MANIFEST="${REPO_ROOT}/.claude-plugin/plugin.json"
+CONFIG_FILE="${REPO_ROOT}/.env"
+
+unset ANTARX_SKILL_TARGETS CODEX_SKILLS_DIR GROK_SKILLS_DIR CLAUDE_SKILLS_DIR CODEX_AGENTS_FILE CODEX_DESIGN_FILE
+ANTARX_SKILL_TARGETS=""
+CODEX_SKILLS_DIR=""
+GROK_SKILLS_DIR=""
+CLAUDE_SKILLS_DIR=""
+CODEX_AGENTS_FILE=""
+CODEX_DESIGN_FILE=""
+
+BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
+CODEX_ONLY_SKILLS=(
+  "skill-creation-closeout"
+  "skill-improvement-ax"
+  "workflow-review-packager"
+)
+FAIL=0
+
+info() { echo "[doctor] $*"; }
+pass() { echo "[PASS] $*"; }
+fail() { echo "[FAIL] $*"; FAIL=1; }
+
+load_config() {
+  local line key value
+  [[ -f "$CONFIG_FILE" ]] || return
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "$line" || "${line:0:1}" == "#" ]] && continue
+    if [[ "$line" != *=* ]]; then
+      echo "Invalid .env entry (expected KEY=value): $line" >&2
+      exit 2
+    fi
+    key="${line%%=*}"
+    value="${line#*=}"
+    case "$key" in
+      ANTARX_SKILL_TARGETS|CODEX_SKILLS_DIR|GROK_SKILLS_DIR|CLAUDE_SKILLS_DIR|CODEX_AGENTS_FILE|CODEX_DESIGN_FILE)
+        printf -v "$key" '%s' "$value"
+        ;;
+      *)
+        echo "Unsupported .env key: $key" >&2
+        exit 2
+        ;;
+    esac
+  done < "$CONFIG_FILE"
+}
+
+load_config
+
 TARGETS_SPEC="${ANTARX_SKILL_TARGETS:-all}"
+CODEX_SKILLS_DIR_RESOLVED="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
+GROK_SKILLS_DIR_RESOLVED="${GROK_SKILLS_DIR:-$HOME/.grok/skills}"
+CLAUDE_SKILLS_DIR_RESOLVED="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
+TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
+TARGET_DESIGN_FILE="${CODEX_DESIGN_FILE:-$HOME/.codex/DESIGN.md}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -25,31 +85,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SRC_SKILLS_DIR="${REPO_ROOT}/skills"
-SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
-SRC_DESIGN_FILE="${REPO_ROOT}/DESIGN.md"
-PLUGIN_MANIFEST="${REPO_ROOT}/.claude-plugin/plugin.json"
-
-CODEX_SKILLS_DIR_RESOLVED="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
-GROK_SKILLS_DIR_RESOLVED="${GROK_SKILLS_DIR:-$HOME/.grok/skills}"
-CLAUDE_SKILLS_DIR_RESOLVED="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
-TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
-TARGET_DESIGN_FILE="${CODEX_DESIGN_FILE:-$HOME/.codex/DESIGN.md}"
-
-BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
-CODEX_ONLY_SKILLS=(
-  "skill-creation-closeout"
-  "skill-improvement-ax"
-  "workflow-review-packager"
-)
-FAIL=0
-
-info() { echo "[doctor] $*"; }
-pass() { echo "[PASS] $*"; }
-fail() { echo "[FAIL] $*"; FAIL=1; }
 
 is_blacklisted() {
   local name="$1"
