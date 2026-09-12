@@ -1,7 +1,7 @@
 # 仓库指南
 
 ## 项目结构与模块组织
-本仓库是托管 agent skills 的单一事实源（SSOT），面向 Codex、Grok Build 与 Claude Code。默认托管内容仅包含 `skills/`；`AGENTS.md.root` 是模板，除非用户明确选择同步，否则不得同步。新增或更新可复用 skill 时，放在 `skills/<category>/<skill-name>/SKILL.md`；只有在直接需要时，才把配套文件放在对应 skill 旁边。运维脚本放在 `scripts/`，当前包括用于部署的 `sync_to_local.sh` 和用于一致性检查的 `doctor.sh`。参考资料和计划放在 `docs/`。
+本仓库是托管 agent skills 的单一事实源（SSOT），面向 Codex、Grok Build 与 Claude Code。默认托管内容包含 `skills/` 和 Codex 的 `DESIGN.md`；`AGENTS.md.root` 是模板，除非用户明确选择同步，否则不得同步。新增或更新可复用 skill 时，放在 `skills/<category>/<skill-name>/SKILL.md`；只有在直接需要时，才把配套文件放在对应 skill 旁边。运维脚本放在 `scripts/`，当前包括用于部署的 `sync_to_local.sh` 和用于一致性检查的 `doctor.sh`。参考资料和计划放在 `docs/`。
 
 ## 编码风格与命名约定
 1. Shell 脚本使用 Bash，并启用 `set -euo pipefail`；新增脚本改动保持一致。除非文件已经使用中文文本，否则优先使用 ASCII，本仓库的若干核心文档已经使用中文。skill 目录使用小写短横线命名，例如 `skills/collaboration/requesting-code-review/`。`SKILL.md` 保持简洁、行动导向，并明确它覆盖的触发条件。

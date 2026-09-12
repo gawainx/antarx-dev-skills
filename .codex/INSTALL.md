@@ -32,6 +32,7 @@ cd ~/.codex/antarx-dev-skills
 
 The source repository can keep skills grouped under `skills/<category>/<skill-name>/`.
 The sync script installs them flat under `~/.codex/skills/<skill-name>/`.
+It also creates `~/.codex/DESIGN.md` as a symlink to the repository's root `DESIGN.md`. Set `CODEX_DESIGN_FILE` to use a different destination.
 
 ## Update
 

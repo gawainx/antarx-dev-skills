@@ -45,11 +45,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SRC_SKILLS_DIR="${REPO_ROOT}/skills"
 SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
+SRC_DESIGN_FILE="${REPO_ROOT}/DESIGN.md"
 
 CODEX_SKILLS_DIR_RESOLVED="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 GROK_SKILLS_DIR_RESOLVED="${GROK_SKILLS_DIR:-$HOME/.grok/skills}"
 CLAUDE_SKILLS_DIR_RESOLVED="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
+TARGET_DESIGN_FILE="${CODEX_DESIGN_FILE:-$HOME/.codex/DESIGN.md}"
 
 BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
 # Strongly Codex-bound skills: install only to codex by default.
@@ -140,6 +142,7 @@ print_shell_env_commands() {
   shell_export_line "GROK_SKILLS_DIR" "$GROK_SKILLS_DIR_RESOLVED"
   shell_export_line "CLAUDE_SKILLS_DIR" "$CLAUDE_SKILLS_DIR_RESOLVED"
   shell_export_line "CODEX_AGENTS_FILE" "$TARGET_AGENTS_FILE"
+  shell_export_line "CODEX_DESIGN_FILE" "$TARGET_DESIGN_FILE"
   shell_export_line "ANTARX_SKILL_TARGETS" "$TARGETS_SPEC"
 }
 
@@ -149,6 +152,7 @@ print_fish_env_commands() {
   printf 'set -gx GROK_SKILLS_DIR %s\n' "$(shell_quote "$GROK_SKILLS_DIR_RESOLVED")"
   printf 'set -gx CLAUDE_SKILLS_DIR %s\n' "$(shell_quote "$CLAUDE_SKILLS_DIR_RESOLVED")"
   printf 'set -gx CODEX_AGENTS_FILE %s\n' "$(shell_quote "$TARGET_AGENTS_FILE")"
+  printf 'set -gx CODEX_DESIGN_FILE %s\n' "$(shell_quote "$TARGET_DESIGN_FILE")"
   printf 'set -gx ANTARX_SKILL_TARGETS %s\n' "$(shell_quote "$TARGETS_SPEC")"
 }
 
@@ -354,6 +358,32 @@ install_skill_link() {
 }
 
 ##
+# Link the repository design conventions into Codex's system configuration.
+##
+install_design_link() {
+  local resolved_dst
+
+  log "[codex] link DESIGN.md -> $TARGET_DESIGN_FILE"
+
+  if [[ -L "$TARGET_DESIGN_FILE" ]]; then
+    resolved_dst="$(cd "$(dirname "$TARGET_DESIGN_FILE")" && cd "$(dirname "$(readlink "$TARGET_DESIGN_FILE")")" 2>/dev/null && printf '%s/%s\n' "$(pwd -P)" "$(basename "$(readlink "$TARGET_DESIGN_FILE")")")" || true
+    if [[ "$resolved_dst" == "$SRC_DESIGN_FILE" ]]; then
+      if [[ "$DRY_RUN" -eq 1 ]]; then
+        echo "[dry-run] symlink already correct: '$TARGET_DESIGN_FILE' -> '$SRC_DESIGN_FILE'"
+      fi
+      return
+    fi
+    run_cmd rm -f "$TARGET_DESIGN_FILE"
+  elif [[ -e "$TARGET_DESIGN_FILE" ]]; then
+    echo "Refusing to replace existing DESIGN.md that is not a symlink: $TARGET_DESIGN_FILE" >&2
+    exit 1
+  fi
+
+  run_cmd mkdir -p "$(dirname "$TARGET_DESIGN_FILE")"
+  run_cmd ln -s "$SRC_DESIGN_FILE" "$TARGET_DESIGN_FILE"
+}
+
+##
 # Remove stale managed installs for one agent target (manifest-only).
 ##
 cleanup_stale_managed() {
@@ -436,6 +466,11 @@ if [[ "$SYNC_AGENTS" -eq 1 && ! -f "$SRC_AGENTS_FILE" ]]; then
   exit 1
 fi
 
+if [[ ! -f "$SRC_DESIGN_FILE" ]]; then
+  echo "Source DESIGN.md not found: $SRC_DESIGN_FILE" >&2
+  exit 1
+fi
+
 if [[ "$FORCE_AGENTS" -eq 1 && "$SYNC_AGENTS" -ne 1 ]]; then
   echo "--force-agents requires --sync-agents" >&2
   exit 2
@@ -449,6 +484,12 @@ log "targets: ${TARGETS[*]}"
 for agent in "${TARGETS[@]}"; do
   sync_target "$agent"
 done
+
+if array_contains "codex" "${TARGETS[@]}"; then
+  install_design_link
+else
+  log "skip DESIGN.md link; codex is not among targets"
+fi
 
 write_shell_env_config
 

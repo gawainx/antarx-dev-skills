@@ -48,6 +48,7 @@ npx skills@latest add gawainx/antarx-dev-skills
 - `skills/`：技能定义（核心），源码按二级分类目录整理，安装后通过符号链接扁平化到 Codex skills 目录
 - `scripts/`：本地同步与校验脚本
 - `AGENTS.md.root`：全局代理行为模板（默认不自动同步）
+- `DESIGN.md`：Codex 全局设计规范，安装时链接到 `~/.codex/DESIGN.md`
 - `docs/`：设计文档与计划
 - `commands/`：可选的命令模板
 - `agents/`：可选的 agent 指令模板
@@ -83,6 +84,7 @@ cd ~/code/vibeProjects/antarx-dev-skills
   - Claude Code → `~/.claude/skills/<skill-name>`
 - 源码目录可以按二级分类整理；本地安装目录通过链接保持扁平
 - 强绑定 Codex 的技能默认只装到 Codex，不装到 Grok/Claude
+- 当目标包含 Codex 时，自动创建 `~/.codex/DESIGN.md` 指向仓库根目录 `DESIGN.md` 的符号链接；可用 `CODEX_DESIGN_FILE` 指定其他目标路径
 - 默认不同步 `AGENTS.md.root`，避免覆盖 Codex 系统级 `AGENTS.md`
 - 可通过参数或环境变量控制目标与路径：
 
@@ -93,6 +95,8 @@ CODEX_SKILLS_DIR=/custom/codex-skills \
 GROK_SKILLS_DIR=/custom/grok-skills \
 CLAUDE_SKILLS_DIR=/custom/claude-skills \
 ./scripts/sync_to_local.sh
+
+CODEX_DESIGN_FILE=/custom/DESIGN.md ./scripts/sync_to_local.sh --targets codex
 ```
 
 如确需同步 AGENTS 模板，必须显式 opt in：

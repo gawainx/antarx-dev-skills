@@ -30,12 +30,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SRC_SKILLS_DIR="${REPO_ROOT}/skills"
 SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
+SRC_DESIGN_FILE="${REPO_ROOT}/DESIGN.md"
 PLUGIN_MANIFEST="${REPO_ROOT}/.claude-plugin/plugin.json"
 
 CODEX_SKILLS_DIR_RESOLVED="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 GROK_SKILLS_DIR_RESOLVED="${GROK_SKILLS_DIR:-$HOME/.grok/skills}"
 CLAUDE_SKILLS_DIR_RESOLVED="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
 TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
+TARGET_DESIGN_FILE="${CODEX_DESIGN_FILE:-$HOME/.codex/DESIGN.md}"
 
 BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
 CODEX_ONLY_SKILLS=(
@@ -366,6 +368,10 @@ if [[ "$CHECK_AGENTS" -eq 1 && ! -f "$SRC_AGENTS_FILE" ]]; then
   fail "missing source AGENTS.md.root: $SRC_AGENTS_FILE"
 fi
 
+if [[ ! -f "$SRC_DESIGN_FILE" ]]; then
+  fail "missing source DESIGN.md: $SRC_DESIGN_FILE"
+fi
+
 info "targets: ${TARGETS[*]}"
 
 for bad in "${BLACKLIST[@]}"; do
@@ -403,6 +409,23 @@ if [[ "$CHECK_AGENTS" -eq 1 ]]; then
   fi
 else
   info "skip AGENTS check; use --check-agents to opt in"
+fi
+
+if array_contains "codex" "${TARGETS[@]}"; then
+  if [[ ! -L "$TARGET_DESIGN_FILE" ]]; then
+    fail "Codex DESIGN.md is not a symlink: $TARGET_DESIGN_FILE"
+  else
+    resolved_design="$(resolve_symlink_target "$TARGET_DESIGN_FILE" 2>/dev/null || true)"
+    if [[ "$resolved_design" == "$SRC_DESIGN_FILE" ]]; then
+      pass "Codex DESIGN.md symlink is in sync"
+    else
+      fail "Codex DESIGN.md symlink target differs: $TARGET_DESIGN_FILE"
+      echo "  expected: $SRC_DESIGN_FILE"
+      echo "  actual:   ${resolved_design:-<unresolved>}"
+    fi
+  fi
+else
+  info "skip DESIGN.md check; codex is not among targets"
 fi
 
 for agent in "${TARGETS[@]}"; do
