@@ -2,7 +2,6 @@
 set -euo pipefail
 
 CHECK_AGENTS=0
-TARGETS_SPEC="all"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -12,8 +11,7 @@ SRC_DESIGN_FILE="${REPO_ROOT}/DESIGN.md"
 PLUGIN_MANIFEST="${REPO_ROOT}/.claude-plugin/plugin.json"
 CONFIG_FILE="${REPO_ROOT}/.env"
 
-unset ANTARX_SKILL_TARGETS CODEX_SKILLS_DIR GROK_SKILLS_DIR CLAUDE_SKILLS_DIR CODEX_AGENTS_FILE CODEX_DESIGN_FILE
-ANTARX_SKILL_TARGETS=""
+unset CODEX_SKILLS_DIR GROK_SKILLS_DIR CLAUDE_SKILLS_DIR CODEX_AGENTS_FILE CODEX_DESIGN_FILE
 CODEX_SKILLS_DIR=""
 GROK_SKILLS_DIR=""
 CLAUDE_SKILLS_DIR=""
@@ -45,7 +43,7 @@ load_config() {
     key="${line%%=*}"
     value="${line#*=}"
     case "$key" in
-      ANTARX_SKILL_TARGETS|CODEX_SKILLS_DIR|GROK_SKILLS_DIR|CLAUDE_SKILLS_DIR|CODEX_AGENTS_FILE|CODEX_DESIGN_FILE)
+      CODEX_SKILLS_DIR|GROK_SKILLS_DIR|CLAUDE_SKILLS_DIR|CODEX_AGENTS_FILE|CODEX_DESIGN_FILE)
         printf -v "$key" '%s' "$value"
         ;;
       *)
@@ -58,7 +56,6 @@ load_config() {
 
 load_config
 
-TARGETS_SPEC="${ANTARX_SKILL_TARGETS:-all}"
 CODEX_SKILLS_DIR_RESOLVED="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 GROK_SKILLS_DIR_RESOLVED="${GROK_SKILLS_DIR:-$HOME/.grok/skills}"
 CLAUDE_SKILLS_DIR_RESOLVED="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
@@ -70,14 +67,6 @@ while [[ $# -gt 0 ]]; do
     --check-agents)
       CHECK_AGENTS=1
       shift
-      ;;
-    --targets)
-      if [[ $# -lt 2 ]]; then
-        echo "--targets requires a comma-separated list (codex,grok,claude) or all" >&2
-        exit 2
-      fi
-      TARGETS_SPEC="$2"
-      shift 2
       ;;
     *)
       echo "Unknown argument: $1" >&2
@@ -147,37 +136,6 @@ find_source_skills() {
         printf '%s\0' "$(dirname "$skill_file")"
       done \
     | sort -z
-}
-
-##
-# Expand TARGETS_SPEC into the global TARGETS array.
-##
-parse_targets() {
-  local raw item
-  TARGETS=()
-  raw="$(printf '%s' "$TARGETS_SPEC" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
-  if [[ -z "$raw" ]]; then
-    echo "Empty --targets / ANTARX_SKILL_TARGETS value" >&2
-    exit 2
-  fi
-  if [[ "$raw" == "all" ]]; then
-    TARGETS=("codex" "grok" "claude")
-    return
-  fi
-  IFS=',' read -r -a TARGETS <<< "$raw"
-  if [[ "${#TARGETS[@]}" -eq 0 ]]; then
-    echo "No install targets resolved from: $TARGETS_SPEC" >&2
-    exit 2
-  fi
-  for item in "${TARGETS[@]}"; do
-    case "$item" in
-      codex|grok|claude) ;;
-      *)
-        echo "Unknown install target: $item (expected codex, grok, claude, or all)" >&2
-        exit 2
-        ;;
-    esac
-  done
 }
 
 skills_dir_for_target() {
@@ -393,7 +351,7 @@ check_target_installs() {
   info "[$agent] ${ok_count}/${expected_count} portable/managed skills verified"
 }
 
-parse_targets
+TARGETS=("codex" "grok" "claude")
 
 if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
   fail "missing source skills dir: $SRC_SKILLS_DIR"
@@ -407,7 +365,7 @@ if [[ ! -f "$SRC_DESIGN_FILE" ]]; then
   fail "missing source DESIGN.md: $SRC_DESIGN_FILE"
 fi
 
-info "targets: ${TARGETS[*]}"
+info "configured targets: ${TARGETS[*]}"
 
 for bad in "${BLACKLIST[@]}"; do
   if find "$SRC_SKILLS_DIR" -type d -name "$bad" -exec test -f '{}/SKILL.md' ';' -print -quit | grep -q .; then
