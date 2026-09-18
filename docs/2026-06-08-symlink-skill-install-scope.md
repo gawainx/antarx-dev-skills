@@ -53,7 +53,7 @@ Codex 仍然从扁平安装目录发现 skills：
 - 必要时创建 `CODEX_SKILLS_DIR`；
 - 将 `CODEX_SKILLS_DIR/<skill-name>` 创建或更新为指向对应源码 skill 目录的符号链接；
 - 保留现有黑名单 skill 处理逻辑；
-- 保留 `AGENTS.md.root` 显式 opt-in 同步逻辑。
+- 保留 `AGENTS.root.md` 显式 opt-in 同步逻辑。
 
 ### 4. 用链接校验替换 diff 校验
 
@@ -117,7 +117,7 @@ scripts/
 
 - `README.md`
 - `AGENTS.md`
-- `AGENTS.md.root`
+- `AGENTS.root.md`
 - `skills/maintenance/skill-improvement-ax/SKILL.md`
 - `skills/maintenance/skill-improvement-ax/references/workflow.md`
 - `skills/maintenance/writing-skills/SKILL.md`
@@ -131,7 +131,7 @@ scripts/
 - 不改变仓库源码目录结构。
 - 不改变 skill 名称或 skill frontmatter。
 - 不改变 Codex 扁平 skill 发现目录。
-- 不改变受保护的 `AGENTS.md.root` 同步策略。
+- 不改变受保护的 `AGENTS.root.md` 同步策略。
 - 不新增打包格式或注册表。
 - 不新增用于 skill 安装的 UI 或插件层。
 

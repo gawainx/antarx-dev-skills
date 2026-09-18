@@ -7,7 +7,7 @@ TARGETS_SPEC="all"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SRC_SKILLS_DIR="${REPO_ROOT}/skills"
-SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
+SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.root.md"
 SRC_DESIGN_FILE="${REPO_ROOT}/DESIGN.md"
 PLUGIN_MANIFEST="${REPO_ROOT}/.claude-plugin/plugin.json"
 CONFIG_FILE="${REPO_ROOT}/.env"
@@ -32,7 +32,7 @@ fail() { echo "[FAIL] $*"; FAIL=1; }
 
 load_config() {
   local line key value
-  [[ -f "$CONFIG_FILE" ]] || return
+  [[ -f "$CONFIG_FILE" ]] || return 0
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     [[ -z "$line" || "${line:0:1}" == "#" ]] && continue
@@ -390,7 +390,7 @@ if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
 fi
 
 if [[ "$CHECK_AGENTS" -eq 1 && ! -f "$SRC_AGENTS_FILE" ]]; then
-  fail "missing source AGENTS.md.root: $SRC_AGENTS_FILE"
+  fail "missing source AGENTS.root.md: $SRC_AGENTS_FILE"
 fi
 
 if [[ ! -f "$SRC_DESIGN_FILE" ]]; then
@@ -420,13 +420,16 @@ fi
 
 if [[ "$CHECK_AGENTS" -eq 1 ]]; then
   if array_contains "codex" "${TARGETS[@]}"; then
-    if [[ ! -f "$TARGET_AGENTS_FILE" ]]; then
-      fail "target AGENTS file missing: $TARGET_AGENTS_FILE"
+    if [[ ! -L "$TARGET_AGENTS_FILE" ]]; then
+      fail "Codex AGENTS.md is not a symlink: $TARGET_AGENTS_FILE"
     else
-      if cmp -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"; then
-        pass "AGENTS file is in sync"
+      resolved_agents="$(resolve_symlink_target "$TARGET_AGENTS_FILE" 2>/dev/null || true)"
+      if [[ -f "$TARGET_AGENTS_FILE" && "$resolved_agents" == "$SRC_AGENTS_FILE" ]]; then
+        pass "Codex AGENTS.md symlink is in sync"
       else
-        fail "AGENTS file differs from source: $TARGET_AGENTS_FILE"
+        fail "Codex AGENTS.md symlink target differs or is broken: $TARGET_AGENTS_FILE"
+        echo "  expected: $SRC_AGENTS_FILE"
+        echo "  actual:   ${resolved_agents:-<unresolved>}"
       fi
     fi
   else

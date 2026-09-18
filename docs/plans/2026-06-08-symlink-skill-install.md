@@ -10,7 +10,7 @@
 
 **技术栈：** Bash、`find`、`ln -s`、`readlink`、Codex Agent Skills 文件结构。
 
-**范围 / 非范围：** 只改安装、校验、skill-improvement-ax 路径解析和当前维护文档；不改 skill 名称、源码分组结构、Codex 扁平发现目录和 `AGENTS.md.root` 受保护同步策略。
+**范围 / 非范围：** 只改安装、校验、skill-improvement-ax 路径解析和当前维护文档；不改 skill 名称、源码分组结构、Codex 扁平发现目录和 `AGENTS.root.md` 受保护同步策略。
 
 ---
 
@@ -69,7 +69,7 @@
 **文件：**
 - 修改：`README.md`
 - 修改：`AGENTS.md`
-- 修改：`AGENTS.md.root`
+- 修改：`AGENTS.root.md`
 - 修改：`skills/maintenance/skill-improvement-ax/SKILL.md`
 - 修改：`skills/maintenance/skill-improvement-ax/references/workflow.md`
 - 修改：`skills/maintenance/writing-skills/SKILL.md`

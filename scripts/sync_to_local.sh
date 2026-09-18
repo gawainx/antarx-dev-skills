@@ -9,7 +9,7 @@ TARGETS_SPEC="all"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SRC_SKILLS_DIR="${REPO_ROOT}/skills"
-SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.md.root"
+SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.root.md"
 SRC_DESIGN_FILE="${REPO_ROOT}/DESIGN.md"
 CONFIG_FILE="${REPO_ROOT}/.env"
 
@@ -30,7 +30,7 @@ log() { echo "[sync] $*"; }
 
 load_config() {
   local line key value
-  [[ -f "$CONFIG_FILE" ]] || return
+  [[ -f "$CONFIG_FILE" ]] || return 0
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     [[ -z "$line" || "${line:0:1}" == "#" ]] && continue
@@ -383,7 +383,7 @@ if [[ ! -d "$SRC_SKILLS_DIR" ]]; then
 fi
 
 if [[ "$SYNC_AGENTS" -eq 1 && ! -f "$SRC_AGENTS_FILE" ]]; then
-  echo "Source AGENTS.md.root not found: $SRC_AGENTS_FILE" >&2
+  echo "Source AGENTS.root.md not found: $SRC_AGENTS_FILE" >&2
   exit 1
 fi
 
@@ -418,19 +418,28 @@ if [[ "$SYNC_AGENTS" -eq 1 ]]; then
   else
     run_cmd mkdir -p "$(dirname "$TARGET_AGENTS_FILE")"
 
-    if [[ -f "$TARGET_AGENTS_FILE" ]] \
-      && ! cmp -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE" \
-      && [[ "$FORCE_AGENTS" -ne 1 ]]; then
-      echo "Refusing to overwrite existing AGENTS file: $TARGET_AGENTS_FILE" >&2
-      echo "Re-run with --sync-agents --force-agents only after backing up or reviewing the target." >&2
-      exit 1
+    # Repository AGENTS.md is never an installation source.
+    resolved_agents=""
+    if [[ -L "$TARGET_AGENTS_FILE" ]]; then
+      resolved_agents="$(cd "$(dirname "$TARGET_AGENTS_FILE")" && cd "$(dirname "$(readlink "$TARGET_AGENTS_FILE")")" 2>/dev/null && printf '%s/%s\n' "$(pwd -P)" "$(basename "$(readlink "$TARGET_AGENTS_FILE")")")" || true
     fi
-
-    log "sync AGENTS.md.root -> $TARGET_AGENTS_FILE"
-    if [[ "$DRY_RUN" -eq 1 ]]; then
-      echo "[dry-run] cp '$SRC_AGENTS_FILE' '$TARGET_AGENTS_FILE'"
+    if [[ "$resolved_agents" == "$SRC_AGENTS_FILE" ]]; then
+      log "AGENTS symlink already correct: $TARGET_AGENTS_FILE"
     else
-      cp "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"
+      if [[ -e "$TARGET_AGENTS_FILE" || -L "$TARGET_AGENTS_FILE" ]]; then
+        if [[ -d "$TARGET_AGENTS_FILE" && ! -L "$TARGET_AGENTS_FILE" ]]; then
+          echo "Refusing to replace AGENTS directory: $TARGET_AGENTS_FILE" >&2
+          exit 1
+        fi
+        if [[ "$FORCE_AGENTS" -ne 1 ]]; then
+          echo "Refusing to replace existing AGENTS entry: $TARGET_AGENTS_FILE" >&2
+          echo "Re-run with --sync-agents --force-agents only after backing up or reviewing the target." >&2
+          exit 1
+        fi
+        run_cmd rm -f "$TARGET_AGENTS_FILE"
+      fi
+      log "link AGENTS.root.md -> $TARGET_AGENTS_FILE"
+      run_cmd ln -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"
     fi
   fi
 else

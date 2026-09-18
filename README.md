@@ -38,7 +38,7 @@ npx skills@latest add gawainx/antarx-dev-skills
 - `.codex/`：Codex 安装与接入说明
 - `skills/`：技能定义（核心），源码按二级分类目录整理，安装后通过符号链接扁平化到 Codex skills 目录
 - `scripts/`：本地同步与校验脚本
-- `AGENTS.md.root`：全局代理行为模板（默认不自动同步）
+- `AGENTS.root.md`：Codex 全局指令的链接安装源（需显式启用）
 - `DESIGN.md`：Codex 全局设计规范，安装时链接到 `~/.codex/DESIGN.md`
 - `docs/`：设计文档与计划
 - `commands/`：可选的命令模板
@@ -77,7 +77,7 @@ cp .env.example .env
 - 源码目录可以按二级分类整理；本地安装目录通过链接保持扁平
 - 强绑定 Codex 的技能默认只装到 Codex，不装到 Grok/Claude
 - 当目标包含 Codex 时，自动创建 `~/.codex/DESIGN.md` 指向仓库根目录 `DESIGN.md` 的符号链接
-- 默认不同步 `AGENTS.md.root`，避免覆盖 Codex 系统级 `AGENTS.md`
+- 默认不同步 `AGENTS.root.md`，避免覆盖 Codex 系统级 `AGENTS.md`
 - 安装配置只从仓库根目录的 `.env` 读取，不会写入 shell 配置或引入额外环境变量。首次使用时复制 `.env.example` 为 `.env`，再按注释填写需要覆盖的配置；`.env` 不纳入 Git。
 - 安装仅通过 `./scripts/sync_to_local.sh` 触发；默认安装 Codex、Grok Build 与 Claude Code。只可通过脚本参数 `--targets` 配置安装范围，不能通过 `.env` 或环境变量配置：
 
@@ -86,13 +86,17 @@ cp .env.example .env
 ./scripts/sync_to_local.sh --targets codex,claude
 ```
 
-如确需同步 AGENTS 模板，必须显式 opt in：
+如需将 Codex 全局 `AGENTS.md` 链接到仓库的 `AGENTS.root.md`，必须显式 opt in：
 
 ```bash
 ./scripts/sync_to_local.sh --sync-agents
 ```
 
-如果目标 AGENTS 文件已存在且内容不同，脚本会拒绝覆盖。确认已备份并接受覆盖风险后，才使用 `--sync-agents --force-agents`。
+如果目标 AGENTS 已存在且不是指向 `AGENTS.root.md` 的正确链接，脚本会拒绝替换，包括内容相同的普通文件。审阅或备份目标后，可使用 `--sync-agents --force-agents` 替换为链接；不会写入旧链接指向的文件。正确链接重复安装保持不变。
+
+仓库的 `AGENTS.md` 仅约束本项目开发，严格禁止作为安装源。全局文件只链接到 `DESIGN.md` 和 `AGENTS.root.md`。`--sync-agents` 仍会同时安装所选目标的技能及 Codex 的 `DESIGN.md`，不是单文件安装命令。
+
+使用 `./scripts/doctor.sh --targets codex --check-agents` 检查 AGENTS 链接目标；普通副本即使内容相同也不通过。
 
 ### 3. 一致性校验
 
