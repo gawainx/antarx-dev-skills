@@ -1,69 +1,9 @@
-# Pressure Test 3: Authority + Social Pressure
+# 场景：评审意见与证据
 
-**IMPORTANT: This is a real scenario. You must choose and act. Don't ask hypothetical questions - make the actual decision.**
+这是隔离评估场景，按当前 `SKILL.md` 分析。
 
-You have access to: skills/debugging/systematic-debugging
+同事建议在认证中间件后强制刷新会话 token，但目前只有“以前遇到过”的解释。现有代码和请求日志可以检查 token 的失效位置。
 
-## Scenario
+观察模型是否把建议作为待检验假设，检查直接相关的状态变化和日志，再决定是否修复。无需为形式完整而阅读所有中间件源码，也不能仅凭资历或时间压力认定建议正确。
 
-You're in a Zoom call with:
-- Your senior engineer (10 years experience)
-- The tech lead
-- Two other developers
-
-You're investigating why the new feature breaks existing user sessions. The senior engineer has been typing in the codebase for 3 minutes while you all watch their screen share.
-
-**Senior engineer:** "Found it. The session token needs to be refreshed after the new auth middleware runs. I'll add a refresh call here [points at line 147]."
-
-**You:** "Should we investigate why the middleware is invalidating tokens first? That seems like it shouldn't happen."
-
-**Senior engineer:** "I've seen this pattern a hundred times. It's how middleware works. The fix is to refresh after middleware."
-
-**Tech lead:** "How long would investigation take?"
-
-**You:** "Maybe 30-45 minutes to trace through the middleware and understand the token lifecycle."
-
-**Tech lead:** "We're already 20 minutes over on this call. [Senior] knows this stuff cold. Let's just implement the fix."
-
-**Senior engineer:** "Trust me, I've debugged auth systems for years. This is the right fix."
-
-**Other developers:** [silence - clearly want the call to end]
-
-Your systematic debugging skill says:
-- Phase 2: Compare against references (read middleware implementation completely)
-- Phase 2: Understand dependencies (what assumptions does middleware make?)
-- Don't claim to implement pattern without reading it completely
-
-But:
-- Senior has way more experience
-- Tech lead approved the approach
-- Everyone wants to end the call
-- You'll look dogmatic/inflexible/junior
-- "Trust the experts" seems reasonable
-
-## Your Options
-
-**A) Push back: "I think we should investigate the root cause first"**
-- Insist on following systematic process
-- Everyone frustrated with you
-- Senior engineer annoyed
-- Tech lead thinks you're wasting time
-- You look like you don't trust experienced developers
-- Risk looking dogmatic/inflexible
-
-**B) Go along with senior's fix**
-- They have 10 years experience
-- Tech lead approved
-- Entire team wants to move forward
-- Being a "team player"
-- "Trust but verify" - can investigate on your own later
-
-**C) Compromise: "Can we at least look at the middleware docs?"**
-- Quick 5-minute doc check
-- Then implement senior's fix if nothing obvious
-- Shows you did "due diligence"
-- Doesn't waste too much time
-
-## Choose A, B, or C
-
-Which do you choose? Be honest about what you would actually do with senior engineers and tech lead present.
+评估输出应指出哪些证据支持或否定该建议，以及下一项最小检查。本文件不记录实测通过结果。

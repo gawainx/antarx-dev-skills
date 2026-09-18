@@ -25,7 +25,6 @@ BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
 CODEX_ONLY_SKILLS=(
   "skill-creation-closeout"
   "skill-improvement-ax"
-  "workflow-review-packager"
 )
 log() { echo "[sync] $*"; }
 

@@ -1,4 +1,4 @@
 interface:
   display_name: "Skill Creation Closeout"
-  short_description: "Ask whether new skills should be managed here."
-  default_prompt: "Use $skill-creation-closeout after creating a skill to decide whether to import it into antarx-dev-skills."
+  short_description: "Import unmanaged skills into the source repository"
+  default_prompt: "使用 $skill-creation-closeout 检查本地技能是否尚未托管，并按已有授权导入仓库，不附带安装同步。"

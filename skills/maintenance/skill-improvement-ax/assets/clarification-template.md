@@ -21,4 +21,4 @@
 
 - Write source repo:
 - Sync local install:
-- Create branch, commit, push, and PR:
+- Create branch and commit:

@@ -1,4 +1,4 @@
 interface:
   display_name: "设计与计划文档编写"
-  short_description: "按固定顺序产出成对设计文档与分阶段开发计划（同需求同文件名）"
-  default_prompt: "使用 $design-plan-doc-writer，在需求澄清完成后按固定顺序产出设计文档与开发计划，并确保同一需求下文件名严格一致。"
+  short_description: "按项目文档模式复用已有设计，仅编写本轮请求的设计或开发计划文档"
+  default_prompt: "使用 $design-plan-doc-writer 沿用项目文档模式，复用已确认需求与设计，只编写我要求的设计或计划。"

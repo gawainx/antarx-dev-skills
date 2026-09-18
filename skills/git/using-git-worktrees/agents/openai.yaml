@@ -1,4 +1,4 @@
 interface:
   display_name: "Using Git Worktrees"
-  short_description: "Create isolated Git worktrees only when the task needs separation"
-  default_prompt: "Use $using-git-worktrees to decide whether a worktree is needed, ask for approval, and set up isolated work safely."
+  short_description: "Create isolated worktrees when the task needs them"
+  default_prompt: "使用 $using-git-worktrees 按任务需要和已有授权创建隔离工作区，并运行相关准备与验证。"

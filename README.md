@@ -21,23 +21,14 @@ npx skills@latest add gawainx/antarx-dev-skills
 
 ### 当前公开 skills
 
-- `brainstorming`：需求或方案不清晰时进行共创讨论
 - `dispatching-parallel-agents`：把独立任务并行派发给子代理
-- `receiving-code-review`：接收评审意见前先验证再落地
-- `requesting-code-review`：任务完成后发起代码评审
 - `merge-worktree-to-source-branch`：把 worktree 改动合回源分支
 - `using-git-worktrees`：需要隔离工作区时创建和使用 worktree
-- `experience-triage`：判断经验应沉淀到哪一层
-- `writing-skills`：创建、修改和验证 skills
-- `architecture-design`：讨论模块边界、依赖方向和数据流
 - `design-plan-doc-writer`：需求澄清后产出设计文档与开发计划
 - `requirement-clarification`：结合仓库现状澄清需求
 - `init-project-bootstrap`：初始化 Codex 持续开发文档骨架
-- `project-structure-migration`：迁移已有项目文档结构
 - `systematic-debugging`：按根因调查流程处理 bug 和失败
 - `test-driven-development`：按 RED-GREEN-REFACTOR 实现功能或修复
-- `verification-before-completion`：完成前运行验证并核对输出
-- `json-schema-design-assistant`：设计和增强 JSON Schema
 - `swiftui-macos-settings-window-pattern`：构建 macOS SwiftUI Settings 窗口
 - `ui-layout-discipline`：检查和实现稳定 UI 布局
 

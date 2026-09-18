@@ -1,4 +1,4 @@
 interface:
   display_name: "Test Driven Development"
-  short_description: "Use red-green-refactor loops for features and bug fixes"
-  default_prompt: "Use $test-driven-development to write a failing test first, make the smallest implementation pass, and then refactor safely."
+  short_description: "Use TDD for required or testable behavior changes"
+  default_prompt: "使用 $test-driven-development 按用户和项目要求，对适合自动断言的行为执行 RED-GREEN-REFACTOR。"

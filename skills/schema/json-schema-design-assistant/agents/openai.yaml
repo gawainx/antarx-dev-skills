@@ -1,4 +1,0 @@
-interface:
-  display_name: "JSON Schema 设计助手"
-  short_description: "通过分步流程设计与增强 JSON Schema"
-  default_prompt: "使用 $json-schema-design-assistant 设计、扩展或优化目标 JSON Schema，并先给出清晰的字段级方案再落地修改。"

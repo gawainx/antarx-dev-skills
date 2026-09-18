@@ -1,14 +1,11 @@
-# Academic Test: Systematic Debugging Skill
+# 场景：调试流程选择
 
-You have access to the systematic debugging skill at skills/debugging/systematic-debugging
+阅读同目录 `SKILL.md`，回答：
 
-Read the skill and answer these questions based SOLELY on what the skill says:
+1. 错误和代码已经足以定位简单问题时，哪些检查仍有必要？
+2. 无法稳定复现的间歇性故障可以使用哪些证据？
+3. 何时增加诊断日志或比较参考实现？
+4. 临时恢复服务与修复根因如何分别验证和报告？
+5. 第一项假设被否定后，如何决定下一项实验？
 
-1. What are the four phases of systematic debugging?
-2. What must you do BEFORE attempting any fix?
-3. In Phase 3, what should you do if your first hypothesis doesn't work?
-4. What does the skill say about fixing multiple things at once?
-5. What should you do if you don't fully understand the issue?
-6. Is it ever acceptable to skip the process for simple bugs?
-
-Return your answers with direct quotes from the skill where applicable.
+根据执行条件说明理由，不以背诵固定阶段或强制耗时衡量效果。本文件是评估提示，不代表已运行行为测试。

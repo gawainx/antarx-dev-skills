@@ -1,4 +1,4 @@
 interface:
   display_name: "UI Layout Discipline"
-  short_description: "Prevent UI layout hacks and padding stacks"
-  default_prompt: "Use this skill to audit UI layout responsibilities before creating, refactoring, or fixing SwiftUI, web UI, or declarative UI code."
+  short_description: "布局型修改主动审计受影响布局链，其他修改仅按用户要求审计"
+  default_prompt: "使用 $ui-layout-discipline 审计本次布局修改的受影响链路，定位约束并验证结果。"

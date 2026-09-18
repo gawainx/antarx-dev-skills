@@ -61,7 +61,7 @@ After editing, validate and sync:
 
 The sync step updates managed skill symlinks for the selected agent targets and maintains a managed shell rc block for `ANTARX_DEV_SKILLS_REPO`, skill install roots, and `CODEX_AGENTS_FILE`.
 
-## Git And PR
+## Git Commit
 
 Before changing branches:
 
@@ -84,11 +84,4 @@ Commit with a valid Conventional Commit message:
 git commit -m "docs: improve <skill-name> workflow"
 ```
 
-Push the branch and create a PR with `gh`:
-
-```bash
-git push -u origin codex/improve-<skill-name>-<short-desc>
-gh pr create --title "docs: improve <skill-name> workflow" --body-file <pr-body-file>
-```
-
-Use `assets/pr-body-template.md` for PR content. Include changed paths, validation output, and privacy/safety notes.
+Stop after verifying and committing the changes. Do not automatically push or create a PR.
