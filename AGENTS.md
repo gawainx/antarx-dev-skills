@@ -11,7 +11,6 @@
 1. 不要把 `~/.codex/skills`、`~/.grok/skills`、`~/.claude/skills` 当成源码编辑位置。
 2. 受管 skill 的安装项是指向本仓库 `skills/<category>/<skill-name>/` 的符号链接。
 3. 修改 skill 时只改本仓库源码，并验证本次差异、格式及相关引用。源码树按分类分组，安装目录保持扁平；源码维护与本机安装是独立操作。
-4. 以下技能默认仅安装到 Codex（强绑定 Codex 运维闭环），在 Grok/Claude 目标下跳过：`skill-improvement-ax`、`skill-creation-closeout`。
 
 ## Git 完成标准
 
