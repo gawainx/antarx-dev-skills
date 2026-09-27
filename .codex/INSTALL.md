@@ -1,53 +1,14 @@
-# Installing antarx-dev-skills for Codex
+# Codex 安装
 
-Enable local skills in Codex via native skill discovery.
-
-## Prerequisites
-
-- Git
-
-## Installation
-
-1. Clone this repository:
+技能统一使用官方 CLI 安装和管理：
 
 ```bash
-git clone <your-repo-url> ~/.codex/antarx-dev-skills
-cd ~/.codex/antarx-dev-skills
-cp .env.example .env
+npx skills add gawainx/antarx-dev-skills -g -a codex
+npx skills list -g -a codex
+npx skills update requirement-clarification -g
+npx skills remove requirement-clarification -g -a codex
 ```
 
-2. Sync skills into the Codex skills directory:
+安装时选择需要的技能；省略 `-g` 则安装到当前项目。安装后的技能由 CLI 管理，不链接到本仓库源码。
 
-```bash
-./scripts/sync_to_local.sh --dry-run
-./scripts/sync_to_local.sh
-```
-
-3. Restart Codex (quit and relaunch) so skills are discovered.
-
-## Verify
-
-```bash
-./scripts/doctor.sh
-```
-
-The source repository can keep skills grouped under `skills/<category>/<skill-name>/`.
-The sync script installs them flat under `~/.codex/skills/<skill-name>/`.
-It also creates `~/.codex/DESIGN.md` as a symlink to the repository's root `DESIGN.md`. Configure a different destination in the repository-local `.env`; use `.env.example` as the guide. The installer never writes shell configuration or adds environment variables.
-
-## Update
-
-```bash
-cd ~/.codex/antarx-dev-skills
-git pull
-./scripts/sync_to_local.sh
-./scripts/doctor.sh
-```
-
-## Uninstall
-
-Remove managed skill directories listed in `~/.codex/skills/.antarx-managed-skills`, if you want a full uninstall. Optionally remove local clone:
-
-```bash
-rm -rf ~/.codex/antarx-dev-skills
-```
+DESIGN 和 AGENTS 属于独立的全局文件配置，需要时参照 [README](../README.md#codex-全局文件) 显式安装。`scripts/sync_to_local.sh` 与 `scripts/doctor.sh` 不安装、更新、卸载或检查技能。
