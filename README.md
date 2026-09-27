@@ -26,11 +26,18 @@ npx skills@latest add gawainx/antarx-dev-skills
 - `using-git-worktrees`：需要隔离工作区时创建和使用 worktree
 - `design-plan-doc-writer`：需求澄清后产出设计文档与开发计划
 - `requirement-clarification`：结合仓库现状澄清需求
-- `init-project-bootstrap`：初始化 Codex 持续开发文档骨架
 - `systematic-debugging`：按根因调查流程处理 bug 和失败
 - `test-driven-development`：按 RED-GREEN-REFACTOR 实现功能或修复
 - `swiftui-macos-settings-window-pattern`：构建 macOS SwiftUI Settings 窗口
 - `ui-layout-discipline`：检查和实现稳定 UI 布局
+
+### 项目文档保存
+
+需求澄清、设计文档与开发计划默认保存在同一个 `r001-*.md` 文档中，按二级标题逐步补充，需求编号递增。DEVONthink MCP 可用时，优先调用 awesome-devonthink 的 `dt-writing-project-documents` 技能完成读取、修订与保存；该技能需要在使用环境中可读取，源码见 [awesome-devonthink](https://github.com/gawainx/awesome-devonthink/tree/master/using-dt-skills)。本仓库不自动安装该依赖。
+
+仅在 DEVONthink MCP 未安装或未启用时，自动保存到当前项目根目录的 `docs/r001-*.md`。已启用但调用失败、缺少目标 group 或对应技能不可读取时，报告具体问题；写入结果不明确时先核对，不自动另存一份。
+
+`init-project-bootstrap` 已日落，不再提供安装入口。本机归档位于 `.deprecated/init-project-bootstrap/`；`.deprecated/` 被 Git 忽略，归档副本不随仓库分发，历史版本可从 Git 历史恢复。
 
 ## 目录结构
 

@@ -6,7 +6,6 @@
     "./skills/git/using-git-worktrees",
     "./skills/planning/design-plan-doc-writer",
     "./skills/planning/requirement-clarification",
-    "./skills/project-bootstrap/init-project-bootstrap",
     "./skills/quality/systematic-debugging",
     "./skills/quality/test-driven-development",
     "./skills/ui/swiftui-macos-settings-window-pattern",

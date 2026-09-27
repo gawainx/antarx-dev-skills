@@ -1,4 +1,4 @@
 interface:
   display_name: "设计与计划文档编写"
-  short_description: "按项目文档模式复用已有设计，仅编写本轮请求的设计或开发计划文档"
-  default_prompt: "使用 $design-plan-doc-writer 沿用项目文档模式，复用已确认需求与设计，只编写我要求的设计或计划。"
+  short_description: "在同一需求文档中编写设计与计划，优先保存到 DEVONthink"
+  default_prompt: "使用 $design-plan-doc-writer 复用已确认需求与设计，在同一需求文档中编写我要求的章节，优先通过 DEVONthink 技能保存。"
