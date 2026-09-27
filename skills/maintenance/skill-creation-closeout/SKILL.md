@@ -7,7 +7,7 @@ description: 在新建或更新的本地 skill 尚未由 antarx-dev-skills 托�
 
 ## 1. 判断是否需要导入
 
-确认 skill 的实际来源和仓库位置。优先使用当前 antarx-dev-skills 工作目录，否则使用 `skill-improvement-ax` 的 `scripts/resolve_source_repo.sh` 定位；无法定位时询问路径，不通过安装同步修复定位问题。
+确认 skill 的实际来源和仓库位置。优先使用当前 antarx-dev-skills 工作目录，其次使用已配置的 `ANTARX_DEV_SKILLS_REPO`；无法定位时询问路径，并从确认的仓库根目录运行导入脚本。
 
 搜索仓库 `skills/` 下是否已有同名 skill，并检查本地安装项的真实路径。已托管或链接到仓库源码的 skill 直接结束，不重复导入。仅浏览、安装第三方 skill 或批量安装请求不触发本流程。
 

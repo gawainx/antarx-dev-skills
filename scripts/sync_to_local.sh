@@ -24,7 +24,6 @@ BLACKLIST=("skill-creator" "skill-installer" "swiftui-macos-llm-chat-module")
 # Strongly Codex-bound skills: install only to codex by default.
 CODEX_ONLY_SKILLS=(
   "skill-creation-closeout"
-  "skill-improvement-ax"
 )
 log() { echo "[sync] $*"; }
 

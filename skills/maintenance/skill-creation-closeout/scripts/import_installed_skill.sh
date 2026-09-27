@@ -33,7 +33,7 @@ is_blacklisted() {
 }
 
 ##
-# Resolve the antarx-dev-skills repository from cwd, env, or installed skill link.
+# Resolve the antarx-dev-skills repository from cwd or explicit environment config.
 ##
 resolve_repo() {
   if [[ -f "scripts/sync_to_local.sh" && -d "skills" ]]; then
@@ -43,12 +43,6 @@ resolve_repo() {
 
   if [[ -n "${ANTARX_DEV_SKILLS_REPO:-}" ]]; then
     printf '%s\n' "$ANTARX_DEV_SKILLS_REPO"
-    return
-  fi
-
-  local resolver="${LOCAL_SKILLS_DIR}/skill-improvement-ax/scripts/resolve_source_repo.sh"
-  if [[ -x "$resolver" ]]; then
-    "$resolver"
     return
   fi
 
