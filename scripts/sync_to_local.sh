@@ -278,27 +278,34 @@ install_skill_link() {
 }
 
 ##
+# Reject an existing DESIGN.md unless it links to this repository's source.
+##
+validate_design_target() {
+  if [[ -L "$TARGET_DESIGN_FILE" ]]; then
+    if [[ "$TARGET_DESIGN_FILE" -ef "$SRC_DESIGN_FILE" ]]; then
+      return
+    fi
+  elif [[ ! -e "$TARGET_DESIGN_FILE" ]]; then
+    return
+  fi
+
+  echo "DESIGN.md already exists and is not a link to this project's source: $TARGET_DESIGN_FILE" >&2
+  echo "Expected source: $SRC_DESIGN_FILE" >&2
+  echo "Stopped without replacing it. Review the existing entry and decide how to handle it before retrying." >&2
+  exit 1
+}
+
+##
 # Link the repository design conventions into Codex's system configuration.
 ##
 install_design_link() {
-  local resolved_dst
-
-  log "[codex] link DESIGN.md -> $TARGET_DESIGN_FILE"
-
+  validate_design_target
   if [[ -L "$TARGET_DESIGN_FILE" ]]; then
-    resolved_dst="$(cd "$(dirname "$TARGET_DESIGN_FILE")" && cd "$(dirname "$(readlink "$TARGET_DESIGN_FILE")")" 2>/dev/null && printf '%s/%s\n' "$(pwd -P)" "$(basename "$(readlink "$TARGET_DESIGN_FILE")")")" || true
-    if [[ "$resolved_dst" == "$SRC_DESIGN_FILE" ]]; then
-      if [[ "$DRY_RUN" -eq 1 ]]; then
-        echo "[dry-run] symlink already correct: '$TARGET_DESIGN_FILE' -> '$SRC_DESIGN_FILE'"
-      fi
-      return
-    fi
-    run_cmd rm -f "$TARGET_DESIGN_FILE"
-  elif [[ -e "$TARGET_DESIGN_FILE" ]]; then
-    echo "Refusing to replace existing DESIGN.md that is not a symlink: $TARGET_DESIGN_FILE" >&2
-    exit 1
+    log "[codex] DESIGN.md symlink already correct: $TARGET_DESIGN_FILE"
+    return
   fi
 
+  log "[codex] link DESIGN.md -> $TARGET_DESIGN_FILE"
   run_cmd mkdir -p "$(dirname "$TARGET_DESIGN_FILE")"
   run_cmd ln -s "$SRC_DESIGN_FILE" "$TARGET_DESIGN_FILE"
 }
@@ -398,6 +405,10 @@ fi
 
 parse_targets
 validate_source_skills
+
+if array_contains "codex" "${TARGETS[@]}"; then
+  validate_design_target
+fi
 
 log "targets: ${TARGETS[*]}"
 
