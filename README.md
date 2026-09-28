@@ -28,6 +28,7 @@ npx skills add gawainx/antarx-dev-skills -g -a codex
 | [ui-layout-discipline](skills/ui/ui-layout-discipline/SKILL.md) | 检查和修复 UI 布局 |
 | [swiftui-macos-settings-window-pattern](skills/ui/swiftui-macos-settings-window-pattern/SKILL.md) | 构建 macOS SwiftUI 设置窗口 |
 | [dida-task-creator](skills/integration/dida-task-creator/SKILL.md) | 使用本地 dida CLI 创建滴答清单任务 |
+| [writing-flavor-review](skills/writing/writing-flavor-review/SKILL.md) | 审查文章中的怪味、AI 味并提供局部修改建议 |
 
 ## 更新与卸载
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Writing Flavor Review"
+  short_description: "审查文章中的无依据猜测、假想反驳、自我辩护和冗余表达，提供局部修改建议"
+  default_prompt: "使用 $writing-flavor-review 审查这篇文章中的怪味和 AI 味，按位置与原句、具体问题、建议改法列出结果。"
