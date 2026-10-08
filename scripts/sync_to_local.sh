@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Install only Codex DESIGN.md and optionally AGENTS.md.
+# Install only Codex DESIGN.md, and optionally Codex AGENTS.md and/or Claude CLAUDE.md.
 
 DRY_RUN=0
 SYNC_AGENTS=0
 FORCE_AGENTS=0
+SYNC_CLAUDE=0
+FORCE_CLAUDE=0
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -13,9 +15,10 @@ SRC_AGENTS_FILE="${REPO_ROOT}/AGENTS.root.md"
 SRC_DESIGN_FILE="${REPO_ROOT}/DESIGN.md"
 CONFIG_FILE="${REPO_ROOT}/.env"
 
-unset CODEX_AGENTS_FILE CODEX_DESIGN_FILE
+unset CODEX_AGENTS_FILE CODEX_DESIGN_FILE CLAUDE_AGENTS_FILE
 CODEX_AGENTS_FILE=""
 CODEX_DESIGN_FILE=""
+CLAUDE_AGENTS_FILE=""
 
 log() { echo "[sync] $*"; }
 
@@ -32,7 +35,7 @@ load_config() {
     key="${line%%=*}"
     value="${line#*=}"
     case "$key" in
-      CODEX_AGENTS_FILE|CODEX_DESIGN_FILE)
+      CODEX_AGENTS_FILE|CODEX_DESIGN_FILE|CLAUDE_AGENTS_FILE)
         printf -v "$key" '%s' "$value"
         ;;
       *)
@@ -47,6 +50,7 @@ load_config
 
 TARGET_AGENTS_FILE="${CODEX_AGENTS_FILE:-$HOME/.codex/AGENTS.md}"
 TARGET_DESIGN_FILE="${CODEX_DESIGN_FILE:-$HOME/.codex/DESIGN.md}"
+TARGET_CLAUDE_FILE="${CLAUDE_AGENTS_FILE:-$HOME/.claude/CLAUDE.md}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -60,6 +64,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --force-agents)
       FORCE_AGENTS=1
+      shift
+      ;;
+    --sync-claude)
+      SYNC_CLAUDE=1
+      shift
+      ;;
+    --force-claude)
+      FORCE_CLAUDE=1
       shift
       ;;
     *)
@@ -110,7 +122,42 @@ install_design_link() {
   run_cmd ln -s "$SRC_DESIGN_FILE" "$TARGET_DESIGN_FILE"
 }
 
-if [[ "$SYNC_AGENTS" -eq 1 && ! -f "$SRC_AGENTS_FILE" ]]; then
+##
+# Link the repository's AGENTS.root.md into a target path (Codex AGENTS.md or Claude CLAUDE.md).
+# Refuses to replace an existing non-matching entry unless force=1.
+##
+install_agents_root_link() {
+  local target="$1" label="$2" force="$3"
+
+  run_cmd mkdir -p "$(dirname "$target")"
+
+  # Repository AGENTS.md is never an installation source.
+  local resolved=""
+  if [[ -L "$target" ]]; then
+    resolved="$(cd "$(dirname "$target")" && cd "$(dirname "$(readlink "$target")")" 2>/dev/null && printf '%s/%s\n' "$(pwd -P)" "$(basename "$(readlink "$target")")")" || true
+  fi
+  if [[ "$resolved" == "$SRC_AGENTS_FILE" ]]; then
+    log "$label symlink already correct: $target"
+    return
+  fi
+
+  if [[ -e "$target" || -L "$target" ]]; then
+    if [[ -d "$target" && ! -L "$target" ]]; then
+      echo "Refusing to replace $label directory: $target" >&2
+      exit 1
+    fi
+    if [[ "$force" -ne 1 ]]; then
+      echo "Refusing to replace existing $label entry: $target" >&2
+      echo "Re-run with --force-${label,,} only after backing up or reviewing the target." >&2
+      exit 1
+    fi
+    run_cmd rm -f "$target"
+  fi
+  log "link AGENTS.root.md -> $target"
+  run_cmd ln -s "$SRC_AGENTS_FILE" "$target"
+}
+
+if [[ ( "$SYNC_AGENTS" -eq 1 || "$SYNC_CLAUDE" -eq 1 ) && ! -f "$SRC_AGENTS_FILE" ]]; then
   echo "Source AGENTS.root.md not found: $SRC_AGENTS_FILE" >&2
   exit 1
 fi
@@ -125,36 +172,23 @@ if [[ "$FORCE_AGENTS" -eq 1 && "$SYNC_AGENTS" -ne 1 ]]; then
   exit 2
 fi
 
+if [[ "$FORCE_CLAUDE" -eq 1 && "$SYNC_CLAUDE" -ne 1 ]]; then
+  echo "--force-claude requires --sync-claude" >&2
+  exit 2
+fi
+
 install_design_link
 
 if [[ "$SYNC_AGENTS" -eq 1 ]]; then
-  run_cmd mkdir -p "$(dirname "$TARGET_AGENTS_FILE")"
-
-  # Repository AGENTS.md is never an installation source.
-  resolved_agents=""
-  if [[ -L "$TARGET_AGENTS_FILE" ]]; then
-    resolved_agents="$(cd "$(dirname "$TARGET_AGENTS_FILE")" && cd "$(dirname "$(readlink "$TARGET_AGENTS_FILE")")" 2>/dev/null && printf '%s/%s\n' "$(pwd -P)" "$(basename "$(readlink "$TARGET_AGENTS_FILE")")")" || true
-  fi
-  if [[ "$resolved_agents" == "$SRC_AGENTS_FILE" ]]; then
-    log "AGENTS symlink already correct: $TARGET_AGENTS_FILE"
-  else
-    if [[ -e "$TARGET_AGENTS_FILE" || -L "$TARGET_AGENTS_FILE" ]]; then
-      if [[ -d "$TARGET_AGENTS_FILE" && ! -L "$TARGET_AGENTS_FILE" ]]; then
-        echo "Refusing to replace AGENTS directory: $TARGET_AGENTS_FILE" >&2
-        exit 1
-      fi
-      if [[ "$FORCE_AGENTS" -ne 1 ]]; then
-        echo "Refusing to replace existing AGENTS entry: $TARGET_AGENTS_FILE" >&2
-        echo "Re-run with --sync-agents --force-agents only after backing up or reviewing the target." >&2
-        exit 1
-      fi
-      run_cmd rm -f "$TARGET_AGENTS_FILE"
-    fi
-    log "link AGENTS.root.md -> $TARGET_AGENTS_FILE"
-    run_cmd ln -s "$SRC_AGENTS_FILE" "$TARGET_AGENTS_FILE"
-  fi
+  install_agents_root_link "$TARGET_AGENTS_FILE" "AGENTS" "$FORCE_AGENTS"
 else
   log "skip AGENTS sync; use --sync-agents to opt in"
+fi
+
+if [[ "$SYNC_CLAUDE" -eq 1 ]]; then
+  install_agents_root_link "$TARGET_CLAUDE_FILE" "CLAUDE" "$FORCE_CLAUDE"
+else
+  log "skip CLAUDE sync; use --sync-claude to opt in"
 fi
 
 log "done"

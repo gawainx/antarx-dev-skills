@@ -9,7 +9,7 @@
 ## 安装与管理
 
 - 全部技能通过 `npx skills` 安装、更新、查询和卸载，由 CLI 管理安装位置与记录，不创建指向本仓库源码的技能安装链接。
-- `scripts/sync_to_local.sh` 和 `scripts/doctor.sh` 仅安装、检查 Codex 全局 DESIGN 与 AGENTS。安装源分别为 `DESIGN.md` 和 `AGENTS.root.md`；本文件仅约束仓库开发，禁止作为安装源。
+- `scripts/sync_to_local.sh` 和 `scripts/doctor.sh` 仅安装、检查 Codex 全局 DESIGN、Codex AGENTS 与 Claude CLAUDE.md。安装源分别为 `DESIGN.md` 和 `AGENTS.root.md`（后者同时是 Codex AGENTS 和 Claude CLAUDE.md 的安装源）；本文件仅约束仓库开发，禁止作为安装源。
 - 安装或更新须有本次用户明确授权，先核对范围与副作用，只处理指定技能和目标。源码维护、检查失败、历史安装状态及其他文档的自动同步要求均不构成授权；未安装是正常状态。
 - 不附带修改 shell 配置或安装、修改全局 AGENTS，除非用户明确授权。卸载仅清理来源已确认的安装项及记录，核对残留后不得重新安装。
 

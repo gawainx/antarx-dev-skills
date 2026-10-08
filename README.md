@@ -50,23 +50,26 @@ npx skills remove requirement-clarification -g
 
 需求澄清、设计和开发计划默认保存在同一文档中，按章节逐步补充。DEVONthink MCP 可用时，调用 [awesome-devonthink](https://github.com/gawainx/awesome-devonthink/tree/master/using-dt-skills) 的 `dt-writing-project-documents` 技能保存；使用该方式需另行提供对应技能。MCP 未安装或未启用时，保存到当前项目根目录的 `docs/`。
 
-## Codex 全局文件
+## Codex / Claude 全局文件
 
-本仓库另提供 [DESIGN.md](DESIGN.md) 和 [AGENTS.root.md](AGENTS.root.md)，按需独立安装。在本地仓库根目录运行：
+本仓库另提供 [DESIGN.md](DESIGN.md) 和 [AGENTS.root.md](AGENTS.root.md)，按需独立安装。`AGENTS.root.md` 可同时作为 Codex 的 `AGENTS.md` 和 Claude Code 的 `CLAUDE.md` 安装源。在本地仓库根目录运行：
 
 ```bash
-# 预览或安装 DESIGN
+# 预览或安装 DESIGN（仅 Codex）
 ./scripts/sync_to_local.sh --dry-run
 ./scripts/sync_to_local.sh
 
-# 同时安装 DESIGN 和 AGENTS
+# 同时安装 DESIGN 和 Codex AGENTS
 ./scripts/sync_to_local.sh --sync-agents
 
-# 检查 DESIGN；添加 --check-agents 同时检查 AGENTS
+# 同时安装 DESIGN 和 Claude CLAUDE.md
+./scripts/sync_to_local.sh --sync-claude
+
+# 检查 DESIGN；添加 --check-agents / --check-claude 同时检查对应链接
 ./scripts/doctor.sh
 ```
 
-这两个脚本仅处理全局文件。目标路径配置见 [.env.example](.env.example)。已有 DESIGN 非本项目来源时停止；替换已有 AGENTS 需明确使用 `--sync-agents --force-agents`。
+这两个脚本仅处理全局文件。目标路径配置见 [.env.example](.env.example)。已有 DESIGN 非本项目来源时停止；替换已有 AGENTS 需明确使用 `--sync-agents --force-agents`，替换已有 CLAUDE.md 需明确使用 `--sync-claude --force-claude`。
 
 ## 维护
 
