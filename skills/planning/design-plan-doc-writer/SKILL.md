@@ -1,91 +1,97 @@
 ---
 name: design-plan-doc-writer
-description: 需求澄清完成后，按用户要求编写设计文档或开发计划，在同一需求文档中更新对应章节。优先通过 DEVONthink 技能保存，MCP 未安装或未启用时保存到项目根目录 docs。
+description: After requirements are clarified, write the requested design document or development plan in the corresponding sections of the same requirement document. Prefer saving through the DEVONthink skill; use docs at the project root only when MCP is not installed or enabled.
 ---
 
-# 设计与计划文档编写
+# Design and Development Plan Writing
 
-仅在需求边界、约束与范围已稳定时撰写文档。
+Write documents only when requirement boundaries, constraints, and scope are stable.
 
-## 输入与产物
+## Inputs and deliverables
 
-复用已明确的需求、设计和用户决策，不重复确认。用户只要求设计时只写设计；只要求计划时基于已有设计写计划；要求两者时先设计后计划。缺少会影响计划的设计决策时，先解决该决策，不为补齐流程强制新建设计文档。
+Reuse established requirements, designs, and user decisions without reconfirming them. If the user requests only a design, write only the design; if only a plan, build it from the existing design; if both, write the design before the plan. Resolve missing design decisions that affect the plan first, without requiring a new design document merely to complete a process.
 
-## 选择保存位置
+## Choose a save location
 
-- 通过当前环境的工具发现机制确认 DEVONthink MCP 是否可用。
-- 可用时，读取并调用 `$dt-writing-project-documents` 保存本技能产出的内容，具体操作遵循该技能。
-- 仅在 MCP 未安装或未启用时，保存到当前项目根目录的 `docs/`。
+- Use the current environment's tool discovery mechanism to check whether DEVONthink MCP is available.
+- When available, read and invoke `$dt-writing-project-documents` to save this skill's output, following that skill's procedure.
+- Save to `docs/` at the current project root only when MCP is not installed or enabled.
 
-本地保存时使用 `<项目根目录>/docs/r001-short-title.md`，目录缺失时创建；保存后核对本次内容和保留章节，向用户提供文件路径。
+For local storage, use `<project-root>/docs/r001-short-title.md`, creating the directory if needed. After saving, verify the new content and preserved sections, and provide the file path to the user.
 
-## 工作流
+## Workflow
 
-1. 先确认需求澄清已完成；未完成则继续澄清。
-2. 按保存位置规则定位并读取当前需求文档，检查相关代码与项目约束；默认在同一文档中维护需求澄清、设计文档和开发计划。
-3. 阅读历史文档时，先服务于当前新特性的目标、范围和成功标准；历史文档中的约束边界不得直接作为新特性设计或开发计划的约束边界，至少不能作为第一优先级。
-4. 如果当前新特性与历史文档约束存在冲突，必须先请求用户确认取舍；禁止未经确认就基于历史约束写入设计文档或开发计划。
-5. 根据需求编号、标题和内容核对是否已有对应需求，不因阶段变化新建文件。
-6. 新需求检查项目已有需求编号，取最大值加一；无历史编号时从 `r001` 开始，至少三位。已有需求复用编号，不自动重编号。
-7. 若存在，先比较范围和内容。用户已明确要求更新的，直接更新对应内容；只有目标或替换范围存在歧义时才询问。
-8. 按用户要求更新同一文档的“设计文档”“开发计划”二级章节，保留已有需求澄清及无关内容。计划引用同一文档的设计章节。
-9. 严控范围，明确纳入范围与不纳入范围。
+1. Confirm that requirement clarification is complete; otherwise continue clarification.
+2. Locate and read the current requirement document using the save-location rules, and inspect relevant code and project constraints. By default, maintain requirement clarification, design, and development plan in the same document.
+3. When reading historical documents, prioritize the current feature's goals, scope, and success criteria. Do not directly adopt historical boundaries as constraints on the new feature's design or plan, or give them first priority.
+4. If the current feature conflicts with historical constraints, ask the user to resolve the tradeoff before writing those constraints into the design or development plan.
+5. Check requirement IDs, titles, and content for an existing matching requirement; do not create a new file just because the stage has changed.
+6. For a new requirement, increment the largest existing project requirement ID. Start at `r001` if none exist, using at least three digits. Reuse existing requirement IDs; do not renumber automatically.
+7. If a matching requirement exists, compare scope and content first. Apply an explicitly requested update directly; ask only if the target or replacement scope is ambiguous.
+8. Update the requested level-two "Design Document" and "Development Plan" sections in the same document, preserving existing clarification and unrelated content. Link the plan to the design section in that document.
+9. Control scope strictly, explicitly identifying what is included and excluded.
 
-## 输出规则
-- 语言跟随用户；默认简体中文。
-- 默认文件名为 `r001-short-title.md`，一级标题包含需求编号与名称，不含日期；日期可写在文档开头。用户明确指定的命名优先。
-- 需求澄清、设计文档、开发计划默认合为一个文件，以二级标题区分。本地路径为 `<项目根目录>/docs/r001-short-title.md`，后续阶段沿用已确定的需求文档。
-- 已有项目编号和文档先核对复用；需要迁移为新命名或合并旧文档时，先确认范围，保留原文件与无关内容。旧分离目录的存在不作为继续创建分离文件的理由。
-- 开发期间在同一文档的计划章节回写任务状态；只有用户验收后才标记需求完成，不自动移动到其他目录或 group。
-- 计划任务状态统一：`Designed | Coding | Testing | Finished`。
-- 开发计划中的“阶段”术语统一使用英文 `Stage`；禁止使用 `Phase`。
-- 计划仅覆盖本轮已确认范围，不得静默扩 scope。
-- 历史需求、设计文档和执行计划只能作为背景证据；禁止把其中的“非范围”“暂不实现”“不引入依赖”等负向边界直接写成当前新特性的范围限制。
+## Output rules
 
-## 设计文档结构
+- Follow the user's language; default to Simplified Chinese.
+- Default to `r001-short-title.md`, with the requirement ID and name in the level-one heading and no date in the filename or title. Dates may appear at the beginning of the document. Explicit user naming takes precedence.
+- Keep requirement clarification, design, and development plan in one file by default, separated by level-two headings. The local path is `<project-root>/docs/r001-short-title.md`; reuse the established document in later stages.
+- Check and reuse existing project IDs and documents first. Confirm scope before migrating names or consolidating old documents, preserving original files and unrelated content. Existing separate directories do not justify creating more separate files.
+- Update task status in the same document's plan section during development. Mark the requirement complete only after user acceptance; do not automatically move it to another directory or group.
+- Use task statuses consistently: `Designed | Coding | Testing | Finished`.
+- Use the English term `Stage` for development plan stages; do not use `Phase`.
+- Cover only the scope confirmed for this round; do not silently expand it.
+- Treat historical requirements, designs, and execution plans as background evidence only. Do not directly turn old exclusions such as "out of scope," "not implemented yet," or "no new dependencies" into restrictions on the current feature.
 
-在同一需求文档的 `## 设计文档` 下按需组织：
+## Design document structure
 
-1. `### 核心功能（WHAT）`
-2. `#### 需求背景（WHY）`
-3. `#### 需求目标（GOAL）`
-4. `#### 范围边界`
-5. `### 实现流程（HOW）`
-6. `### i18n` （如果不涉及则略过）
-7. `### 测试用例`
+Under `## Design Document` in the same requirement document, organize as needed:
 
-### 设计要求
-- 说明当前架构与最终技术决策。
-- 明确触点、状态归属、关键约束等信息；
-- 关键约束必须来自当前需求确认、当前架构事实或用户明确决策；如果约束来自历史文档且会影响当前新特性范围，必须先获得用户确认。
-- 如果涉及 UI 场景，需写清布局结构、工具栏归属、宽度策略、空态与稳定性策略。
-- 如果涉及国际化，`i18n` 需包含 key、占位符、语言映射、回退策略、影响面。
-- 测试分编译检查、手工检查、回归检查。
+1. `### Core Features (WHAT)`
+2. `#### Background (WHY)`
+3. `#### Goals (GOAL)`
+4. `#### Scope Boundaries`
+5. `### Implementation Flow (HOW)`
+6. `### i18n` (omit when irrelevant)
+7. `### Test Cases`
 
-## 开发计划结构
+### Design requirements
 
-在同一需求文档的 `## 开发计划` 下先引用设计章节，再按 Stage 和任务组织。
+- Explain the current architecture and final technical decisions.
+- Identify integration points, state ownership, and key constraints.
+- Derive key constraints from confirmed current requirements, current architectural facts, or explicit user decisions. Obtain user confirmation before applying a historical constraint that affects the new feature's scope.
+- For UI work, describe layout structure, toolbar ownership, width strategy, empty states, and stability strategy.
+- For internationalization, include keys, placeholders, language mappings, fallback strategy, and affected areas in `i18n`.
+- Separate build checks, manual checks, and regression checks.
 
-### 计划任务模板
-计划任务必须包含如下内容：
+## Development plan structure
 
-- `### Stage #N: [Stage 名]`
-- `#### 任务 #N: [任务名]`
+Under `## Development Plan` in the same requirement document, link to the design section first, then organize by Stage and task.
+
+### Task template
+
+Each task must include:
+
+- `### Stage #N: [Stage name]`
+- `#### Task #N: [Task name]`
 - `**Status:** Designed | Coding | Testing | Finished`
-- `**Files:** Create/Modify/Verify` 记录修改的文件
-- 功能 / 实现说明 / 预期验证结果：每个任务记录函数、实现功能、预期结果
+- `**Files:** Create/Modify/Verify`, listing affected files
+- Functionality / implementation notes / expected validation results: record the functions, behavior to implement, and expected outcomes for each task.
 
-### 计划要求
-- 至少 1 个 Stage，每个 Stage 至少 1 个任务。
-- 每个任务必须可验证，建议 15-90 分钟颗粒度。
-- 风险驱动验证：高风险变更要求更强自动化或迁移校验。
-- 增加最终整体验证任务（构建/回归检查 + 计划状态回写）。
-- 完成每个 Stage 后进行 1 次原子提交。
+### Plan requirements
 
-## 旧文档处理
-- 无对应需求：在已确定的位置创建一个需求文档，仅写本轮已授权的章节。
-- 有对应需求：更新同一文档中的相关章节，保留无关内容，仅对目标或合并范围的实质歧义询问。
+- Include at least one Stage, with at least one task per Stage.
+- Make every task verifiable; a duration of 15-90 minutes is recommended.
+- Use risk-driven validation: high-risk changes require stronger automation or migration checks.
+- Add a final integrated validation task covering build/regression checks and plan status updates.
+- Make one atomic commit after completing each Stage.
 
-## 参考
-- 参考 `references/framework.md`。
-- 参考 `assets/r001-inspector-panel.md` 中的单需求文档示例；示例编号不是新需求的固定编号。
+## Existing documents
+
+- No matching requirement: create one requirement document at the established location, containing only sections authorized for this round.
+- Matching requirement: update relevant sections in the same document, preserve unrelated content, and ask only about material ambiguity in the target or consolidation scope.
+
+## References
+
+- See `references/framework.md`.
+- See `assets/r001-inspector-panel.md` for a single-document example. Its example ID is not a fixed ID for new requirements.

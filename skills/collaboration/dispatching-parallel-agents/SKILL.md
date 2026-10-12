@@ -1,43 +1,50 @@
 ---
 name: dispatching-parallel-agents
-description: 当存在 2 个及以上彼此独立、无共享状态且无顺序依赖的任务时使用，用于并行派发子代理提升排障与实现效率。
+description: Use when two or more tasks are independent, share no state, and have no sequential dependencies, to dispatch subagents in parallel for troubleshooting and implementation.
 ---
 
-# 并行派发子代理
+# Dispatching Parallel Agents
 
-## 核心原则
-一个独立问题域对应一个代理，并发处理，最后统一集成。
+## Core principle
 
-## 何时使用
-- 多个失败分布在不同测试文件/子系统，根因明显独立。
-- 每个问题无需依赖其他问题结论即可推进。
-- 代理之间不会争用同一状态或同一改动面。
+Assign one agent to each independent problem domain, work concurrently, and integrate the results afterward.
 
-不适用：
-- 问题强相关（修一个可能联动修其他）。
-- 必须先建立全局系统理解。
-- 会发生文件冲突或共享资源干扰。
+## When to use
 
-## 执行模式
-1. 先按问题域分组（按文件、子系统、错误簇）。
-2. 每个代理只给单一清晰目标与约束。
-3. 并行派发。
-4. 回收结果后做人审：冲突检查、全量验证、再集成。
+- Failures span different test files or subsystems with clearly independent root causes.
+- Each problem can progress without findings from the others.
+- Agents will not compete for the same state or edit surface.
 
-## 任务提示词要求
-- 聚焦：只给一个问题域。
-- 自洽：给足上下文、错误信息、测试名。
-- 约束明确：是否允许改生产代码、是否只改测试。
-- 输出明确：必须返回“根因 + 改动摘要 + 验证结果”。
+Do not use when:
 
-## 常见错误
-- 任务过大导致代理发散。
-- 只说“修 race”不给定位信息。
-- 不设约束导致大范围重构。
-- 不做最终统一验证。
+- Problems are closely related, so fixing one may affect another.
+- A global understanding of the system must come first.
+- File conflicts or interference with shared resources would occur.
 
-## 验证闭环
-1. 审阅每个代理摘要。
-2. 检查改动冲突与覆盖面。
-3. 跑全量或目标回归。
-4. spot check 防系统性误修。
+## Execution pattern
+
+1. Group work by problem domain: files, subsystems, or error clusters.
+2. Give each agent one clear goal and explicit constraints.
+3. Dispatch agents in parallel.
+4. Review returned results for conflicts, validate the complete result, and integrate.
+
+## Task prompt requirements
+
+- Focus: assign only one problem domain.
+- Self-contained context: provide sufficient context, errors, and test names.
+- Explicit constraints: specify whether production code may change or only tests.
+- Explicit output: require root cause, change summary, and validation results.
+
+## Common mistakes
+
+- Overly broad tasks that let agents lose focus.
+- Asking only to "fix the race" without location details.
+- Missing constraints that lead to broad refactoring.
+- Skipping final integrated validation.
+
+## Validation loop
+
+1. Review each agent's summary.
+2. Check for conflicting edits and coverage gaps.
+3. Run the full suite or targeted regression checks.
+4. Spot-check for systematic incorrect fixes.

@@ -3,7 +3,7 @@
 ## 源码与风格
 
 - 技能源码统一维护在 `skills/<category>/<skill-name>/SKILL.md`，配套文件按需放在同目录；不直接编辑技能安装目录。参考资料和计划放在 `docs/`。
-- 技能目录使用小写短横线命名；内容以简体中文编写，保持简洁、行动导向并明确触发条件。技能名和 `openai.yaml` 的 `display_name` 优先使用英文。
+- 技能目录使用小写短横线命名；技能内容以英文编写，保持简洁、行动导向并明确触发条件。技能名和 `openai.yaml` 的 `display_name` 使用英文。
 - Shell 脚本使用 Bash 并启用 `set -euo pipefail`；非中文文件优先使用 ASCII。
 
 ## 安装与管理

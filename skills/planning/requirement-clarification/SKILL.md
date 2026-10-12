@@ -1,74 +1,74 @@
 ---
 name: requirement-clarification
-description: 当用户明确要求澄清、重新梳理或继续确认需求时使用，厘清目标、范围和验收条件。普通设计、规划或实现请求不自动触发。
+description: Clarify goals, scope, and acceptance criteria when the user explicitly asks to clarify, reorganize, or continue confirming requirements. Ordinary design, planning, or implementation requests do not trigger this skill automatically.
 ---
 
-# 需求澄清
+# Requirement Clarification
 
-## 1. 理解用户需求
+## 1. Understand the user's requirement
 
-先阅读用户当前描述和相关对话，提取：谁在什么场景下遇到什么问题、期望得到什么结果、明确提出了哪些约束、怎样判断需求已满足。用简短文字复述理解；缺失信息标为待核实，不补造答案。
+Read the user's current description and relevant conversation first. Identify who encounters what problem in which scenario, the desired outcome, explicit constraints, and how completion will be judged. Briefly restate your understanding. Mark missing information for verification; do not invent answers.
 
-识别含义不清且会改变需求范围的核心概念，带着这些缺口核对仓库，再向用户确认。不要直接把用户概念替换成技术模式，或用现有模块划定需求范围。
+Identify ambiguous core concepts that could change scope, inspect the repository with those gaps in mind, then confirm them with the user. Do not directly replace the user's concepts with technical patterns or let existing modules define the requirement's scope.
 
-用户纠正理解时，更新需求表述，撤回依赖旧理解的结论，再继续。
+When the user corrects your understanding, update the requirement, withdraw conclusions based on the old interpretation, and continue.
 
-## 2. 检索项目上下文与外部资料
+## 2. Research project context and external sources
 
-需求调研须覆盖目标项目代码与文档、对应的 DEVONthink group 和互联网。目标项目指本技能被触发时当次需求所在的代码仓；所有项目来源均从该仓库及用户提供的上下文确定，不从技能源码仓库或安装目录获取或回退。
+Requirement research must cover the target project's code and documents, its corresponding DEVONthink group, and the internet. The target project is the code repository for the requirement that triggered this skill. Derive all project sources from that repository and user-provided context; do not source them from, or fall back to, the skill's source repository or installation directory.
 
-围绕上述需求，用 `rg`、`rg --files` 查找相关源码和文档，跳过依赖、缓存与构建目录，确认当前行为、已有能力和实际限制。
+Use `rg` and `rg --files` to find relevant source code and documents, skipping dependency, cache, and build directories. Verify current behavior, existing capabilities, and actual limitations.
 
-读取目标项目代码仓中的 `AGENTS.md` 和 `AGENTS.*.md`，提取其中指定的 DEVONthink group，并合并用户明确提供的来源；用户明确限定或替换范围时遵循其指示。通过当前环境的工具发现机制确认 DEVONthink MCP 是否可用，在上述 group 及其子 group 内检索并阅读与当前需求有关的需求、设计、决策等资料，不默认扩大到全库。未配置 group 且用户未提供来源时，询问来源；链接无法访问或工具不可用时，说明具体阻碍并继续其他可执行的调研，不将受阻的检索标记为已完成。
+Read `AGENTS.md` and `AGENTS.*.md` in the target repository, extract their designated DEVONthink groups, and combine them with sources explicitly provided by the user. Follow explicit user restrictions or replacements of the search scope. Discover whether DEVONthink MCP is available through the current environment's tool discovery mechanism. Search and read relevant requirements, designs, decisions, and other material within those groups and their subgroups; do not expand to the whole database by default. If no group is configured and the user supplied no source, ask for one. If a link is inaccessible or tools are unavailable, explain the specific blocker and continue other feasible research; do not mark blocked searches as completed.
 
-将 DEVONthink 资料与仓库现状交叉核对，保留相关记录的来源引用。历史文档用于核对事实，不自动继承其中的“非范围”“暂不实现”等旧边界。历史限制仍可能影响当前目标时，查清原因，并把需要用户取舍的冲突带到下一步。技能源码只描述来源发现规则，不写入维护环境的实际 group、绝对路径或其他本机环境信息。
+Cross-check DEVONthink material against the repository's current state, retaining source references for relevant records. Use historical documents to verify facts without automatically inheriting old exclusions such as "out of scope" or "not implemented yet." If an old restriction may still affect the current goal, investigate why and bring conflicts requiring a user decision to the next step. Skill source should describe source-discovery rules only; do not embed actual groups, absolute paths, or other local details from the maintenance environment.
 
-主动搜索互联网，尤其查找解决类似需求的开源项目及其文档、源码和示例，了解已有能力、使用方式和限制，不必等到遇到陌生术语才搜索。将相关发现与用户场景、仓库现状对照，说明可借鉴之处及不适用的条件，并附来源；不把外部实现直接当作用户需求。
+Proactively search the internet, especially open-source projects that address similar requirements and their documentation, code, and examples. Understand their capabilities, usage, and limitations without waiting for an unfamiliar term. Compare relevant findings with the user's scenario and repository state, explain what can be reused and under which conditions it does not apply, and cite sources. Do not treat an external implementation as the user's requirement.
 
-不确定的外部术语、产品能力或规范先查可靠来源；用户自定义概念留待下一步确认。继续或重新澄清时，复用仍然有效的调研，只补查变化和缺口。
+Verify uncertain external terms, product capabilities, or standards using reliable sources first; confirm user-defined concepts in the next step. When resuming or revisiting clarification, reuse research that remains valid and investigate only changes and gaps.
 
-## 3. 解决影响需求的问题
+## 3. Resolve questions that affect the requirement
 
-检查尚未确定的信息是否会改变目标、范围、用户可见行为或验收条件。能通过已有上下文或调研解决的自行核实；需要用户判断的，在对话中提问，每轮最多 5 个，优先解决会影响后续问题的事项。
+Check whether unresolved information changes the goal, scope, user-visible behavior, or acceptance criteria. Verify what can be resolved through existing context or research yourself. Ask questions requiring user judgment in the conversation, at most five per round, prioritizing issues that affect later questions.
 
-每个问题必须说明：相关的仓库现状或已核实的能力缺口、它对当前需求的影响，以及需要用户决定什么。给出对应文件或代码位置；未找到相关实现时，说明查找范围和缺口，不虚构关联。无法说明答案会影响什么需求结论的问题不问。
+Every question must explain the relevant repository state or verified capability gap, its effect on the current requirement, and the decision the user must make. Provide the corresponding file or code location. If no related implementation was found, describe the search scope and gap without inventing a connection. Do not ask a question unless you can explain which requirement conclusion its answer affects.
 
-方案选择题给出推荐项、真实可行的备选项及主要差异；事实缺失题直接询问缺失信息，不强凑选项。
+For choices between approaches, provide a recommendation, genuinely viable alternatives, and the main differences. For missing facts, ask directly for the information instead of forcing a multiple-choice format.
 
-等待用户回答后更新需求，再检查剩余问题。没有需要用户判断的问题时，直接进入下一步。
+Wait for the user's answer, update the requirement, then check remaining questions. If no user decision is needed, proceed directly to the next step.
 
-涉及布局、流程、状态或关系，且图示比文字更清楚时，附简洁的 Mermaid 图或文本示意图，标明需要讨论的边界。
+For layout, workflows, states, or relationships, include a concise Mermaid diagram or text sketch when it is clearer than prose, marking boundaries that need discussion.
 
-## 4. 输出澄清结果
+## 4. Present the clarification
 
-按以下顺序输出，内容简短时可以合并：
+Use this order, combining items when the content is brief:
 
-- 需求理解：用户场景、目标和预期结果。
-- 范围与约束：明确纳入的内容，以及用户明确排除的内容。
-- 验收条件：可观察、可核对的完成标准。
-- 项目关联：与需求有关的仓库现状、DEVONthink 资料、限制和依据，附相关来源，必要时附开源实现的参考结论与来源。
+- Requirement understanding: user scenario, goal, and expected outcome.
+- Scope and constraints: explicitly included items and items explicitly excluded by the user.
+- Acceptance criteria: observable, verifiable completion conditions.
+- Project connections: relevant repository state, DEVONthink material, limitations, and supporting evidence, with sources. Include findings and sources from open-source implementations when useful.
 
-仍有需要用户决策的问题时，留在对话中继续澄清，不写入需求澄清文档；文档只记录已明确的需求、事实和决策。
+If user decisions remain unresolved, continue clarification in the conversation instead of writing them into the requirement clarification document. Record only established requirements, facts, and decisions in the document.
 
-## 5. 保存已确认的需求
+## 5. Save confirmed requirements
 
-用户要求保存或项目工作流要求持久化时才执行；仅讨论或审查时在对话中输出，不因澄清完成自动写入。
+Save only when the user requests it or the project workflow requires persistence. For discussion or review alone, respond in the conversation; completing clarification does not automatically authorize writing a document.
 
-### 选择保存位置
+### Choose a save location
 
-- 通过当前环境的工具发现机制确认 DEVONthink MCP 是否可用。
-- 可用时，读取并调用 `$dt-writing-project-documents` 保存本技能产出的内容，具体操作遵循该技能。
-- 仅在 MCP 未安装或未启用时，保存到当前项目根目录的 `docs/`。
+- Use the current environment's tool discovery mechanism to check whether DEVONthink MCP is available.
+- When available, read and invoke `$dt-writing-project-documents` to save this skill's output, following that skill's procedure.
+- Save to `docs/` at the current project root only when MCP is not installed or enabled.
 
-### 单需求文档
+### Single requirement document
 
-- 默认使用 `r001-short-title.md`，需求澄清、设计文档、开发计划以二级标题放在同一文档中。当前只写已明确的需求澄清，后续设计与计划更新同一文档，不预先编造内容或另建分离文件。
-- 创建前核对当前项目的已有需求文档与编号；已有需求复用文档及编号，新需求取现有最大编号加一，无历史编号时从 `r001` 开始。编号至少三位，文件名不含日期。
-- 后续设计与计划沿用已确定的需求文档。
-- 已有分离文档需要合并时，先确认合并目标和范围，保留原文件及无关内容；不因采用新默认值擅自搬移、删除或重编号。
+- Default to `r001-short-title.md`, with requirement clarification, design, and development plan as level-two sections in the same document. Write only confirmed clarification now; update the same document for later design and planning without inventing content in advance or creating separate files.
+- Before creation, check the current project's existing requirement documents and IDs. Reuse the document and ID for an existing requirement. For a new one, increment the largest ID, starting at `r001` if none exist. Use at least three digits and no date in the filename.
+- Reuse the established requirement document for later design and planning.
+- Before consolidating existing separate documents, confirm the target and scope and preserve original files and unrelated content. Do not move, delete, or renumber documents merely to adopt a new default.
 
-### 本地保存
+### Local storage
 
-使用 `<项目根目录>/docs/r001-short-title.md`，目录缺失时创建。保存后核对本次内容和保留章节，向用户提供文件路径。
+Use `<project-root>/docs/r001-short-title.md`, creating the directory if needed. After saving, verify the new content and preserved sections, and provide the file path to the user.
 
-完成本轮输出及已授权的保存后结束本流程。只有用户明确要求时，才继续设计、开发计划或实现。
+End the workflow after completing this round's output and authorized saving. Continue to design, development planning, or implementation only when the user explicitly requests it.

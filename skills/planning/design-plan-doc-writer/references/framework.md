@@ -1,24 +1,24 @@
-# 设计与计划文档编写框架
+# Design and Development Plan Writing Framework
 
-## 触发模式
+## Trigger
 
-需求澄清已完成，且用户明确要求编写设计、开发计划或两者时使用。仅探索需求、纯实现任务或聊天总结不触发文档编写。
+Use after requirement clarification is complete and the user explicitly requests a design, a development plan, or both. Requirement exploration alone, implementation-only tasks, and conversation summaries do not trigger document writing.
 
-## 文档组织与保存
+## Document organization and storage
 
-- 保存位置与操作入口遵循 `SKILL.md`。
-- 默认每个需求一个 `r001-short-title.md`，用“需求澄清”“设计文档”“开发计划”二级标题分区。本轮只写用户要求的章节，不为补齐结构扩充范围。
-- 新需求取项目已有最大需求编号加一；已有需求沿用编号和记录。标题与引用中的编号保持一致，不按编写阶段分配新编号。
-- 先读取已有需求文档与相邻实现，再补充设计或计划。计划使用同文档的设计章节引用；跨文档引用使用实际文件位置或 DEVONthink URL。
-- 已有分离文件的合并需要明确目标与范围，不擅自迁移、删除、重编号或另建副本。后续阶段沿用已确定的需求文档。
-- 开发期间在同一文档更新计划状态；用户验收后标记需求完成，不自动搬移文档。
+- Follow `SKILL.md` for save locations and tool entry points.
+- Default to one `r001-short-title.md` per requirement, with level-two headings for "Requirement Clarification," "Design Document," and "Development Plan." Write only the requested sections in this round; do not expand scope to fill the structure.
+- For new requirements, increment the project's largest requirement ID. Reuse the ID and record for existing requirements. Keep IDs consistent in titles and references; do not assign a new ID for each writing stage.
+- Read the existing requirement document and adjacent implementation before adding a design or plan. Link the plan to the design section in the same document; for references to other documents, use actual file locations or DEVONthink URLs.
+- Consolidating existing separate files requires a clear target and scope. Do not migrate, delete, renumber, or create copies without authorization. Reuse the established requirement document in later stages.
+- Update plan status in the same document during development. Mark the requirement complete after user acceptance; do not automatically move the document.
 
-## 编写检查清单
+## Writing checklist
 
-1. 当前范围与成功标准已明确；历史文档中的负向边界不自动成为当前需求限制。
-2. 设计点明实际架构、状态归属、模块触点和已确认的技术决策。
-3. 涉及 UI 时说明布局结构、空态、宽度和稳定性；涉及国际化时补充 key、占位符、语言映射与回退策略。
-4. 测试用例描述预期行为与适当验证方式，不堆砌开发流水账。
-5. 计划按依赖关系划分 Stage，必要时细分任务；状态统一为 `Designed | Coding | Testing | Finished`。
-6. 每项任务记录 Create/Modify/Verify 文件、实现内容和预期验证结果，最终任务包含整体验证与计划状态回写。
-7. 完成每个 Stage 后进行一次原子提交。
+1. Current scope and success criteria are clear; historical exclusions do not automatically restrict the current requirement.
+2. The design identifies the actual architecture, state ownership, module integration points, and confirmed technical decisions.
+3. For UI work, explain layout structure, empty states, widths, and stability. For internationalization, include keys, placeholders, language mappings, and fallback strategy.
+4. Test cases describe expected behavior and appropriate verification, without accumulating a development activity log.
+5. Divide the plan into Stages by dependency, subdividing into tasks when needed. Use consistent statuses: `Designed | Coding | Testing | Finished`.
+6. Each task records Create/Modify/Verify files, implementation details, and expected validation results. The final task includes integrated validation and plan status updates.
+7. Make one atomic commit after completing each Stage.

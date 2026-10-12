@@ -1,30 +1,30 @@
 ---
 name: using-git-worktrees
-description: 当用户要求 worktree，或并行实现、脏工作区确实需要隔离时使用。只读分析和不需要隔离的小改动不触发；用户已授权创建时直接执行。
+description: Use when the user requests a worktree, or parallel implementation or a dirty workspace genuinely requires isolation. Do not trigger for read-only analysis or small changes that need no isolation. Proceed directly when creation is already authorized.
 ---
 
-# 使用 Git Worktrees
+# Using Git Worktrees
 
-## 1. 判断隔离需要与授权
+## 1. Assess isolation needs and authorization
 
-检查当前任务、工作区状态和 `git worktree list --porcelain`。只有独立实现会争用同一工作树，或新改动无法与已有修改可靠分离时，才主动建议隔离。用户已经要求 worktree 或批准了包含该操作的方案时，直接继续；否则说明具体原因后请求一次确认。
+Inspect the current task, workspace status, and `git worktree list --porcelain`. Propose isolation only when independent implementations would compete for the same working tree, or new edits cannot be reliably separated from existing changes. Proceed directly if the user has requested a worktree or approved a plan that includes one; otherwise explain the specific reason and request confirmation once.
 
-## 2. 选择目录与分支
+## 2. Choose a directory and branch
 
-优先使用用户指定路径，其次是适用的 AGENTS.md、CLAUDE.md 或项目配置，再其次是已有 `.worktrees/`、`worktrees/`。均未指定时，使用 `.worktrees/`。用户指定位置优先于默认值。
+Prefer the user-specified path, then applicable AGENTS.md, CLAUDE.md, or project configuration, then existing `.worktrees/` or `worktrees/` directories. If none is specified, use `.worktrees/`. The user's location takes precedence over defaults.
 
-创建前用 `git check-ignore` 检查实际选中的仓库内 worktree 路径；未忽略时补充对应 `.gitignore` 规则并按仓库要求提交。仓库外路径无需忽略。核对目标目录、分支是否已存在或被其他 worktree 占用，不覆盖既有工作。
+Before creation, use `git check-ignore` on the actual selected in-repository worktree path. If it is not ignored, add the corresponding `.gitignore` rule and commit according to repository requirements. Paths outside the repository need no ignore rule. Check whether the target directory or branch already exists or is used by another worktree; do not overwrite existing work.
 
-## 3. 创建并准备工作区
+## 3. Create and prepare the workspace
 
-按用户或仓库约定选择分支名，默认使用 `codex/` 前缀。新分支使用 `git worktree add -b <branch> <path>`；已有分支使用 `git worktree add <path> <branch>`。用户指定起点时附上该引用，否则沿用已确认的任务起点。
+Choose a branch name according to user or repository conventions, defaulting to the `codex/` prefix. For a new branch, use `git worktree add -b <branch> <path>`; for an existing branch, use `git worktree add <path> <branch>`. Append the user's specified starting ref when provided; otherwise use the confirmed task starting point.
 
-仅在下一步工作需要时安装依赖，命令取自项目文档、锁文件和实际包管理器，不凭单个配置文件猜测。按任务风险运行相关基线检查，不固定运行全量测试，也不为已授权范围内的常规验证重复询问。
+Install dependencies only when the next step requires them. Derive commands from project documentation, lockfiles, and the actual package manager; do not guess from a single configuration file. Run relevant baseline checks according to task risk, without always running the full suite or repeatedly asking about routine validation within the authorized scope.
 
-基线失败时先判断是否属于既有问题及是否阻碍当前任务。记录不相关失败并继续独立工作；只有失败导致无法推进或需要新增决策时才询问用户。
+If baseline checks fail, determine whether the failure is pre-existing and whether it blocks this task. Record unrelated failures and continue independent work. Ask the user only when a failure prevents progress or requires a new decision.
 
-## 4. 验证与交接
+## 4. Validate and hand off
 
-用 `git worktree list --porcelain` 和新 worktree 的 `git status --short --branch` 核对路径、分支及状态。报告实际执行的准备和验证结果；未运行测试时不得声称测试通过。
+Use `git worktree list --porcelain` and `git status --short --branch` in the new worktree to verify its path, branch, and state. Report preparation and validation actually performed; do not claim tests passed if none were run.
 
-交接新路径、分支和已知阻碍。完成任务后的合并或删除按用户请求处理，不强制调用其他收尾技能。
+Hand off the new path, branch, and known blockers. Handle subsequent merging or deletion according to the user's request; do not require another completion skill.

@@ -1,47 +1,47 @@
 ---
 name: writing-flavor-review
-description: 审查文章中的“怪味”“AI味”，定位无依据的猜测、假想反驳、自我辩护和冗余表达，提供局部修改建议。用户要求怪味审查、去 AI 味或专项审查模型稿件时使用。
+description: Review awkward or AI-sounding prose for unsupported speculation, imagined rebuttals, self-justification, and redundancy, and suggest local edits. Use when the user requests this review, asks to remove AI-sounding wording, or requests a focused review of a model-written draft.
 ---
 
-# 怪味审查
+# Writing Flavor Review
 
-检查文章中的表达问题，根据原文说明问题并给出修改建议。
+Inspect expression problems in an article, explain them using the original text, and suggest revisions.
 
-## 审查要求
+## Review requirements
 
-所有文章执行同一审查标准。读完整篇和用户提供的要求，逐段检查以下六类问题，覆盖标题、正文、表格、摘要和结尾。系列文章还需检查篇间重复。结合上下文判断每段内容的依据、相关性和表达作用，修改时保留有效信息。
+Apply the same review standard to every article. Read the entire article and the user's requirements, then check each paragraph for the six issues below, covering titles, body text, tables, abstracts, and endings. For a series, also check repetition across articles. Evaluate the evidence, relevance, and expressive purpose of each paragraph in context, preserving useful information when editing.
 
-1. **无依据的猜测**：引入缺乏依据的名称、候选实现或判断，再用“无法确认”撤回。删去无关猜测；影响核心结论的内容，先核实再处理。检查摘要和表格是否改变了正文结论的确定程度。
-2. **凭空纠正读者**：假设读者持有某种错误观点，再用“容易误会”“不能理解成”等措辞纠正。直接说明事实、条件和因果。批评或纠正观点时，须有真实、具体的对象和上下文。
-3. **虚构劣质方案**：编造“粗暴”“随意”等方案，衬托当前方案。删去这种陪衬。方案比较须说明具体对象、实际差异及其对结果的影响。
-4. **正文混入编辑提醒和自我辩护**：用“这里需要说准确”“为了保持严谨”等话语，描述作者应当如何写作。直接呈现核实后的事实和分析。对文中涉及的写作过程，同样检查是否存在冗余提醒和自我辩护。
-5. **无关或含糊的保留意见**：追加与当前问题无关的一般可能性，或叠加限定词，使明确的行为变得含糊。能计算就给出计算，能解释行为就说明触发条件。限制条件须与当前结论直接相关。
-6. **空话和重复**：反复宣告重要、严谨、值得借鉴，替读者安排感受，使用缺少具体内容的标题，重复铺垫、预告或总结。删去重复内容，将空泛评价改为具体解释。
+1. **Unsupported speculation**: Introducing unsupported names, candidate implementations, or judgments, then withdrawing them with "cannot confirm." Remove irrelevant speculation; verify material that affects the central conclusion before handling it. Check whether abstracts and tables change the certainty of conclusions in the body.
+2. **Invented corrections of the reader**: Assuming the reader holds a mistaken view, then correcting it with phrases such as "it is easy to misunderstand" or "this should not be understood as." State facts, conditions, and causality directly. Criticism or correction must have a real, specific target and context.
+3. **Invented inferior alternatives**: Making up "crude" or "arbitrary" approaches to make the current one look better. Remove this framing. Comparisons must identify specific alternatives, actual differences, and their effects on results.
+4. **Editorial reminders and self-justification in the body**: Describing how the author should write, using phrases such as "we need to be precise here" or "to remain rigorous." Present verified facts and analysis directly. Apply the same check to redundant reminders and self-justification when the article discusses the writing process itself.
+5. **Irrelevant or vague reservations**: Appending general possibilities unrelated to the current question, or stacking qualifiers until clear behavior becomes vague. Give calculations when possible and explain triggering conditions for behavior. Limitations must directly relate to the current conclusion.
+6. **Empty language and repetition**: Repeatedly declaring importance, rigor, or lessons worth learning; prescribing how readers should feel; using headings with no concrete content; or repeating setup, previews, or summaries. Remove repetition and replace empty judgments with concrete explanations.
 
-## 红线
+## Hard boundaries
 
-- 禁止在审查前自行推断文章类型，禁止据此删减检查项或放宽要求。
-- 禁止将案例或措辞当作关键词黑名单，禁止用机械正则校验代替审查。
-- 禁止仅删除限定词，将推测写成事实。
-- 禁止无关重写或擅自补充新观点。
-- 禁止为凑数量而标记问题。
-- 禁止通过修改的方式大幅改写原文、故意删减压缩原文非怪味段落
+- Do not infer an article type before review and use it to omit checks or relax standards.
+- Do not treat examples or phrases as a keyword blacklist, or replace review with mechanical regex checks.
+- Do not merely delete qualifiers and turn speculation into fact.
+- Do not rewrite unrelated content or add new arguments without authorization.
+- Do not flag issues to meet a quota.
+- Do not substantially rewrite the original or deliberately cut and compress passages that have no prose issues.
 
-## 反例
+## Counterexamples
 
-以下反例来自实际文章的修订。请注意，反例仅供参考，并不意味着只有这些反例，更不允许根据这些反例开发正则表达式进行机械验证，必须对文章内容进行具体审查。
+These counterexamples come from actual article revisions. They are illustrative, not exhaustive. Do not build regex checks from them; review the article's content in context.
 
-| 原文片段 | 问题 | 修改方式 |
+| Original excerpt | Problem | Revision approach |
 | --- | --- | --- |
-| “不能把 KaTeX 或 MathJax 中的某一个写成已确认的实现” | 引入没有依据的技术名称，再用否定句撤回。 | 删除候选名称及自我辩护，保留已掌握的架构事实。 |
-| “看到源码与‘整个版本没有数学渲染’，不能划等号” | 凭空安排一种读者判断，再出面纠正。 | 直接说明公式回退到源码的条件。 |
-| “而不必把公式先按字符串粗暴切开” | 虚构并贬低一个替代方案，衬托当前实现。 | 说明内部表达式与外层结构如何协作。 |
-| “数学支持的版本分界需要说准确” | 将给作者的编辑提醒写进正文。 | 直接给出核实后的版本变化。 |
-| “因此剩余空白不一定左右完全对称” | 当前例子中，分数宽 7 列、分母宽 1 列，补白可以直接算清；这句却引入了其他输入下的可能性。 | 写明分数内部左补白为 (7−1)/2=3 格，左侧表达式另占两列，共五格。 |
-| “这套设计最值得借鉴的地方” | 标题先作价值判断，没有交代具体内容。 | 用实际讨论的设计机制命名标题。 |
+| "Neither KaTeX nor MathJax can be stated as the confirmed implementation." | Introduces unsupported technical names, then withdraws them with a negative statement. | Remove candidate names and self-justification; retain known architectural facts. |
+| "Seeing source code does not mean the entire version lacks math rendering." | Invents a reader judgment and then corrects it. | State the conditions under which formulas fall back to source code. |
+| "Without first crudely splitting the formula as a string." | Invents and disparages an alternative to elevate the current implementation. | Explain how the inner expression and outer structure cooperate. |
+| "The version boundary for math support needs to be stated precisely." | Puts an editorial reminder to the author in the body. | State the verified version changes directly. |
+| "Therefore, the remaining whitespace is not necessarily symmetrical." | In this example, the fraction is 7 columns wide and the denominator is 1 column wide, so padding can be calculated directly; the sentence instead introduces possibilities for other inputs. | State that the fraction's internal left padding is (7-1)/2=3 cells, plus two columns for the expression on the left, totaling five cells. |
+| "The most valuable lesson from this design." | The heading makes a value judgment without identifying the content. | Name the heading after the actual design mechanism discussed. |
 
-## 修改与交付
+## Editing and delivery
 
-1. 用户仅要求审查时，列出“位置与原句 → 具体问题 → 建议改法”。用户要求修改，或已有对应的写回授权时，完成修改并回读。缺少待审文章时再索取。
-2. 采用满足要求的局部修改，保留文章主线、有效事实、必要细节、推导、实例、引用及作者风格。根据内容关系调整段落。
-3. 报告区分需要修正的问题与可选的精简建议。每项判断须有原文依据；没有明显问题时简短说明。
+1. When the user requests review only, list "location and original sentence -> specific issue -> suggested revision." When editing is requested or write-back is already authorized, make the edits and reread the result. Ask for the article only if it is missing.
+2. Use local edits that satisfy the request, preserving the article's main thread, valid facts, necessary details, derivations, examples, citations, and authorial style. Adjust paragraphs according to content relationships.
+3. Distinguish required corrections from optional concision suggestions. Ground every judgment in the original text; if there are no clear issues, say so briefly.

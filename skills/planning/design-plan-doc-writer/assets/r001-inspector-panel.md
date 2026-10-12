@@ -1,234 +1,255 @@
 # r001-inspector-panel
 
-本示例展示同一需求文档中的设计与开发计划。需求澄清已完成；示例编号仅用于展示，新需求应按项目已有编号递增。
+This example shows a design and development plan in the same requirement document. Requirement clarification is complete. The example ID is illustrative; increment the project's existing IDs for new requirements.
 
-## 需求澄清
+## Requirement Clarification
 
-用户需要在 macOS 论文详情右侧增加可显隐的辅助面板，通过工具栏控制显隐，并在 Notes 与 Chat 占位面板间切换。本轮只建立 UI 容器与状态结构；具体笔记、网络和模型调用留待后续需求。验收重点为显隐、切换、空态与详情底部标签栏的布局稳定性。
+The user needs a collapsible auxiliary panel on the right side of the macOS paper detail view, with toolbar visibility control and switching between Notes and Chat placeholder panels. This round establishes only the UI containers and state structure; actual notes, networking, and model calls belong to later requirements. Acceptance focuses on visibility, panel switching, empty states, and stable layout of the tag bar at the bottom of the detail view.
 
-## 设计文档
+## Design Document
 
-### 核心功能
+### Core Features
 
-#### 需求背景
+#### Background
 
-当前 macOS 主界面采用三栏 `NavigationSplitView`：
-- 左侧为 `MainSidebarView`
-- 中间为 `PaperListView`
-- 右侧为 `PaperDetailView`
+The current macOS main interface uses a three-column `NavigationSplitView`:
 
-用户希望在主界面右侧增加一个可显隐的第四栏，用于承载当前论文相关的辅助工作流。目标交互参考 Xcode/Apple 官方工作台风格：
-1. 通过主工具栏右侧一个按钮控制第四栏出现和消失。
-2. 第四栏附着在详情列右侧，不改变左侧导航语义。
-3. 第四栏顶部通过仅图标的分段切换条在不同子 panel 之间切换。
+- Left: `MainSidebarView`
+- Middle: `PaperListView`
+- Right: `PaperDetailView`
 
-结合现有代码结构和 Apple 官方 SwiftUI 能力，本次需求采用 `NavigationSplitView + inspector` 方案落地，而不是将现有主窗口重构为四个真实 split column。
+The user wants a collapsible fourth column on the right of the main interface for auxiliary workflows related to the current paper. The target interaction follows the Xcode/Apple workbench style:
 
-#### 需求目标
+1. A button on the right side of the main toolbar shows and hides the fourth column.
+2. The fourth column attaches to the right of the detail column without changing the left-side navigation semantics.
+3. An icon-only segmented control at the top switches between subpanels.
 
-本次仅完成“第四栏 UI 基建”，目标如下：
-1. 为 macOS 主窗口增加可显隐的右侧 inspector。
-2. 在 detail 工具栏中新增 inspector toggle 按钮。
-3. 在 inspector 内建立稳定的顶部 panel 切换结构，采用 `Picker + .segmented`，仅显示图标。
-4. 建立 inspector 容器、panel 枚举、空态/选中态的 UI 骨架，为后续接入 `Notes` 与 `Chat` 功能提供稳定承载位。
-5. 保持现有 `PaperDetailView` 底部 `TagEditorBar` 布局语义不变，其宽度仅跟随 detail 内容，不占用 inspector 宽度。
+Given the existing code structure and Apple's SwiftUI capabilities, use `NavigationSplitView + inspector` for this requirement rather than restructuring the main window into four actual split columns.
 
-#### 范围边界
+#### Goals
 
-##### 本次范围内
+This requirement covers only the fourth-column UI foundation:
 
-- macOS 主窗口右侧 inspector 容器与显隐状态管理。
-- inspector 顶部 panel 切换 UI。
-- inspector 空态/占位态与列宽约束。
-- detail toolbar 中的 inspector toggle 入口。
-- 视图分层与状态模型设计，为后续 panel 接线预留 API。
+1. Add a collapsible right-side inspector to the macOS main window.
+2. Add an inspector toggle button to the detail toolbar.
+3. Establish a stable top panel switcher inside the inspector using an icon-only `Picker + .segmented`.
+4. Build the inspector container, panel enum, and empty/selected-state UI skeleton to support future `Notes` and `Chat` integration.
+5. Preserve the existing layout semantics of the `TagEditorBar` at the bottom of `PaperDetailView`: its width follows only detail content and does not include inspector width.
 
-##### 本次范围外
+#### Scope Boundaries
 
-- `Notes` 面板的数据读取、列表呈现、编辑与新增逻辑。
-- 基于 arXiv HTML 版本的正文抓取、抽取、缓存与 LLM 对话能力。
-- inspector 内任何业务级网络请求、持久化写入或大模型调用。
-- iOS 端对应交互适配。
+##### In scope
 
-### 实现流程
+- The inspector container on the right of the macOS main window and its visibility state.
+- Panel switching UI at the top of the inspector.
+- Inspector empty/placeholder states and column width constraints.
+- An inspector toggle in the detail toolbar.
+- View hierarchy and state model design, with APIs reserved for future panel integration.
 
-#### 1. 现状调研结论
+##### Out of scope
 
-##### 1.1 当前主窗口结构
+- Data loading, list presentation, editing, and creation logic for `Notes`.
+- Fetching, extracting, and caching paper content from arXiv HTML, and LLM conversations.
+- Any business-level network requests, persistence writes, or model calls inside the inspector.
+- Equivalent interaction adaptations for iOS.
+
+### Implementation Flow
+
+#### 1. Findings from the Current Implementation
+
+##### 1.1 Main window structure
 
 - `ArxivDailyReader/ContentView.swift`
-  - `mainSplitView` 采用 `NavigationSplitView { sidebar } content: { list } detail: { detail }`
-  - 现有三列宽度已完成约束，且启用了 `.navigationSplitViewStyle(.balanced)`
+  - `mainSplitView` uses `NavigationSplitView { sidebar } content: { list } detail: { detail }`.
+  - The existing three columns have width constraints and use `.navigationSplitViewStyle(.balanced)`.
 - `ArxivDailyReader/Views/PaperDetailView.swift`
-  - 详情列已拥有独立 toolbar
-  - 底部通过 `safeAreaInset(edge: .bottom)` 挂载 `TagEditorBar`
+  - The detail column already owns a toolbar.
+  - `TagEditorBar` is attached at the bottom through `safeAreaInset(edge: .bottom)`.
 
-##### 1.2 Apple 官方能力判断
+##### 1.2 Apple platform capabilities
 
-根据 Apple WWDC23 `Inspectors in SwiftUI`：
-1. `inspector` 可直接挂在 `NavigationSplitView` 的 detail 路径上。
-2. `inspector` 可通过布尔状态控制显隐。
-3. `inspector` 支持独立列宽配置。
-4. inspector 内容内部可继续使用系统控件组织工具条和分段切换。
+According to Apple's WWDC23 session `Inspectors in SwiftUI`:
 
-因此，第四栏最合适的实现形态是：
-- 主结构仍为三栏 `NavigationSplitView`
-- 第四栏使用 `inspector`
-- inspector 的 panel 切换条由内容内部使用 `Picker + .segmented` 自行构建
+1. An `inspector` can attach directly to the detail path of a `NavigationSplitView`.
+2. A Boolean state can control inspector visibility.
+3. An inspector supports independent column width configuration.
+4. Inspector content can use system controls for toolbars and segmented switching.
 
-#### 2. 目标结构设计
+The most suitable fourth-column structure is therefore:
 
-##### 2.1 顶层容器：`ContentView`
+- Keep the main structure as a three-column `NavigationSplitView`.
+- Use an `inspector` for the fourth column.
+- Build the inspector's panel switcher inside its content using `Picker + .segmented`.
 
-在 `ContentView` 中新增 inspector 基础状态：
+#### 2. Target Structure
+
+##### 2.1 Top-level container: `ContentView`
+
+Add basic inspector state to `ContentView`:
+
 - `isInspectorPresented: Bool`
 - `selectedInspectorPanel: PaperInspectorPanel`
 
-推荐职责：
-1. `ContentView` 作为主窗口容器，拥有 inspector 是否显示的状态。
-2. `ContentView` 负责将当前选中的 `PaperSummary?` 传入 inspector 容器。
-3. inspector 挂载在 `detail` 路径上，确保其语义严格属于当前论文详情，而不是属于 sidebar 或 list。
+Recommended responsibilities:
 
-目标形态：
-- `NavigationSplitView` 三栏保持不变。
+1. `ContentView`, as the main window container, owns inspector visibility state.
+2. `ContentView` passes the currently selected `PaperSummary?` to the inspector container.
+3. Attach the inspector to the `detail` path so it semantically belongs to the current paper's details, not the sidebar or list.
+
+Target structure:
+
+- Keep the three-column `NavigationSplitView`.
 - `PaperDetailView(...)`
-  - 承载 detail 内容与底部 `TagEditorBar`
-  - 暴露 inspector toggle 回调
-  - 由外层或 detail 层挂载 `.inspector(isPresented:)`
+  - Contains detail content and the bottom `TagEditorBar`.
+  - Exposes an inspector toggle callback.
+  - Has `.inspector(isPresented:)` attached by the outer or detail layer.
 
-##### 2.2 inspector 容器：`PaperInspectorView`
+##### 2.2 Inspector container: `PaperInspectorView`
 
-新增独立 inspector 容器视图，职责如下：
-1. 提供固定顶部 panel 切换区。
-2. 根据 `selectedInspectorPanel` 切换内容区域。
-3. 在 `paper == nil` 时提供统一空态，而不是让每个业务 panel 自行分叉控制。
-4. 对后续 `Notes` 和 `Chat` 提供稳定挂载点。
+Add a dedicated inspector container view with these responsibilities:
 
-建议结构：
-- 顶部：`Picker(selection:)`
+1. Provide a fixed top panel-switching area.
+2. Switch the content area based on `selectedInspectorPanel`.
+3. Provide a shared empty state when `paper == nil`, instead of separate handling in each business panel.
+4. Provide stable attachment points for future `Notes` and `Chat` features.
+
+Suggested structure:
+
+- Top: `Picker(selection:)`
   - `pickerStyle(.segmented)`
-  - 仅图标，不展示文字
-- 下方：`Group` / `switch selectedInspectorPanel`
-  - `paper == nil` 时显示统一空态
-  - `paper != nil` 时显示对应 panel 的占位容器
+  - Icons only, with no visible text.
+- Below: `Group` / `switch selectedInspectorPanel`
+  - Show a shared empty state when `paper == nil`.
+  - Show the selected panel's placeholder container when `paper != nil`.
 
-##### 2.3 panel 枚举：`PaperInspectorPanel`
+##### 2.3 Panel enum: `PaperInspectorPanel`
 
-新增一个稳定枚举，用于表达第四栏当前选中的 panel。
+Add a stable enum representing the currently selected fourth-column panel.
 
-首批 case：
+Initial cases:
+
 - `.notes`
 - `.chat`
 
-枚举职责：
-1. 作为 `Picker` 的选择值。
-2. 统一映射 icon、`accessibilityIdentifier` 与后续本地化标签。
-3. 限制 panel 扩展入口，避免直接在视图里散落硬编码分支。
+Enum responsibilities:
 
-##### 2.4 detail toolbar 集成
+1. Serve as the `Picker` selection value.
+2. Centralize mappings for icons, `accessibilityIdentifier`, and future localized labels.
+3. Provide a controlled extension point for panels, avoiding scattered hardcoded branches in views.
 
-在 `PaperDetailView` macOS toolbar 中新增 inspector toggle 按钮：
-1. 位置：放在当前 detail toolbar 右侧动作组中，不主动重排既有业务按钮分组。
-2. 语义：控制第四栏显隐。
-3. 交互：
-   - inspector 已显示：再次点击关闭
-   - inspector 已关闭：点击打开，并保留上次选中的 panel
+##### 2.4 Detail toolbar integration
 
-说明：
-- 用户已明确当前 detail toolbar 视觉并不拥挤，因此本次不以“腾位置”为目标调整现有图标布局。
+Add an inspector toggle button to the macOS toolbar in `PaperDetailView`:
 
-##### 2.5 `TagEditorBar` 布局约束
+1. Position: place it in the existing right-side action group without proactively rearranging business buttons.
+2. Purpose: control fourth-column visibility.
+3. Interaction:
+   - When the inspector is visible, clicking closes it.
+   - When it is hidden, clicking opens it and preserves the last selected panel.
 
-当前 `TagEditorBar` 位于 `PaperDetailView` 底部，属于 detail 内容的一部分。
+The user has explicitly confirmed that the current detail toolbar is not visually crowded, so this requirement does not rearrange existing icons to make room.
 
-本次硬性保持：
-1. `TagEditorBar` 仍然绑定在 detail 列下方。
-2. inspector 展开后，`TagEditorBar` 仍与 detail 宽度一致。
-3. inspector 不承载 tag 编辑 UI，也不改变 `TagEditorBar` 的 safe area 挂载位置。
+##### 2.5 `TagEditorBar` layout constraints
 
-这意味着 inspector 必须作为 detail 右侧附加列存在，而不能把 `PaperDetailView` 自身包进 inspector 内容内部。
+The current `TagEditorBar` sits at the bottom of `PaperDetailView` and belongs to detail content.
 
-#### 3. 视图拆分建议
+Preserve these requirements:
 
-##### 3.1 新增视图文件建议
+1. `TagEditorBar` stays attached below the detail column.
+2. When the inspector opens, `TagEditorBar` continues to match detail width.
+3. The inspector does not contain tag editing UI or change the safe-area attachment point of `TagEditorBar`.
+
+The inspector must therefore exist as an additional column to the right of detail; do not wrap `PaperDetailView` itself inside inspector content.
+
+#### 3. Suggested View Decomposition
+
+##### 3.1 Suggested new view files
 
 - `ArxivDailyReader/Views/PaperInspectorView.swift`
-  - inspector 容器与顶部 segmented picker
+  - Inspector container and top segmented picker.
 - `ArxivDailyReader/Views/PaperInspectorNotesPanel.swift`
-  - Notes panel 占位壳层
+  - Notes panel placeholder shell.
 - `ArxivDailyReader/Views/PaperInspectorChatPanel.swift`
-  - Chat panel 占位壳层
+  - Chat panel placeholder shell.
 
-说明：
-- 本次阶段允许 `Notes` / `Chat` panel 仅作为占位骨架存在。
-- 后续功能会在对应 panel 文件内扩展，不污染 `ContentView` 和 `PaperDetailView`。
+At this stage, the `Notes` and `Chat` panels may remain placeholder skeletons. Extend their corresponding files for later features without crowding `ContentView` and `PaperDetailView`.
 
-##### 3.2 状态与依赖边界
+##### 3.2 State and dependency boundaries
 
-本次 UI 基建阶段仅下发以下最小上下文：
-- 当前 `paper: PaperSummary?`
+Pass only this minimal context during the UI foundation stage:
+
+- Current `paper: PaperSummary?`
 - `selectedPanel`
-- inspector 是否显示
+- Inspector visibility
 
-禁止在本次阶段引入：
-- note repository 读写
-- arXiv HTML 拉取
-- LLM streaming 状态
-- 新的异步任务编排
+Do not introduce at this stage:
 
-#### 4. 列宽与布局策略
+- Note repository reads or writes.
+- arXiv HTML fetching.
+- LLM streaming state.
+- New asynchronous task orchestration.
 
-##### 4.1 inspector 列宽
+#### 4. Column Width and Layout Strategy
 
-建议为 inspector 设置独立宽度约束：
-- `min`: 280 左右
-- `ideal`: 320~360
-- `max`: 420 左右
+##### 4.1 Inspector column width
 
-设计原则：
-1. `Notes` 面板需要容纳可读列表和输入区域。
-2. `Chat` 面板未来需要承载消息流和输入框，不能过窄。
-3. 不能挤压 detail 正文阅读区到不可读程度。
+Set independent inspector width constraints, with suggested values:
 
-最终具体数值可在编码阶段微调，但本次设计上要求“显式设置列宽”，不依赖系统默认值。
+- `min`: around 280
+- `ideal`: 320-360
+- `max`: around 420
 
-##### 4.2 结构稳定性
+Design principles:
 
-遵循现有仓库对 macOS 布局稳定性的约束：
-1. inspector 容器结构应常驻，通过显隐状态控制，不在高频状态下频繁创建/销毁多层子树。
-2. 顶部 panel 切换保持固定骨架，仅切换内容区域。
-3. 不在布局路径内触发持久化写入。
-4. 若切换 panel 时出现隐式动画抖动，优先在 inspector 层禁用相关动画事务，而不是改变交互语义。
+1. The `Notes` panel needs room for a readable list and input area.
+2. The future `Chat` panel needs room for a message stream and composer, so it must not be too narrow.
+3. Do not compress the detail reading area until it becomes unreadable.
 
-#### 5. 本次阶段与后续功能接线关系
+Exact values may be adjusted during implementation, but the design requires explicit column widths rather than system defaults.
 
-##### 5.1 Notes panel 后续接线预留
+##### 4.2 Structural stability
 
-后续会在 `Notes` panel 接入：
-1. 当前论文 note 列表读取
-2. note 新增入口
-3. 可能的 note 编辑/删除操作
+Follow the repository's existing macOS layout stability constraints:
 
-本次设计要求：
-- `PaperInspectorNotesPanel` 的输入形态、滚动容器和工具区域骨架要先稳定下来。
-- 但不在本任务中落实真实数据绑定。
+1. Keep the inspector container structure resident and control it through visibility state; avoid frequently creating and destroying nested subtrees during rapid state changes.
+2. Keep a fixed top panel-switcher structure and switch only the content area.
+3. Do not trigger persistence writes in layout paths.
+4. If panel switching causes implicit animation jitter, first disable the relevant animation transaction at the inspector layer rather than changing interaction semantics.
 
-##### 5.2 Chat panel 后续接线预留
+#### 5. Connection to Future Features
 
-后续 `Chat` panel 的正确技术方向为：
-1. 不直接嵌入 HTML 页面 UI。
-2. 以 arXiv HTML 版本抽取后的正文上下文作为 LLM 输入源。
-3. panel 主体是对话 UI，而不是 HTML 浏览器。
+##### 5.1 Future Notes panel integration
 
-本次设计要求：
-- `PaperInspectorChatPanel` 预留“消息区 + 输入区 + 上下文状态提示”的版式骨架。
-- 但不在本任务中接入网络或 LLM。
+Later `Notes` work will add:
+
+1. Loading the current paper's note list.
+2. An entry point for adding notes.
+3. Possible note editing and deletion.
+
+This design requires:
+
+- Establish the input shape, scrolling container, and tool-area skeleton of `PaperInspectorNotesPanel` now.
+- Do not implement real data binding in this task.
+
+##### 5.2 Future Chat panel integration
+
+The technical direction for the later `Chat` panel is:
+
+1. Do not embed an HTML page UI directly.
+2. Use extracted paper content from the arXiv HTML version as LLM input context.
+3. Make the panel a conversation UI, not an HTML browser.
+
+This design requires:
+
+- Reserve a layout skeleton with a message area, input area, and context status indicator in `PaperInspectorChatPanel`.
+- Do not connect networking or the LLM in this task.
 
 ### i18n
 
-#### 新增 key 清单
+#### New keys
 
-预计新增以下命名空间 key：
+Expected new namespaced keys:
+
 - `content.inspector.toggle`
 - `content.inspector.panel.notes`
 - `content.inspector.panel.chat`
@@ -237,14 +258,13 @@
 - `content.inspector.notes.placeholder`
 - `content.inspector.chat.placeholder`
 
-说明：
-- 若编码阶段决定 segmented picker 仅使用图标而不展示文本，仍建议保留对应本地化 key，用于 `help`、`accessibilityLabel` 和空态文案。
+Even if the segmented picker uses icons without visible text, retain the corresponding localization keys for `help`, `accessibilityLabel`, and empty-state copy.
 
-#### 占位符说明
+#### Placeholders
 
-- 本次预计无需动态占位符。
+- No dynamic placeholders are expected in this requirement.
 
-#### zh-Hans/en 对照
+#### zh-Hans/en mappings
 
 - `content.inspector.toggle`
   - zh-Hans: 打开或关闭辅助面板
@@ -268,141 +288,141 @@
   - zh-Hans: 对话面板将在后续任务接入。
   - en: Chat panel will be connected in a follow-up task.
 
-#### 回退策略与影响范围
+#### Fallback strategy and affected areas
 
-1. 所有用户可见文案统一写入 `ArxivDailyReader/Resources/Localizable.xcstrings`。
-2. 若某语言缺失，对应控件回退到 catalog 默认语言。
-3. 影响范围仅限 macOS 主窗口第四栏 UI，不影响既有 iOS 页面。
+1. Put all user-visible text in `ArxivDailyReader/Resources/Localizable.xcstrings`.
+2. When a language is missing, the corresponding control falls back to the catalog's default language.
+3. Changes affect only the fourth-column UI in the macOS main window, leaving existing iOS pages unchanged.
 
-### 测试用例
+### Test Cases
 
-#### 编译验证
+#### Build verification
 
-1. macOS Debug 构建通过：
+1. The macOS Debug build passes:
    - `xcodebuild -scheme ArxivDailyReader -destination "platform=macOS,arch=arm64" -configuration Debug build`
 
-#### 功能验证（手工）
+#### Functional verification (manual)
 
-1. 点击 detail toolbar 中新增按钮，可打开/关闭 inspector。
-2. inspector 展开后位于 detail 右侧，且主窗口左三栏语义不变。
-3. inspector 顶部显示仅图标 segmented picker。
-4. 切换 `Notes` / `Chat` 时，顶部切换区不抖动，内容区正常切换。
-5. 未选中论文时，inspector 显示统一空态。
-6. inspector 展开时，底部 `TagEditorBar` 仍只占据 detail 区域宽度。
+1. The new detail toolbar button opens and closes the inspector.
+2. The expanded inspector appears to the right of detail, preserving the semantics of the main window's three left columns.
+3. An icon-only segmented picker appears at the top of the inspector.
+4. Switching between `Notes` and `Chat` keeps the top switcher stable and changes content correctly.
+5. The inspector shows a shared empty state when no paper is selected.
+6. When the inspector is expanded, the bottom `TagEditorBar` still spans only the detail area.
 
-#### 回归验证
+#### Regression verification
 
-1. `PaperDetailView` 现有收藏、翻译、总结、分享等按钮行为不变。
-2. `NavigationSplitView` 三栏宽度约束仍然生效。
-3. 不新增 render path 持久化写入。
-4. 不新增用户可见硬编码文案。
+1. Existing favorite, translation, summary, sharing, and other buttons in `PaperDetailView` retain their behavior.
+2. Three-column width constraints in `NavigationSplitView` remain effective.
+3. No persistence writes are added to render paths.
+4. No hardcoded user-visible text is added.
 
-## 开发计划
+## Development Plan
 
-关联设计：[设计文档](#设计文档)。
+Related design: [Design Document](#design-document).
 
-### Stage 1: Inspector 基础容器落地
+### Stage 1: Basic Inspector Container
 
-#### 任务 #1: 建立 inspector 顶层状态与挂载路径
+#### Task #1: Establish top-level inspector state and attachment
 
 **Status:** Designed
 
 **Files:** Modify `ArxivDailyReader/ContentView.swift`
 
-- 任务功能：在 `ContentView` 中引入第四栏基础状态，并将 inspector 挂载到 detail 路径。
-- 实现要点：
-  - 新增 `isInspectorPresented` 与 `selectedInspectorPanel`。
-  - 保持现有 `NavigationSplitView` 三栏结构不变。
-  - 显式配置 inspector 列宽约束。
-- 预期测试结果：编译通过；点击控制入口后，右侧第四栏可显示与隐藏。
+- Functionality: introduce fourth-column state in `ContentView` and attach the inspector to the detail path.
+- Implementation notes:
+  - Add `isInspectorPresented` and `selectedInspectorPanel`.
+  - Preserve the existing three-column `NavigationSplitView` structure.
+  - Explicitly configure inspector column widths.
+- Expected validation: the build passes; the control shows and hides the right-side fourth column.
 
-#### 任务 #2: 新增 inspector 容器与 panel 切换条
+#### Task #2: Add the inspector container and panel switcher
 
 **Status:** Designed
 
 **Files:** Create `ArxivDailyReader/Views/PaperInspectorView.swift`
 
-- 任务功能：建立 `PaperInspectorView` 及其顶部仅图标 segmented picker。
-- 实现要点：
-  - 定义 `PaperInspectorPanel` 枚举。
-  - 使用 `Picker + .segmented` 切换 `notes` / `chat`。
-  - 保持固定骨架，仅切换内容区域。
-- 预期测试结果：切换不同 panel 时结构稳定，选中态正确。
+- Functionality: establish `PaperInspectorView` and its top icon-only segmented picker.
+- Implementation notes:
+  - Define the `PaperInspectorPanel` enum.
+  - Use `Picker + .segmented` to switch between `notes` and `chat`.
+  - Keep a fixed skeleton and switch only the content area.
+- Expected validation: panel switching preserves structural stability and the correct selected state.
 
-#### 任务 #3: 接入 detail toolbar 的 inspector toggle
+#### Task #3: Integrate the inspector toggle into the detail toolbar
 
 **Status:** Designed
 
 **Files:** Modify `ArxivDailyReader/Views/PaperDetailView.swift`
 
-- 任务功能：在 `PaperDetailView` macOS toolbar 中加入第四栏显示控制按钮。
-- 实现要点：
-  - 保持现有 toolbar 分组与主视觉不做额外收缩。
-  - 新按钮提供本地化 `help`、`accessibilityLabel`、`accessibilityIdentifier`。
-  - 通过回调或 binding 与 `ContentView` 状态联动。
-- 预期测试结果：detail 现有工具栏行为不回归；新增按钮能稳定切换第四栏。
+- Functionality: add a fourth-column visibility button to the macOS toolbar in `PaperDetailView`.
+- Implementation notes:
+  - Preserve existing toolbar grouping and visual layout without additional compression.
+  - Provide localized `help` and `accessibilityLabel`, plus an `accessibilityIdentifier`, for the new button.
+  - Connect it to `ContentView` state through a callback or binding.
+- Expected validation: existing detail toolbar behavior does not regress; the new button reliably toggles the fourth column.
 
-#### 任务 #4: 保持 detail 底部 TagEditorBar 布局边界
+#### Task #4: Preserve the bottom TagEditorBar layout boundary
 
 **Status:** Designed
 
 **Files:** Verify `ArxivDailyReader/Views/PaperDetailView.swift`
 
-- 任务功能：验证 inspector 接入后，底部 `TagEditorBar` 仍只跟随 detail 宽度。
-- 实现要点：
-  - inspector 不侵入 `PaperDetailView.safeAreaInset(edge: .bottom)`。
-  - 检查展开/收起 inspector 时 detail 区和 tag bar 的宽度联动是否正确。
-- 预期测试结果：TagEditorBar 不延展到 inspector 下方，空态/内容态均稳定。
+- Functionality: verify that the bottom `TagEditorBar` continues to follow only detail width after inspector integration.
+- Implementation notes:
+  - Keep the inspector out of `PaperDetailView.safeAreaInset(edge: .bottom)`.
+  - Check that detail and tag bar widths track correctly when expanding and collapsing the inspector.
+- Expected validation: TagEditorBar does not extend beneath the inspector and remains stable in both empty and content states.
 
-#### 任务 #5: 最小化本地化与编译验证
+#### Task #5: Minimal localization and build verification
 
 **Status:** Designed
 
 **Files:** Modify `ArxivDailyReader/Resources/Localizable.xcstrings`
 
-- 任务功能：补齐本次 UI 基建所需的最小 i18n 资源并执行 macOS 构建。
-- 实现要点：
-  - 新增 inspector 相关 String Catalog key。
-  - 执行 macOS arm64 Debug 构建。
-- 预期测试结果：构建通过，无新增硬编码用户文案。
+- Functionality: add the minimal i18n resources required by the UI foundation and run the macOS build.
+- Implementation notes:
+  - Add inspector-related String Catalog keys.
+  - Run the macOS arm64 Debug build.
+- Expected validation: the build passes with no new hardcoded user-visible text.
 
-### Stage 2: Panel 骨架与后续接线预留
+### Stage 2: Panel Skeletons and Future Integration Points
 
-#### 任务 #6: 建立 Notes panel 占位骨架
+#### Task #6: Establish the Notes panel placeholder skeleton
 
 **Status:** Designed
 
 **Files:** Create `ArxivDailyReader/Views/PaperInspectorNotesPanel.swift`
 
-- 任务功能：为后续论文级 note 接线提供稳定的 inspector 子视图壳层。
-- 实现要点：
-  - 新增 `PaperInspectorNotesPanel`。
-  - 提供列表区、输入区或占位区的基本版式，但不接入真实数据。
-  - 预留当前论文上下文入参。
-- 预期测试结果：切换到 Notes panel 时显示稳定占位 UI，无数据链路依赖。
+- Functionality: provide a stable inspector subview shell for future paper-level note integration.
+- Implementation notes:
+  - Add `PaperInspectorNotesPanel`.
+  - Provide a basic list, input, or placeholder layout without connecting real data.
+  - Reserve an input parameter for the current paper context.
+- Expected validation: switching to Notes shows stable placeholder UI with no data pipeline dependency.
 
-#### 任务 #7: 建立 Chat panel 占位骨架
+#### Task #7: Establish the Chat panel placeholder skeleton
 
 **Status:** Designed
 
 **Files:** Create `ArxivDailyReader/Views/PaperInspectorChatPanel.swift`
 
-- 任务功能：为后续基于 arXiv HTML 正文上下文的 LLM 对话接线提供稳定壳层。
-- 实现要点：
-  - 新增 `PaperInspectorChatPanel`。
-  - 预留消息区、输入区、上下文提示区。
-  - 明确当前阶段不嵌入 HTML 页面 UI，不接入网络与 LLM。
-- 预期测试结果：切换到 Chat panel 时显示稳定占位 UI，结构满足后续扩展。
+- Functionality: provide a stable shell for future LLM conversations using arXiv HTML paper content as context.
+- Implementation notes:
+  - Add `PaperInspectorChatPanel`.
+  - Reserve message, input, and context indicator areas.
+  - Keep embedded HTML page UI, networking, and LLM integration out of this stage.
+- Expected validation: switching to Chat shows stable placeholder UI with a structure suitable for later extension.
 
-#### 任务 #8: 回归验证与计划回写
+#### Task #8: Regression verification and plan updates
 
 **Status:** Designed
 
-**Files:** Verify `ArxivDailyReader/ContentView.swift`; Modify 当前需求文档的开发计划章节
+**Files:** Verify `ArxivDailyReader/ContentView.swift`; Modify the Development Plan section of the current requirement document.
 
-- 任务功能：完成第四栏 UI 基建后的增量验证，并回写计划状态。
-- 实现要点：
-  - 进行 macOS 主窗口手工回归检查。
-  - 将任务按 `Designed -> Coding -> Testing -> Finished` 更新。
-  - 若发现超出本次范围的需求，记录到后续计划而非在本次扩张实现。
-- 预期测试结果：第四栏 UI 基建完成，且 Notes/Chat 具体功能仍保持在后续任务范围。
+- Functionality: complete incremental validation of the fourth-column UI foundation and update plan status.
+- Implementation notes:
+  - Perform manual regression checks of the macOS main window.
+  - Update tasks through `Designed -> Coding -> Testing -> Finished`.
+  - Record requirements discovered outside the current scope in a follow-up plan instead of expanding this implementation.
+- Expected validation: the fourth-column UI foundation is complete, while concrete Notes/Chat functionality remains scoped to later tasks.

@@ -1,4 +1,4 @@
 interface:
-  display_name: "设计与计划文档编写"
-  short_description: "在同一需求文档中编写设计与计划，优先保存到 DEVONthink"
-  default_prompt: "使用 $design-plan-doc-writer 复用已确认需求与设计，在同一需求文档中编写我要求的章节，优先通过 DEVONthink 技能保存。"
+  display_name: "Design and Development Plan Writer"
+  short_description: "Write design and plan sections, preferring DEVONthink"
+  default_prompt: "Use $design-plan-doc-writer to reuse confirmed requirements and designs, write the requested sections in the same requirement document, and prefer saving through the DEVONthink skill."

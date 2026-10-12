@@ -1,4 +1,4 @@
 interface:
   display_name: "Merge Worktree To Source Branch"
   short_description: "Fast-forward unoccupied target branch refs safely"
-  default_prompt: "使用 $merge-worktree-to-source-branch 检查分支占用和快进条件，仅在目标未被检出时更新 ref。"
+  default_prompt: "Use $merge-worktree-to-source-branch to check branch occupancy and fast-forward eligibility, updating the ref only when the target is not checked out."

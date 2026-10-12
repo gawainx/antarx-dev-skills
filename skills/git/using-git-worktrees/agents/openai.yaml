@@ -1,4 +1,4 @@
 interface:
   display_name: "Using Git Worktrees"
   short_description: "Create isolated worktrees when the task needs them"
-  default_prompt: "使用 $using-git-worktrees 按任务需要和已有授权创建隔离工作区，并运行相关准备与验证。"
+  default_prompt: "Use $using-git-worktrees to create an isolated workspace based on task needs and existing authorization, then perform relevant preparation and validation."

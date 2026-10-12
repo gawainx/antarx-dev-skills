@@ -1,29 +1,29 @@
 ---
 name: ui-layout-discipline
-description: 当创建、调整或修复 UI 布局时主动审计受影响的布局链，包括尺寸、间距、对齐、换行、裁剪和滚动。其他 UI 修改仅在用户明确要求布局审计时触发。
+description: Proactively audit the affected layout chain when creating, adjusting, or fixing UI layout, including dimensions, spacing, alignment, wrapping, clipping, and scrolling. For other UI changes, trigger only when the user explicitly requests a layout audit.
 ---
 
-# UI 布局审计
+# UI Layout Audit
 
-## 触发范围
+## Trigger scope
 
-布局型修改主动执行本流程。仅改文案、颜色、图标、业务逻辑或持久化且不改变布局行为时，不自动审计；用户要求布局审计时按指定范围检查。文案等改动如果实际导致换行、尺寸或溢出变化，则按布局型修改处理。
+Run this workflow proactively for layout changes. Do not automatically audit changes limited to wording, colors, icons, business logic, or persistence when layout behavior is unchanged. When the user requests an audit, inspect the specified scope. Treat wording or similar changes as layout changes if they actually affect wrapping, dimensions, or overflow.
 
-## 定位与修改
+## Locate and modify
 
-1. 从最近的稳定父容器追踪到受影响元素，识别可用空间、滚动、行尺寸、对齐、视觉表面和文本各由哪层负责。
-2. 检查该链上的 padding、margin、inset、spacing、frame、Spacer、fixedSize、裁剪及默认组件内边距，找出造成目标问题的约束。
-3. 在负责该关系的层修改最小约束；删除已确认冗余的约束，不因暂时不理解就移除已有布局。
-4. 核对目标尺寸、长文本、窗口缩放或状态变化等与本次修改有关的场景。验证方式遵守用户及项目对 UI 工具的授权要求。
+1. Trace from the nearest stable parent container to the affected element. Identify which layer owns available space, scrolling, row dimensions, alignment, visual surfaces, and text.
+2. Inspect padding, margin, inset, spacing, frame, Spacer, fixedSize, clipping, and default component insets along that chain to find the constraint causing the issue.
+3. Change the smallest constraint at the layer responsible for the relationship. Remove confirmed redundant constraints; do not remove existing layout simply because it is not yet understood.
+4. Check relevant scenarios such as target dimensions, long text, window resizing, and state changes. Follow user and project authorization requirements for UI verification tools.
 
-## 约束判断
+## Evaluate constraints
 
-- 区分页面间距、元素间距和表面内边距，避免为同一视觉关系重复补 padding；不同层表达不同距离时可以组合。
-- 为新增包装层说明其布局职责，不用无目的嵌套掩盖错位。
-- 固定尺寸应来自设计要求、平台约定、已有 token 或明确的响应式计算，不凭试错数字掩盖约束问题。
-- 使用测量工具前先检查父容器提供的空间和系统控件默认行为；确实需要测量时说明计算依赖。
-- SwiftUI 中检查 modifier 顺序：背景跟随内容时先确定内容宽度；区分行的填充空间与表面的内容尺寸。Web 布局按对应的盒模型及 flex/grid 约束检查，不套用 SwiftUI modifier 规则。
+- Distinguish page spacing, element spacing, and surface insets. Avoid adding padding twice for the same visual relationship; combine layers when they express different distances.
+- Explain the layout responsibility of any new wrapper. Do not hide misalignment behind purposeless nesting.
+- Derive fixed dimensions from design requirements, platform conventions, existing tokens, or explicit responsive calculations. Do not hide constraint problems with trial-and-error numbers.
+- Before using measurement tools, inspect the space offered by the parent and the default behavior of system controls. When measurement is necessary, explain what the calculation depends on.
+- In SwiftUI, check modifier order: establish content width before a background that follows the content, and distinguish row fill space from surface content dimensions. For web layouts, inspect the corresponding box model and flex/grid constraints; do not apply SwiftUI modifier rules.
 
-## 输出与结束
+## Report and finish
 
-报告实际布局原因、修改位置和已完成的验证。只输出与本次问题有关的结论，不固定回答整套审计清单。已有验证覆盖当前改动时结束，不为补齐形式扩大审计范围。
+Report the actual layout cause, edit locations, and completed validation. Include only conclusions relevant to this issue; do not always return the entire audit checklist. Stop when existing validation covers the changes, without expanding the audit for formality.
