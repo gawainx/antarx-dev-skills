@@ -23,6 +23,7 @@ npx skills add gawainx/antarx-dev-skills -g -a codex
 | [using-git-worktrees](skills/git/using-git-worktrees/SKILL.md) | 创建和准备隔离工作区 |
 | [merge-worktree-to-source-branch](skills/git/merge-worktree-to-source-branch/SKILL.md) | 将 worktree 改动快进合回源分支 |
 | [dispatching-parallel-agents](skills/collaboration/dispatching-parallel-agents/SKILL.md) | 将独立任务派发给并行子代理 |
+| [systematic-debugging](skills/quality/systematic-debugging/SKILL.md) | Investigate causes from evidence and verify fixes |
 | [ui-layout-discipline](skills/ui/ui-layout-discipline/SKILL.md) | 检查和修复 UI 布局 |
 | [swiftui-macos-settings-window-pattern](skills/ui/swiftui-macos-settings-window-pattern/SKILL.md) | 构建 macOS SwiftUI 设置窗口 |
 | [dida-task-creator](skills/integration/dida-task-creator/SKILL.md) | 使用本地 dida CLI 创建滴答清单任务 |

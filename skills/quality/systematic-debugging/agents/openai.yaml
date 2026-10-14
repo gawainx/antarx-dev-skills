@@ -1,0 +1,4 @@
+interface:
+  display_name: "Systematic Debugging"
+  short_description: "Find causes from evidence and verify fixes in proportion to problem complexity"
+  default_prompt: "Use $systematic-debugging to investigate the cause from available evidence, scale the investigation to the problem, and complete relevant fixes and verification."
