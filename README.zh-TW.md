@@ -24,6 +24,7 @@ npx skills add gawainx/antarx-dev-skills -g -a codex
 | [merge-worktree-to-source-branch](skills/git/merge-worktree-to-source-branch/SKILL.md) | 將 worktree 的變更以快轉方式合併回來源分支 |
 | [dispatching-parallel-agents](skills/collaboration/dispatching-parallel-agents/SKILL.md) | 將互相獨立的工作分派給平行 Agent |
 | [systematic-debugging](skills/quality/systematic-debugging/SKILL.md) | 根據證據調查原因並驗證修正 |
+| [local-llm-deployment-planning](skills/inference/local-llm-deployment-planning/SKILL.md) | 比較本機 LLM 部署方案、模型品質、效能與 RAM／SSD offloading |
 | [ui-layout-discipline](skills/ui/ui-layout-discipline/SKILL.md) | 檢查並修正 UI 版面配置 |
 | [swiftui-macos-settings-window-pattern](skills/ui/swiftui-macos-settings-window-pattern/SKILL.md) | 使用 SwiftUI 建立 macOS App 設定視窗 |
 | [dida-task-creator](skills/integration/dida-task-creator/SKILL.md) | 使用本機 dida CLI 建立 TickTick 工作 |

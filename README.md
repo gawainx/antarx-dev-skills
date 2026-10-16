@@ -24,6 +24,7 @@ npx skills add gawainx/antarx-dev-skills -g -a codex
 | [merge-worktree-to-source-branch](skills/git/merge-worktree-to-source-branch/SKILL.md) | Fast-forward worktree changes into the source branch |
 | [dispatching-parallel-agents](skills/collaboration/dispatching-parallel-agents/SKILL.md) | Delegate independent tasks to parallel agents |
 | [systematic-debugging](skills/quality/systematic-debugging/SKILL.md) | Investigate causes from evidence and verify fixes |
+| [local-llm-deployment-planning](skills/inference/local-llm-deployment-planning/SKILL.md) | Compare local LLM deployment recipes, model quality, performance, and RAM/SSD offloading |
 | [ui-layout-discipline](skills/ui/ui-layout-discipline/SKILL.md) | Inspect and fix UI layouts |
 | [swiftui-macos-settings-window-pattern](skills/ui/swiftui-macos-settings-window-pattern/SKILL.md) | Build settings windows for macOS apps with SwiftUI |
 | [dida-task-creator](skills/integration/dida-task-creator/SKILL.md) | Create TickTick tasks with the local dida CLI |

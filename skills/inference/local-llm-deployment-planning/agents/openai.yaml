@@ -1,0 +1,4 @@
+interface:
+  display_name: "Local LLM Deployment Planning"
+  short_description: "Compare local LLM deployment and offloading recipes"
+  default_prompt: "Use $local-llm-deployment-planning to research and compare local LLM deployment recipes for my hardware and single-user concurrent workload, including RAM and SSD offloading."
