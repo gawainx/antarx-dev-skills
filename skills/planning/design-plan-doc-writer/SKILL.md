@@ -17,7 +17,7 @@ Reuse established requirements, designs, and user decisions without reconfirming
 - When available, read and invoke `$dt-writing-project-documents` to save this skill's output, following that skill's procedure.
 - Save to `docs/` at the current project root only when MCP is not installed or enabled.
 
-For local storage, use `<project-root>/docs/r001-short-title.md`, creating the directory if needed. After saving, verify the new content and preserved sections, and provide the file path to the user.
+For local storage, use `<project-root>/docs/r001 Short Title.md`, creating the directory if needed. After saving, verify the new content and preserved sections, and provide the file path to the user.
 
 ## Workflow
 
@@ -34,8 +34,8 @@ For local storage, use `<project-root>/docs/r001-short-title.md`, creating the d
 ## Output rules
 
 - Follow the user's language; default to Simplified Chinese.
-- Default to `r001-short-title.md`, with the requirement ID and name in the level-one heading and no date in the filename or title. Dates may appear at the beginning of the document. Explicit user naming takes precedence.
-- Keep requirement clarification, design, and development plan in one file by default, separated by level-two headings. The local path is `<project-root>/docs/r001-short-title.md`; reuse the established document in later stages.
+- Default to `r001 Short Title.md`, with the requirement ID and name in the level-one heading and no date in the filename or title. Dates may appear at the beginning of the document. Explicit user naming takes precedence.
+- Keep requirement clarification, design, and development plan in one file by default, separated by level-two headings. The local path is `<project-root>/docs/r001 Short Title.md`; reuse the established document in later stages.
 - Check and reuse existing project IDs and documents first. Confirm scope before migrating names or consolidating old documents, preserving original files and unrelated content. Existing separate directories do not justify creating more separate files.
 - Update task status in the same document's plan section during development. Mark the requirement complete only after user acceptance; do not automatically move it to another directory or group.
 - Use task statuses consistently: `Designed | Coding | Testing | Finished`.
