@@ -1,6 +1,6 @@
 # antarx-dev-skills
 
-Agent Skills for requirements clarification, design planning, development, and debugging. They work with tools such as Codex, Claude Code, and Grok Build. Install and manage skills with the [skills CLI](https://github.com/vercel-labs/skills). See the [Traditional Chinese README](README.zh-TW.md).
+Agent Skills for requirements clarification, design planning, development, and debugging. They work with tools such as Codex, Claude Code, and Grok Build. Install and manage skills with the [skills CLI](https://github.com/vercel-labs/skills).
 
 ## Installation
 

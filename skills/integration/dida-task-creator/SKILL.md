@@ -8,7 +8,7 @@ Use the local `dida` command to create a task in the Dida project matching the c
 ## Workflow
 
 1. Confirm the request is in scope.
-   - Continue only when the user's prompt mentions both Dida (滴答清单) and creating a task (创建任务), or the user explicitly invokes this skill.
+   - Continue only when the user's prompt mentions both Dida and creating a task, including equivalent wording in the user's language, or the user explicitly invokes this skill.
    - Create one task by default, unless the user explicitly requests multiple tasks.
    - Assume `dida` is installed and authenticated. If the command fails due to missing authentication, stop and report the login issue.
 

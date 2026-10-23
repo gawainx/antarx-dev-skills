@@ -1,18 +1,18 @@
-# 仓库指南
+# Repository Guide
 
-## 源码与风格
+## Source and Style
 
-- 技能源码统一维护在 `skills/<category>/<skill-name>/SKILL.md`，配套文件按需放在同目录；不直接编辑技能安装目录。参考资料和计划放在 `docs/`。
-- 技能目录使用小写短横线命名；技能内容以英文编写，保持简洁、行动导向并明确触发条件。技能名和 `openai.yaml` 的 `display_name` 使用英文。
-- Shell 脚本使用 Bash 并启用 `set -euo pipefail`；非中文文件优先使用 ASCII。
+- Maintain skill sources under `skills/<category>/<skill-name>/SKILL.md`, with supporting files in the same directory as needed. Do not edit skill installation directories directly. Keep reference materials and plans under `docs/`.
+- Use lowercase, hyphen-separated skill directory names. Write skill content in concise, action-oriented English with explicit trigger conditions. Use English for skill names and the `display_name` in `openai.yaml`.
+- Use Bash with `set -euo pipefail` for shell scripts. Prefer ASCII in files that do not contain Chinese text.
 
-## 安装与管理
+## Installation and Management
 
-- 全部技能通过 `npx skills` 安装、更新、查询和卸载，由 CLI 管理安装位置与记录，不创建指向本仓库源码的技能安装链接。
-- `scripts/sync_to_local.sh` 和 `scripts/doctor.sh` 仅安装、检查 Codex 全局 DESIGN、Codex AGENTS 与 Claude CLAUDE.md。安装源分别为 `DESIGN.md` 和 `AGENTS.root.md`（后者同时是 Codex AGENTS 和 Claude CLAUDE.md 的安装源）；本文件仅约束仓库开发，禁止作为安装源。
-- 安装或更新须有本次用户明确授权，先核对范围与副作用，只处理指定技能和目标。源码维护、检查失败、历史安装状态及其他文档的自动同步要求均不构成授权；未安装是正常状态。
-- 不附带修改 shell 配置或安装、修改全局 AGENTS，除非用户明确授权。卸载仅清理来源已确认的安装项及记录，核对残留后不得重新安装。
+- Install, update, list, and remove all skills through `npx skills`. Let the CLI manage installation locations and records; do not create skill installation links pointing to this repository's sources.
+- `scripts/sync_to_local.sh` and `scripts/doctor.sh` only install or check the global Codex DESIGN, Codex AGENTS, and Claude CLAUDE.md files. Their installation sources are `DESIGN.md` and `AGENTS.root.md`, respectively; the latter is the source for both Codex AGENTS and Claude CLAUDE.md. This file governs repository development only and must not be used as an installation source.
+- Installation or updates require explicit user authorization for the current operation. First verify the scope and side effects, then process only the specified skills and targets. Source maintenance, failed checks, historical installation status, and automatic synchronization requirements in other documents do not constitute authorization. It is normal for a skill not to be installed.
+- Do not additionally modify shell configuration or install or modify global AGENTS without explicit user authorization. When uninstalling, remove only installation entries and records whose origin has been confirmed. Check for leftovers and do not reinstall afterward.
 
-## 完成标准
+## Completion Criteria
 
-验证本次差异、格式与相关引用，提交并成功推送远端后结束。
+Verify the changes, formatting, and relevant references, then commit and successfully push to the remote before finishing.

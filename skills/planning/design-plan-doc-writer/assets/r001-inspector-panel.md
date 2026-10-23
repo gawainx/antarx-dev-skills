@@ -266,26 +266,28 @@ Even if the segmented picker uses icons without visible text, retain the corresp
 
 #### zh-Hans/en mappings
 
+The zh-Hans values below are English translations of the intended Simplified Chinese copy for documentation purposes. Use Simplified Chinese equivalents in the actual localization catalog.
+
 - `content.inspector.toggle`
-  - zh-Hans: 打开或关闭辅助面板
+  - zh-Hans (English translation): Open or Close the Inspector
   - en: Toggle Inspector
 - `content.inspector.panel.notes`
-  - zh-Hans: 笔记
+  - zh-Hans (English translation): Notes
   - en: Notes
 - `content.inspector.panel.chat`
-  - zh-Hans: 对话
+  - zh-Hans (English translation): Chat
   - en: Chat
 - `content.inspector.empty.title`
-  - zh-Hans: 未选择论文
+  - zh-Hans (English translation): No Paper Selected
   - en: No Paper Selected
 - `content.inspector.empty.description`
-  - zh-Hans: 选择一篇论文后可查看辅助面板内容。
+  - zh-Hans (English translation): Select a paper to view inspector content.
   - en: Select a paper to view inspector content.
 - `content.inspector.notes.placeholder`
-  - zh-Hans: 笔记面板将在后续任务接入。
+  - zh-Hans (English translation): The Notes panel will be connected in a later task.
   - en: Notes panel will be connected in a follow-up task.
 - `content.inspector.chat.placeholder`
-  - zh-Hans: 对话面板将在后续任务接入。
+  - zh-Hans (English translation): The Chat panel will be connected in a later task.
   - en: Chat panel will be connected in a follow-up task.
 
 #### Fallback strategy and affected areas

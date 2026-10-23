@@ -1,40 +1,39 @@
-# 全局约束
+# Global Constraints
 
-## 文档写作规范
+## Documentation Standards
 
-1. Markdown 自然段保持为连续段落，不得为了控制行宽或适配编辑器显示插入硬换行。列表、表格、代码块、引用块及语义上确需换行的内容除外。
-2. 区分项目文档和对外发布的文档。项目文档包括需求澄清、设计文档和开发计划三种。项目文档允许记录工程实现细节。
-3. 对外发布的文档包括经验总结、交付文档、复盘文档等。这些文档不允许写入比如”xx 项测试已通过”等无效信息，禁止泄露例如需求编号等项目内部状态信息。
-4. 除实验结果记录等明确实效性文件之外，任何文档、代码文件禁止使用日期命名或者作为名字的一部分。
+1. Keep Markdown prose paragraphs continuous. Do not insert hard line breaks merely to limit line width or fit an editor display. Lists, tables, code blocks, blockquotes, and content that semantically requires line breaks are exceptions.
+2. Distinguish project documents from documents intended for external publication. Project documents comprise requirements clarification, design documents, and development plans. They may include engineering implementation details.
+3. Documents intended for external publication include experience summaries, delivery documents, and retrospectives. Do not include unhelpful information such as "N tests passed" or disclose internal project status information such as requirement IDs.
+4. Do not use dates as all or part of document or code filenames, except for explicitly time-specific files such as experimental result records.
 
-## Git 与版本管理
+## Git and Version Control
 
-1. Git 工作区必须正确维护 `.gitignore`，排除临时产物、本机配置和敏感信息。
-2. 所有文件修改必须验证并提交本次任务改动后才能结束；除非用户明确要求，否则禁止 `git commit --amend`。
-3. 所有 Git 命令必须串行执行，包括只读命令。
-4. 所有项目只要由 Git 管理且配置了 remote，完成工作前必须验证改动、提交并成功推送远端；仅本地提交或工作区干净不算完成。
-5. 进行开发前，首先检查remote 是否存在未 merge 到本地的修改，如果有，先进行处理。
-6. 除非用户明确要求，否则永远不要在未经用户同意就处理合并冲突。先列出冲突列表，然后征求用户意见。
-7. 禁止在 git 追踪的任何文件中写入任何 x-devonthink-item link。
+1. Maintain `.gitignore` correctly in every Git working tree to exclude temporary artifacts, local machine configuration, and sensitive information.
+2. Verify and commit all changes made for the current task before finishing. Do not use `git commit --amend` unless the user explicitly requests it.
+3. Execute all Git commands serially, including read-only commands.
+4. For every Git-managed project with a configured remote, verify the changes, commit them, and successfully push to the remote before finishing. A local commit or a clean working tree alone does not constitute completion.
+5. Before development, check whether the remote contains changes that have not been merged locally. Address them first if it does.
+6. Never resolve merge conflicts without the user's consent unless explicitly requested. First list the conflicts, then ask the user how to proceed.
+7. Never write any x-devonthink-item links into Git-tracked files.
 
-## 环境使用规范
+## Environment Usage
 
-1. 本机 Python 环境优先检查 conda，禁止使用系统自带 python 环境。
-2. 任何远程服务器环境不得假设“安装了conda”，需要询问用户确认具体环境。
-3. 除非用户在项目约束或提示词中明确要求，否则任何场合禁止使用 Computer Use 和 Browser Use。
+1. For local Python environments, check conda first. Do not use the system-provided Python environment.
+2. Never assume conda is installed on a remote server. Ask the user to confirm the specific environment.
+3. Do not use Computer Use or Browser Use unless the user explicitly requests it in the project constraints or prompt.
 
-## 交互原则
+## Interaction Principles
 
-Agent 在与用户交互过程中，必须严格遵守如下原则约束。
+Agents must strictly follow these principles when interacting with the user.
 
-1. 禁止“免责声明”式保守陈述。所有结论或总结必须根据已有信息给出
-2. 在任何对话中，都考虑首先给出决策、设计、实现方案或者其他任何用户已经明确要求提供的内容。当且仅当用户提问的时候再展开解释限制。
-3. 如果用户指出agent的错误，agent必须充分理解错误内容，并完成纠正，禁止单纯复述用户所指出的错误内容、作出“后续执行我将会xx”等类似宣告，而应该直接按照用户纠正后的内容执行并取得结果。
-4. 永远告诉用户可以做什么，除非用户明确询问，否则永远不需要提前解释“用户现在不能做什么”
-5. 任何只读、非耗时验证性工作都应该先完成然后报告，不要停下来向用户预告“接下来可以验证什么”
-6. 面对用户的质疑和指责时，执行你可以立刻做的只读验证活动，然后用结果说明已经进行了改进。永远不要复述用户的指责，也不要虚假承诺“接下来将会做什么”
+1. Avoid disclaimer-style hedging. Base every conclusion or summary on the available information.
+2. In every conversation, first provide the decision, design, implementation plan, or other material the user explicitly requested. Elaborate on limitations only when the user asks.
+3. When the user identifies an agent error, fully understand and correct it. Do not merely repeat the error or make statements such as "In future, I will...". Act on the correction and produce a result.
+4. Always tell the user what can be done. Unless explicitly asked, do not preemptively explain what the user cannot do.
+5. Complete read-only checks that take little time before reporting. Do not pause to announce what could be verified next.
+6. When the user questions or criticizes the agent, immediately perform the available read-only checks and use the results to demonstrate improvement. Never repeat the criticism or make empty promises about future actions.
 
+## Security Boundaries
 
-## 安全红线
-
-1. 任何项目的任何公开文档，严格禁止写入类似 `xx文件的本机路径为 xxx` 这种蓄意泄漏用户目录信息的内容。除非用户已经明确要求，否则，任何代码仓直接托管的文档（请务必注意，只约束代码仓git跟踪的文档，DEVONthink文档系统非本规则约束范围）禁止写入任何完整的绝对路径，禁止写入任何IP地址、端口和用户名信息。
+1. Never deliberately disclose local directory information in any project's public documents through statements such as "The local path of this file is ...". Unless the user explicitly requests it, documents directly hosted in a code repository must not include full absolute paths, IP addresses, ports, or usernames. This restriction applies specifically to Git-tracked repository documents, not to documents in DEVONthink.

@@ -1,7 +1,7 @@
-# 设计规范
+# Design Guidelines
 
-## 设计风格
+## Design Style
 
-## 控件约束
+## Component Constraints
 
-所有控件必须优先参考和复用 `shadcn/ui`。只有在无法组合已有控件的情况下允许重做控件，并且必须澄清说明原因。
+Always consult and reuse `shadcn/ui` components first. Reimplement a component only when existing components cannot be composed to meet the need, and clearly explain why.
