@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-from loguru import logger
-
 from crkit.rule_templates import RULE_TEMPLATES, render_mdc
 
 
@@ -30,7 +28,6 @@ def install_bundled_rules(project_directory: Path) -> tuple[list[Path], list[Pat
     for name, fields in RULE_TEMPLATES.items():
         destination = rules_directory / f"{name}.mdc"
         if destination.exists():
-            logger.info("Rule already exists: {}", destination)
             skipped.append(destination)
             continue
         pending.append((render_mdc(fields), destination))
@@ -39,6 +36,5 @@ def install_bundled_rules(project_directory: Path) -> tuple[list[Path], list[Pat
         rules_directory.mkdir(parents=True, exist_ok=True)
         for content, destination in pending:
             destination.write_text(content, encoding="utf-8")
-            logger.info("Created rule: {}", destination)
             created.append(destination)
     return created, skipped

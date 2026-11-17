@@ -5,13 +5,12 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-from loguru import logger
 from rich.console import Console
 
 from crkit.logging import configure_logging
 from crkit.rules import CursorPathError, install_bundled_rules
 
-console = Console(stderr=True, soft_wrap=True)
+console = Console(soft_wrap=True)
 app = typer.Typer(
     add_completion=False,
     no_args_is_help=True,
@@ -62,7 +61,6 @@ def init() -> None:
     try:
         created, skipped = install_bundled_rules(project_directory)
     except CursorPathError as exc:
-        logger.error("Path is not a directory: {}", exc.path)
         console.print(f"Not a directory: {exc.path}")
         raise typer.Exit(1) from exc
 
