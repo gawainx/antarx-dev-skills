@@ -4,7 +4,7 @@ from pathlib import Path
 
 from loguru import logger
 
-BUNDLED_RULE_NAMES = ("project-env.mdc", "project-doc.mdc")
+from crkit.rule_templates import RULE_TEMPLATES, render_mdc
 
 
 class CursorPathError(Exception):
@@ -13,10 +13,6 @@ class CursorPathError(Exception):
     def __init__(self, path: Path) -> None:
         self.path = path
         super().__init__(str(path))
-
-
-def bundled_rules_directory() -> Path:
-    return Path(__file__).resolve().parent / "templates" / "rules"
 
 
 def install_bundled_rules(project_directory: Path) -> tuple[list[Path], list[Path]]:
@@ -30,23 +26,19 @@ def install_bundled_rules(project_directory: Path) -> tuple[list[Path], list[Pat
 
     created: list[Path] = []
     skipped: list[Path] = []
-    pending: list[tuple[Path, Path]] = []
-    templates = bundled_rules_directory()
-    for name in BUNDLED_RULE_NAMES:
-        destination = rules_directory / name
+    pending: list[tuple[str, Path]] = []
+    for name, fields in RULE_TEMPLATES.items():
+        destination = rules_directory / f"{name}.mdc"
         if destination.exists():
             logger.info("Rule already exists: {}", destination)
             skipped.append(destination)
             continue
-        source = templates / name
-        if not source.is_file():
-            raise FileNotFoundError(source)
-        pending.append((source, destination))
+        pending.append((render_mdc(fields), destination))
 
     if pending:
         rules_directory.mkdir(parents=True, exist_ok=True)
-        for source, destination in pending:
-            destination.write_bytes(source.read_bytes())
+        for content, destination in pending:
+            destination.write_text(content, encoding="utf-8")
             logger.info("Created rule: {}", destination)
             created.append(destination)
     return created, skipped

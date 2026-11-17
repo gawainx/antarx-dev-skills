@@ -65,10 +65,6 @@ def init() -> None:
         logger.error("Path is not a directory: {}", exc.path)
         console.print(f"Not a directory: {exc.path}")
         raise typer.Exit(1) from exc
-    except FileNotFoundError as exc:
-        logger.error("Bundled rule template is missing: {}", exc)
-        console.print(f"Bundled rule template is missing: {exc}")
-        raise typer.Exit(1) from exc
 
     for path in skipped:
         console.print(f"File already exists: {_relative_path(project_directory, path)}")
