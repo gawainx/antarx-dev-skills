@@ -1,0 +1,18 @@
+[project]
+name = "crkit"
+version = "0.1.0"
+description = "Initialize a project's .cursor directory from bundled rule templates."
+requires-python = ">=3.12"
+license = "Apache-2.0"
+dependencies = [
+    "loguru>=0.8.0",
+    "rich>=15.0.0",
+    "typer>=0.29.1",
+]
+
+[project.scripts]
+crkit = "crkit.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11.29,<0.12.0"]
+build-backend = "uv_build"
